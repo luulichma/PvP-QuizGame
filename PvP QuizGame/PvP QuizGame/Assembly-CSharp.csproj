@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+    <_TargetFrameworkDirectories>non_empty_path_generated_by_unity.rider.package</_TargetFrameworkDirectories>
+    <_FullFrameworkReferenceAssemblyPaths>non_empty_path_generated_by_unity.rider.package</_FullFrameworkReferenceAssemblyPaths>
+    <DisableHandlePackageFileConflicts>true</DisableHandlePackageFileConflicts>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <RootNamespace></RootNamespace>
+    <ProjectGuid>{f654e289-a0b0-41a4-8d13-89f77398f561}</ProjectGuid>
+    <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseDirectory>.</BaseDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\Bin\Debug\Unity.Rider.Editor\</OutputPath>
+    <DefineConstants>UNITY_EDITOR</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169,0649</NoWarn>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoConfig>true</NoConfig>
+    <NoStdLib>true</NoStdLib>
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+    <ImplicitlyExpandNETStandardFacades>false</ImplicitlyExpandNETStandardFacades>
+    <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="Library\PackageCache\com.unity.burst@f7a407abf4d5\package.json" />
+    <None Include="Library\PackageCache\com.unity.test-framework.performance@92d1d09a72ed\package.json" />
+    <None Include="Library\PackageCache\com.unity.inputsystem@be6c4fd0abf5\package.json" />
+    <None Include="Library\PackageCache\com.unity.collections@56bff8827a7e\Unity.Collections.LowLevel.ILSupport\README.txt" />
+    <None Include="Library\PackageCache\com.unity.inputsystem@be6c4fd0abf5\ValidationConfig.json" />
+    <None Include="Library\PackageCache\com.unity.2d.pixel-perfect@e3ae982b672d\package.json" />
+    <None Include="Library\PackageCache\com.unity.test-framework.performance@92d1d09a72ed\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.timeline@6b9e48457ddb\package.json" />
+    <None Include="Library\PackageCache\com.unity.ide.visualstudio@198cdf337d13\ValidationConfig.json" />
+    <None Include="Library\PackageCache\com.unity.mathematics@8017b507cc74\package.json" />
+    <None Include="Library\PackageCache\com.unity.burst@f7a407abf4d5\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.visualscripting@6279e2b7c485\package.json" />
+    <None Include="Library\PackageCache\com.unity.collab-proxy@e566cd3e7623\package.json" />
+    <None Include="Library\PackageCache\com.unity.ide.visualstudio@198cdf337d13\package.json" />
+    <None Include="Library\PackageCache\com.unity.ide.rider@0baf0f91edc0\package.json" />
+    <None Include="Library\PackageCache\com.unity.searcher@1e17ce91558d\package.json" />
+    <None Include="Library\PackageCache\com.unity.ide.rider@0baf0f91edc0\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.nuget.mono-cecil@d6f9955a5d5f\package.json" />
+    <None Include="Library\PackageCache\com.unity.visualscripting@6279e2b7c485\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.2d.common@bc041c6e0d0d\package.json" />
+    <None Include="Library\PackageCache\com.unity.ide.visualstudio@198cdf337d13\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.2d.tilemap.extras@13634da7dbe0\package.json" />
+    <None Include="Library\PackageCache\com.unity.inputsystem@be6c4fd0abf5\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.collab-proxy@e566cd3e7623\ValidationConfig.json" />
+    <None Include="Library\PackageCache\com.unity.2d.aseprite@dba7c65ef731\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.timeline@6b9e48457ddb\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.2d.aseprite@dba7c65ef731\package.json" />
+    <None Include="Library\PackageCache\com.unity.visualscripting@6279e2b7c485\ValidationConfig.json" />
+    <None Include="Library\PackageCache\com.unity.collections@56bff8827a7e\package.json" />
+    <None Include="Library\PackageCache\com.unity.2d.spriteshape@9e35352ae135\package.json" />
+    <None Include="Library\PackageCache\com.unity.mathematics@8017b507cc74\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.2d.animation@81ad133dbdf1\package.json" />
+    <None Include="Library\PackageCache\com.unity.collections@56bff8827a7e\ValidationExceptions.json" />
+    <None Include="Library\PackageCache\com.unity.burst@f7a407abf4d5\Unity.Burst.Unsafe.xml" />
+    <None Include="Library\PackageCache\com.unity.2d.psdimporter@e0ffc26deb40\package.json" />
+    <Reference Include="UnityEngine">
+      <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\Managed\UnityEngine\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\Managed\UnityEngine\UnityEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
