@@ -41,7 +41,7 @@ def export_to_png(mmd_file: Path) -> Tuple[bool, str]:
     
     try:
         # Chạy mmdc command với shell=True để tìm được command trong PATH
-        cmd = f'mmdc -i "{mmd_file}" -o "{output_file}" -b transparent'
+        cmd = f'npx mmdc -i "{mmd_file}" -o "{output_file}" -b transparent'
         result = subprocess.run(
             cmd,
             capture_output=True,
@@ -68,7 +68,7 @@ def export_to_svg(mmd_file: Path) -> Tuple[bool, str]:
     
     try:
         # Chạy mmdc command với shell=True để tìm được command trong PATH
-        cmd = f'mmdc -i "{mmd_file}" -o "{output_file}"'
+        cmd = f'npx mmdc -i "{mmd_file}" -o "{output_file}"'
         result = subprocess.run(
             cmd,
             capture_output=True,

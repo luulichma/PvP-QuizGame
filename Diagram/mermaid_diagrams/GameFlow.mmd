@@ -1,0 +1,16 @@
+flowchart TD
+    A([Mo App]) --> B[Main Menu]
+    B -->|Nhan Tim tran| C[Lobby / Matchmaking]
+    C -->|Ghep cap thanh cong| D["Countdown<br/>3 - 2 - 1"]
+    D --> E["Playing<br/>Tra loi cau hoi"]
+    E <-->|"Firebase sync<br/>diem & trang thai"| F[(Firebase\nRealtime DB)]
+    E --> G["GameOver<br/>Hien ket qua"]
+    G -->|Nhan Choi lai| B
+
+    style A fill:#4CAF50,color:#fff,stroke:#388E3C
+    style B fill:#1a237e,color:#fff,stroke:#0d47a1
+    style C fill:#283593,color:#fff,stroke:#1a237e
+    style D fill:#f57f17,color:#fff,stroke:#e65100
+    style E fill:#1565C0,color:#fff,stroke:#0d47a1
+    style F fill:#F57C00,color:#fff,stroke:#E65100
+    style G fill:#b71c1c,color:#fff,stroke:#7f0000
