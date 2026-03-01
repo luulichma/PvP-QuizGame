@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor Admin as 👨‍💼 Quản Trị Viên
+    participant AdminUI as 🖥️ Admin UI
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Admin->>AdminUI: Nhấn "Thêm câu hỏi mới"
+    AdminUI->>Admin: Hiển thị form (nội dung, 4 đáp án, đáp án đúng, ngôn ngữ)
+    Admin->>AdminUI: Điền đầy đủ thông tin & nhấn Lưu
+    AdminUI->>AdminUI: Validate (không bỏ trống trường bắt buộc)
+    alt Dữ liệu không hợp lệ
+        AdminUI->>Admin: Hiển thị lỗi validation
+    else Dữ liệu hợp lệ
+        AdminUI->>Server: POST /api/admin/questions {question, answers, correctIndex, lang}
+        Server->>Server: Xác thực JWT token (role = ADMIN)
+        Server->>DB: Lưu câu hỏi mới
+        DB-->>Server: Thành công + questionId
+        Server-->>AdminUI: 201 Created
+        AdminUI->>Admin: Thông báo "Thêm câu hỏi thành công"
+        AdminUI->>Admin: Cập nhật danh sách câu hỏi
+    end

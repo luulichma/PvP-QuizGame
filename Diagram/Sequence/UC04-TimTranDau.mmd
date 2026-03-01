@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant Server as ☁️ Server
+    participant Queue as 🔄 Matchmaking Queue
+
+    Player->>App: Nhấn "Tìm trận đấu"
+    App->>Server: POST /api/match/find (kèm JWT token)
+    Server->>Queue: Thêm Player vào hàng chờ
+    Server-->>App: Đang tìm đối thủ...
+    App->>Player: Hiển thị trạng thái "Đang tìm đối thủ..."
+
+    alt Tìm thấy đối thủ
+        Queue->>Server: Ghép 2 Player thành 1 phòng
+        Server->>Server: Tạo phòng (roomId), chuẩn bị câu hỏi
+        Server-->>App: Tìm thấy đối thủ! {roomId, opponentName}
+        App->>Player: Hiển thị "Đã tìm thấy đối thủ - Bắt đầu!"
+    else Hủy tìm kiếm
+        Player->>App: Nhấn "Hủy"
+        App->>Server: DELETE /api/match/cancel
+        Server->>Queue: Xóa Player khỏi hàng chờ
+        Server-->>App: Đã hủy
+        App->>Player: Quay về màn hình chính
+    else Timeout (60 giây)
+        Server->>Queue: Xóa Player khỏi hàng chờ
+        Server-->>App: Timeout - Không tìm thấy đối thủ
+        App->>Player: Hiển thị "Không tìm được đối thủ, thử lại?"
+    end

@@ -1,0 +1,20 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant Server as ☁️ Server
+
+    App->>Player: Hiển thị câu hỏi + 4 đáp án + đồng hồ đếm ngược
+    Player->>App: Chọn đáp án
+    App->>App: Ghi nhận thời gian trả lời
+    App->>Server: Gửi kết quả {questionId, answerId, timeSpent}
+    Server->>Server: Kiểm tra đáp án đúng/sai
+    alt Đáp án đúng
+        Server->>Server: Cộng điểm (+10)
+        Server-->>App: Đúng! Điểm hiện tại: X
+        App->>Player: Hiển thị phản hồi màu xanh ✅
+    else Đáp án sai
+        Server->>Server: Trừ điểm (-5) hoặc giữ nguyên
+        Server-->>App: Sai! Đáp án đúng là: Y
+        App->>Player: Hiển thị phản hồi màu đỏ ❌
+    end
+    App->>Player: Chuyển sang câu hỏi tiếp theo

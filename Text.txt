@@ -1,0 +1,181 @@
+Chào bạn, danh sách Use Case bạn xác định cho tựa game quiz PvP rất đầy đủ và bao quát được các luồng chức năng từ phía Client (Người chơi, Admin) đến Server (Hệ thống).
+
+Dưới đây là tài liệu đặc tả chi tiết (Use Case Specification) cho từng Use Case theo đúng format bạn yêu cầu. Để dễ theo dõi, tôi đã chia thành các nhóm tương ứng.
+
+---
+
+### 👤 Nhóm Quản Lý Trải Nghiệm Người Chơi (Player)
+
+**UC01 — Đăng ký tài khoản**
+
+* **Use Case Description:** Cho phép người chơi mới tạo tài khoản để lưu trữ thông tin và lịch sử thi đấu.
+* **Actor:** Người chơi
+* **Priority:** Cao
+* **Trigger:** Người chơi điền thông tin và nhấn nút "Đăng ký".
+* **Pre-Condition:** Người chơi đang ở màn hình đăng ký và chưa đăng nhập.
+* **Post-Condition:** Thông tin tài khoản được mã hóa và lưu vào cơ sở dữ liệu. Hệ thống thông báo thành công và chuyển hướng đến màn hình đăng nhập.
+
+**UC02 — Đăng nhập**
+
+* **Use Case Description:** Xác thực thông tin người chơi để truy cập vào hệ thống game.
+* **Actor:** Người chơi
+* **Priority:** Cao
+* **Trigger:** Người chơi nhập tài khoản, mật khẩu và nhấn "Đăng nhập".
+* **Pre-Condition:** Người chơi đã có tài khoản trên hệ thống.
+* **Post-Condition:** Người chơi được cấp quyền truy cập, chuyển đến màn hình sảnh chính (Lobby).
+
+**UC03 — Đăng xuất**
+
+* **Use Case Description:** Chấm dứt phiên làm việc hiện tại của người chơi trên thiết bị.
+* **Actor:** Người chơi
+* **Priority:** Thấp
+* **Trigger:** Người chơi nhấn nút "Đăng xuất" trong mục cài đặt hoặc hồ sơ.
+* **Pre-Condition:** Người chơi đang trong trạng thái đăng nhập.
+* **Post-Condition:** Xóa phiên đăng nhập hiện tại, hệ thống đưa người chơi về màn hình đăng nhập khởi điểm.
+
+**UC04 — Tìm trận đấu (Matchmaking)**
+
+* **Use Case Description:** Hệ thống tìm kiếm và ghép cặp hai người chơi đang có nhu cầu thi đấu.
+* **Actor:** Người chơi, Hệ thống
+* **Priority:** Rất Cao (Cốt lõi)
+* **Trigger:** Người chơi nhấn nút "Tìm trận" tại sảnh chính.
+* **Pre-Condition:** Người chơi đã đăng nhập và đang không trong trận đấu nào khác.
+* **Post-Condition:** Người chơi được ghép vào một phòng đấu (room) chung với một đối thủ khác.
+
+**UC05 — Bắt đầu trận đấu**
+
+* **Use Case Description:** Chuyển trạng thái từ phòng chờ sang giao diện thi đấu chính thức.
+* **Actor:** Người chơi, Hệ thống
+* **Priority:** Cao
+* **Trigger:** Việc ghép cặp (Matchmaking) thành công.
+* **Pre-Condition:** Hai người chơi đã kết nối ổn định vào chung một phòng.
+* **Post-Condition:** Giao diện thi đấu hiển thị đồng loạt cho cả 2 client, bộ đếm ngược thời gian bắt đầu chạy.
+
+**UC06 — Trả lời câu hỏi**
+
+* **Use Case Description:** Người chơi chọn đáp án cho câu hỏi hiện tại trên màn hình.
+* **Actor:** Người chơi
+* **Priority:** Rất Cao
+* **Trigger:** Người chơi chạm/click vào một trong các đáp án.
+* **Pre-Condition:** Trận đấu đang diễn ra, câu hỏi đang hiển thị và chưa hết thời gian quy định.
+* **Post-Condition:** Lựa chọn của người chơi được khóa lại, gửi tín hiệu về hệ thống để kiểm tra tính đúng/sai và tính điểm.
+
+**UC07 — Xem điểm đối thủ real-time**
+
+* **Use Case Description:** Cập nhật và hiển thị điểm số hiện tại của đối thủ ngay trong lúc trận đấu diễn ra.
+* **Actor:** Người chơi
+* **Priority:** Trung bình
+* **Trigger:** Đối thủ vừa trả lời xong một câu hỏi và được cập nhật điểm.
+* **Pre-Condition:** Trận đấu đang diễn ra.
+* **Post-Condition:** Thanh điểm số (hoặc giao diện hiển thị điểm) của đối thủ trên màn hình người chơi nhảy số mới.
+
+**UC08 — Xem kết quả trận đấu**
+
+* **Use Case Description:** Hiển thị màn hình tổng kết (Thắng, Thua, Hòa) và số điểm cuối cùng.
+* **Actor:** Người chơi
+* **Priority:** Cao
+* **Trigger:** Trận đấu kết thúc (đã hết số lượng câu hỏi quy định).
+* **Pre-Condition:** Cả 2 người chơi đã hoàn thành bộ câu hỏi hoặc hết thời gian tổng.
+* **Post-Condition:** Màn hình kết quả hiện ra, thứ hạng/điểm số được cập nhật vào hồ sơ lưu trữ của người chơi.
+
+**UC09 — Đổi ngôn ngữ giao diện**
+
+* **Use Case Description:** Thay đổi ngôn ngữ hiển thị của toàn bộ game (Ví dụ: VI ⇄ EN).
+* **Actor:** Người chơi
+* **Priority:** Thấp
+* **Trigger:** Người chơi chọn ngôn ngữ mới trong mục Cài đặt.
+* **Pre-Condition:** Người chơi đang mở bảng Cài đặt.
+* **Post-Condition:** Toàn bộ text trên giao diện người dùng được tải lại theo ngôn ngữ mới.
+
+**UC10 — Bật / Tắt âm thanh**
+
+* **Use Case Description:** Bật hoặc tắt nhạc nền (BGM) và hiệu ứng âm thanh (SFX) trong game.
+* **Actor:** Người chơi
+* **Priority:** Thấp
+* **Trigger:** Người chơi gạt công tắc âm thanh trong mục Cài đặt.
+* **Pre-Condition:** Game đang chạy trên thiết bị.
+* **Post-Condition:** Trạng thái âm thanh thay đổi ngay lập tức và được lưu lại cho các lần mở game sau.
+
+---
+
+### 👨‍💼 Nhóm Quản Trị Viên (Admin)
+
+**UC11 — Đăng nhập tài khoản Admin**
+
+* **Use Case Description:** Admin xác thực để truy cập vào hệ thống quản lý nội dung game (CMS/Dashboard).
+* **Actor:** Admin
+* **Priority:** Cao
+* **Trigger:** Admin điền thông tin và nhấn "Đăng nhập" tại cổng Admin.
+* **Pre-Condition:** Phải có tài khoản được cấp quyền quản trị viên.
+* **Post-Condition:** Admin được truy cập vào giao diện Dashboard quản lý.
+
+**UC12 — Thêm câu hỏi mới**
+
+* **Use Case Description:** Admin đưa thêm câu hỏi mới cùng các đáp án và chỉ định đáp án đúng vào ngân hàng câu hỏi.
+* **Actor:** Admin
+* **Priority:** Cao
+* **Trigger:** Admin điền form tạo câu hỏi và nhấn "Lưu".
+* **Pre-Condition:** Admin đã đăng nhập thành công.
+* **Post-Condition:** Câu hỏi mới được lưu vào cơ sở dữ liệu và sẵn sàng xuất hiện trong game.
+
+**UC13 — Sửa câu hỏi**
+
+* **Use Case Description:** Admin cập nhật lại nội dung, đáp án hoặc độ khó của một câu hỏi đã có.
+* **Actor:** Admin
+* **Priority:** Trung bình
+* **Trigger:** Admin chọn một câu hỏi, chỉnh sửa và nhấn "Cập nhật".
+* **Pre-Condition:** Câu hỏi đó phải tồn tại trong cơ sở dữ liệu.
+* **Post-Condition:** Thông tin câu hỏi được ghi đè bằng dữ liệu mới nhất.
+
+**UC14 — Xóa câu hỏi**
+
+* **Use Case Description:** Admin gỡ bỏ một câu hỏi khỏi ngân hàng câu hỏi hiện tại.
+* **Actor:** Admin
+* **Priority:** Trung bình
+* **Trigger:** Admin chọn câu hỏi và nhấn biểu tượng "Xóa" (và xác nhận).
+* **Pre-Condition:** Câu hỏi tồn tại trong cơ sở dữ liệu.
+* **Post-Condition:** Câu hỏi bị xóa (hoặc ẩn) khỏi hệ thống, không còn xuất hiện trong các trận đấu matchmaking sau đó.
+
+**UC15 — Xem danh sách câu hỏi**
+
+* **Use Case Description:** Admin xem lại toàn bộ ngân hàng câu hỏi hiện có dưới dạng bảng hoặc danh sách.
+* **Actor:** Admin
+* **Priority:** Trung bình
+* **Trigger:** Admin click vào tab "Quản lý câu hỏi" trên Dashboard.
+* **Pre-Condition:** Admin đã đăng nhập thành công.
+* **Post-Condition:** Danh sách câu hỏi được fetch từ database và hiển thị lên màn hình kèm công cụ tìm kiếm/lọc.
+
+---
+
+### 🔧 Nhóm Hệ Thống (System)
+
+**UC16 — Xáo trộn câu hỏi ngẫu nhiên**
+
+* **Use Case Description:** Lấy một tập hợp câu hỏi từ cơ sở dữ liệu và xáo trộn để tạo thành bộ câu hỏi duy nhất cho một trận đấu, đảm bảo không trùng lặp trong cùng một trận.
+* **Actor:** Hệ thống
+* **Priority:** Cao
+* **Trigger:** Matchmaking thành công, chuẩn bị tạo phòng (room).
+* **Pre-Condition:** Ngân hàng câu hỏi có đủ số lượng câu hỏi tối thiểu cho một trận.
+* **Post-Condition:** Một danh sách ID câu hỏi (mảng) ngẫu nhiên được sinh ra và gán riêng cho phòng đấu đó.
+
+**UC17 — Đồng bộ câu hỏi giữa 2 client**
+
+* **Use Case Description:** Đảm bảo cả hai client trong phòng đấu nhận được cùng một nội dung câu hỏi tại chính xác một thời điểm.
+* **Actor:** Hệ thống
+* **Priority:** Rất Cao (Xương sống của tính năng Real-time PvP)
+* **Trigger:** Chuyển sang lượt câu hỏi tiếp theo (hoặc bắt đầu trận).
+* **Pre-Condition:** Cả hai client đều đang giữ kết nối (socket/network) liên tục với server.
+* **Post-Condition:** Gói tin chứa dữ liệu câu hỏi được gửi tới cả hai người chơi thành công và thời gian đếm ngược bắt đầu đồng bộ.
+
+**UC18 — Tính điểm và xác định kết quả**
+
+* **Use Case Description:** Hệ thống đối chiếu đáp án từ client gửi lên với đáp án gốc, tính điểm (dựa trên tính chính xác và tốc độ trả lời) và quyết định kết quả chung cuộc.
+* **Actor:** Hệ thống
+* **Priority:** Rất Cao
+* **Trigger:** Người chơi trả lời xong một câu hoặc trận đấu kết thúc.
+* **Pre-Condition:** Hệ thống đã nhận được tín hiệu trả lời từ các client hoặc thời gian trận đấu đã cạn.
+* **Post-Condition:** Điểm số được cập nhật nội bộ. Khi hết trận, trạng thái Thắng/Thua/Hòa được broadcast (phát) trả về cho 2 người chơi.
+
+---
+
+Về mặt tổng thể, các định nghĩa này đã bao phủ rất tốt vòng đời tương tác của một game client-server cơ bản. Để hoàn thiện tài liệu dự án, bạn có muốn tôi viết chi tiết kịch bản **Luồng sự kiện chính (Main Flow) và Luồng ngoại lệ (Alternative Flow)** cho các Use Case phức tạp như Matchmaking (UC04) hay Đồng bộ câu hỏi (UC17) không? Tới bước thiết kế, những luồng xử lý này sẽ rất quan trọng cho việc cấu trúc logic đấy.

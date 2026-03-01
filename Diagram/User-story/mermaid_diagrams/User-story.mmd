@@ -1,0 +1,52 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '15px', 'fontFamily': 'Arial'}}}%%
+flowchart LR
+    %% ===== PLAYER NEEDS =====
+    P1["Tạo tài khoản"]
+    P2["Đăng nhập"]
+    P3["Tìm trận đấu"]
+    P4["Trả lời câu hỏi"]
+    P5["Xem kết quả trận đấu"]
+    P6["Xem điểm đối thủ real-time"]
+    P7["Hiểu cơ chế tính điểm"]
+    P8["Câu hỏi không trùng lặp"]
+    P9["Đổi ngôn ngữ giao diện"]
+    P10["Nhận câu hỏi đúng ngôn ngữ"]
+    P11["Giao diện trực quan"]
+    P12["Âm thanh phản hồi"]
+
+    %% ===== ADMIN NEEDS =====
+    A1["Đăng nhập tài khoản Admin"]
+    A2["Thêm câu hỏi"]
+    A3["Sửa câu hỏi"]
+    A4["Xóa câu hỏi"]
+
+    %% ===== ACTORS =====
+    Player(["👤 Người Chơi<br/>(Player)"])
+    Admin(["👨‍💼 Quản Trị Viên<br/>(Admin)"])
+
+    %% ===== CONNECTIONS =====
+    P1 --- Player
+    P2 --- Player
+    P3 --- Player
+    P4 --- Player
+    P5 --- Player
+    P6 --- Player
+    P7 --- Player
+    P8 --- Player
+    P9 --- Player
+    P10 --- Player
+    P11 --- Player
+    P12 --- Player
+
+    A1 --- Admin
+    A2 --- Admin
+    A3 --- Admin
+    A4 --- Admin
+
+    %% ===== STYLING =====
+    classDef actorStyle fill:#4A90D9,stroke:#2C5F8A,stroke-width:3px,color:#fff,font-weight:bold
+    classDef needStyle  fill:#F0F4F8,stroke:#7A9BBF,stroke-width:1.5px,color:#1a1a2e
+
+    class Player,Admin actorStyle
+    class P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 needStyle
+    class A1,A2,A3,A4 needStyle

@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor Player1 as 👤 Người Chơi 1
+    actor Player2 as 👤 Người Chơi 2
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Note over Player1,Player2: Hết giờ 180s hoặc cả 2 hoàn thành
+
+    Server->>Server: Tính tổng điểm 2 người
+    Server->>Server: Xác định kết quả (Thắng / Thua / Hòa)
+    Server->>DB: Lưu kết quả trận đấu
+    DB-->>Server: OK
+    Server-->>Player1: Kết quả {myScore, opponentScore, result: WIN/LOSE/DRAW}
+    Server-->>Player2: Kết quả {myScore, opponentScore, result: WIN/LOSE/DRAW}
+    Player1->>Player1: Hiển thị màn hình kết quả
+    Player2->>Player2: Hiển thị màn hình kết quả
+
+    Note over Player1,Player2: Người chơi chọn "Chơi lại" hoặc "Về menu"

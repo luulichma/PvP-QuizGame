@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Player->>App: Mở màn hình Đăng nhập
+    App->>Player: Hiển thị form (username, password)
+    Player->>App: Nhập thông tin & nhấn Đăng nhập
+    App->>App: Validate dữ liệu phía client
+    alt Dữ liệu không hợp lệ
+        App->>Player: Hiển thị lỗi (trường trống)
+    else Dữ liệu hợp lệ
+        App->>Server: POST /api/auth/login {username, password}
+        Server->>DB: Tìm tài khoản theo username
+        alt Không tìm thấy
+            DB-->>Server: Not found
+            Server-->>App: 401 Unauthorized
+            App->>Player: Hiển thị lỗi "Sai tên đăng nhập hoặc mật khẩu"
+        else Tìm thấy
+            Server->>Server: Kiểm tra password (bcrypt compare)
+            alt Sai mật khẩu
+                Server-->>App: 401 Unauthorized
+                App->>Player: Hiển thị lỗi "Sai tên đăng nhập hoặc mật khẩu"
+            else Đúng mật khẩu
+                Server->>DB: Cập nhật lastLogin
+                Server-->>App: 200 OK + JWT token + thông tin user
+                App->>App: Lưu token vào local storage
+                App->>Player: Chuyển đến màn hình chính
+            end
+        end
+    end

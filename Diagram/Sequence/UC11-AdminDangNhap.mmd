@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor Admin as 👨‍💼 Quản Trị Viên
+    participant AdminUI as 🖥️ Admin UI
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Admin->>AdminUI: Mở trang đăng nhập Admin
+    AdminUI->>Admin: Hiển thị form (username, password)
+    Admin->>AdminUI: Nhập thông tin & nhấn Đăng nhập
+    AdminUI->>Server: POST /api/admin/login {username, password}
+    Server->>DB: Tìm tài khoản Admin
+    alt Không tìm thấy hoặc sai mật khẩu
+        DB-->>Server: Thất bại
+        Server-->>AdminUI: 401 Unauthorized
+        AdminUI->>Admin: Hiển thị lỗi "Sai tài khoản hoặc mật khẩu"
+    else Đăng nhập thành công
+        Server->>Server: Kiểm tra role = ADMIN
+        Server-->>AdminUI: 200 OK + JWT token (Admin role)
+        AdminUI->>AdminUI: Lưu token
+        AdminUI->>Admin: Chuyển đến trang quản trị
+    end

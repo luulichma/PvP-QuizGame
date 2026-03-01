@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant AudioManager as 🔊 Audio Manager
+    participant Storage as 💾 Local Storage
+
+    Player->>App: Vào màn hình Cài đặt
+    App->>Storage: Đọc trạng thái âm thanh hiện tại
+    Storage-->>App: {sfx: true, bgm: true}
+    App->>Player: Hiển thị toggle SFX / BGM
+
+    alt Bật/Tắt SFX
+        Player->>App: Toggle SFX
+        App->>AudioManager: SetSFX(enabled)
+        App->>Storage: Lưu {sfx: enabled}
+        App->>Player: Cập nhật trạng thái toggle
+    else Bật/Tắt BGM
+        Player->>App: Toggle BGM
+        App->>AudioManager: SetBGM(enabled)
+        App->>Storage: Lưu {bgm: enabled}
+        App->>Player: Cập nhật trạng thái toggle
+    end

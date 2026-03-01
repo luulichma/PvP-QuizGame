@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+    actor Player1 as 👤 Người Chơi 1
+    actor Player2 as 👤 Người Chơi 2
+
+    Note over Server: Hết giờ 180s hoặc cả 2 nộp xong
+
+    Server->>Server: Lấy tổng điểm Player1 và Player2
+    Server->>Server: So sánh điểm
+    alt Player1 > Player2
+        Server->>Server: Player1 = WIN, Player2 = LOSE
+    else Player2 > Player1
+        Server->>Server: Player1 = LOSE, Player2 = WIN
+    else Bằng nhau
+        Server->>Server: Cả 2 = DRAW
+    end
+
+    Server->>DB: Lưu kết quả trận {room, player1Score, player2Score, result}
+    DB-->>Server: OK
+
+    Server-->>Player1: {result: WIN/LOSE/DRAW, myScore, opponentScore}
+    Server-->>Player2: {result: WIN/LOSE/DRAW, myScore, opponentScore}
+
+    Player1->>Player1: Hiển thị màn hình kết quả
+    Player2->>Player2: Hiển thị màn hình kết quả

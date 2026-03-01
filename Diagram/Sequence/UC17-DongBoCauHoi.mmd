@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor Player1 as 👤 Người Chơi 1
+    actor Player2 as 👤 Người Chơi 2
+    participant Server as ☁️ Server
+
+    Note over Server: Server giữ vai trò điều phối trung tâm (WebSocket)
+
+    Server->>Player1: Gửi câu hỏi bộ {questions[]} qua WebSocket
+    Server->>Player2: Gửi câu hỏi bộ {questions[]} qua WebSocket
+
+    Note over Player1,Player2: Cả 2 nhận đúng cùng 1 bộ câu hỏi, cùng thứ tự
+
+    Player1->>Server: Gửi đáp án {questionId, answerId}
+    Server->>Server: Xử lý đáp án Player1
+    Server-->>Player1: Kết quả đáp án + điểm hiện tại
+    Server-->>Player2: Điểm đối thủ cập nhật
+
+    Player2->>Server: Gửi đáp án {questionId, answerId}
+    Server->>Server: Xử lý đáp án Player2
+    Server-->>Player2: Kết quả đáp án + điểm hiện tại
+    Server-->>Player1: Điểm đối thủ cập nhật

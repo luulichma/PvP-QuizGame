@@ -1,0 +1,15 @@
+sequenceDiagram
+    actor Player1 as 👤 Người Chơi 1
+    actor Player2 as 👤 Người Chơi 2
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Note over Player1,Player2: Cả 2 đã được ghép vào cùng phòng (roomId)
+
+    Server->>DB: Lấy bộ câu hỏi ngẫu nhiên (không trùng)
+    DB-->>Server: Danh sách câu hỏi đã xáo trộn
+    Server->>Player1: Gửi tín hiệu "Bắt đầu trận!" + danh sách câu hỏi
+    Server->>Player2: Gửi tín hiệu "Bắt đầu trận!" + danh sách câu hỏi
+    Player1->>Player1: Hiển thị màn hình thi đấu + đồng hồ 180s
+    Player2->>Player2: Hiển thị màn hình thi đấu + đồng hồ 180s
+    Note over Player1,Player2: Trận đấu bắt đầu đồng thời

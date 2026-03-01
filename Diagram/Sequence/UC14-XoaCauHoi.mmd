@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor Admin as 👨‍💼 Quản Trị Viên
+    participant AdminUI as 🖥️ Admin UI
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Admin->>AdminUI: Chọn câu hỏi → nhấn "Xóa"
+    AdminUI->>Admin: Hiển thị hộp thoại xác nhận "Bạn có chắc muốn xóa?"
+    alt Admin hủy
+        Admin->>AdminUI: Nhấn "Hủy"
+        AdminUI->>Admin: Đóng hộp thoại
+    else Admin xác nhận
+        Admin->>AdminUI: Nhấn "Xác nhận Xóa"
+        AdminUI->>Server: DELETE /api/admin/questions/{id}
+        Server->>Server: Xác thực JWT (role = ADMIN)
+        Server->>DB: Xóa câu hỏi theo id
+        DB-->>Server: Thành công
+        Server-->>AdminUI: 200 OK
+        AdminUI->>Admin: Thông báo "Xóa câu hỏi thành công"
+        AdminUI->>Admin: Cập nhật danh sách câu hỏi
+    end
