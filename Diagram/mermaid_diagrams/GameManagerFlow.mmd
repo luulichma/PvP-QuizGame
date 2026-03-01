@@ -1,0 +1,23 @@
+flowchart TD
+    A(["▶ Start()"]) --> B["ChangeState(Idle)\n📋 Main Menu"]
+    B -->|"Người chơi nhấn\n'Bắt đầu'"| C
+    C["ChangeState(Countdown)\n⏳ Đếm ngược 3 - 2 - 1"]
+    C --> D["ChangeState(Playing)\n🎮 Trận đấu bắt đầu"]
+    D --> D1["StartTimer() ⏱"]
+    D --> D2["LoadFirstQuestion() ❓"]
+    D1 & D2 --> E{"Điều kiện\nkết thúc?"}
+    E -->|"Hết giờ ⏰"| F
+    E -->|"Hết câu hỏi 📭"| F
+    F["ChangeState(GameOver)"]
+    F --> G["ShowResult() 🏆\nThắng / Thua / Hòa"]
+    G -->|"Chơi lại"| B
+
+    style A  fill:#4CAF50,color:#fff,stroke:#388E3C
+    style B  fill:#1a237e,color:#fff,stroke:#0d47a1
+    style C  fill:#f57f17,color:#fff,stroke:#e65100
+    style D  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style D1 fill:#283593,color:#fff,stroke:#1a237e
+    style D2 fill:#283593,color:#fff,stroke:#1a237e
+    style E  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style F  fill:#b71c1c,color:#fff,stroke:#7f0000
+    style G  fill:#2E7D32,color:#fff,stroke:#1B5E20

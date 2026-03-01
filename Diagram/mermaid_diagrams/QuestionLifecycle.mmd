@@ -1,0 +1,26 @@
+flowchart LR
+    A["🔥 Firebase gửi câu hỏi\nđến cả 2 client"] --> B
+    B["📱 Cả 2 thiết bị hiển thị\ncâu hỏi + 4 đáp án"] --> C
+    C["👆 Người chơi\nchạm vào đáp án"] --> D
+    D["📤 Client gửi answerIndex\nlên Firebase Realtime DB"] --> E
+    E{"⚙️ Firebase\nkiểm tra đáp án"}
+    E -->|"✅ Đúng"| F["➕ Cộng 10 điểm"]
+    E -->|"❌ Sai"| G["➕ 0 điểm"]
+    F --> H["📡 Broadcast điểm mới\nvề cả 2 client"]
+    G --> H
+    H --> I["🎨 Flash xanh / đỏ\n+ Cập nhật điểm"]
+    I --> J{"🔁 Còn câu hỏi?"}
+    J -->|"Còn"| A
+    J -->|"Hết giờ / Hết câu"| K(["🏁 Kết thúc trận"])
+
+    style A fill:#F57C00,color:#fff,stroke:#E65100
+    style B fill:#1565C0,color:#fff,stroke:#0d47a1
+    style C fill:#283593,color:#fff,stroke:#1a237e
+    style D fill:#283593,color:#fff,stroke:#1a237e
+    style E fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style F fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style G fill:#b71c1c,color:#fff,stroke:#7f0000
+    style H fill:#F57C00,color:#fff,stroke:#E65100
+    style I fill:#1565C0,color:#fff,stroke:#0d47a1
+    style J fill:#4527A0,color:#fff,stroke:#311B92
+    style K fill:#1a237e,color:#fff,stroke:#0d47a1
