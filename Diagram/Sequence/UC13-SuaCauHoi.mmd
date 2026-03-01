@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor Admin as 👨‍💼 Quản Trị Viên
+    participant AdminUI as 🖥️ Admin UI
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Admin->>AdminUI: Chọn câu hỏi cần sửa → nhấn "Chỉnh sửa"
+    AdminUI->>Server: GET /api/admin/questions/{id}
+    Server->>DB: Lấy chi tiết câu hỏi
+    DB-->>Server: Dữ liệu câu hỏi
+    Server-->>AdminUI: Trả về câu hỏi
+    AdminUI->>Admin: Hiển thị form với dữ liệu hiện tại
+
+    Admin->>AdminUI: Chỉnh sửa nội dung & nhấn Lưu
+    AdminUI->>AdminUI: Validate dữ liệu
+    alt Dữ liệu không hợp lệ
+        AdminUI->>Admin: Hiển thị lỗi
+    else Hợp lệ
+        AdminUI->>Server: PUT /api/admin/questions/{id} {dữ liệu mới}
+        Server->>Server: Xác thực JWT (role = ADMIN)
+        Server->>DB: Cập nhật câu hỏi
+        DB-->>Server: Thành công
+        Server-->>AdminUI: 200 OK
+        AdminUI->>Admin: Thông báo "Cập nhật thành công"
+    end

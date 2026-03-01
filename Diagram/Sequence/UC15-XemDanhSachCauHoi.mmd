@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor Admin as 👨‍💼 Quản Trị Viên
+    participant AdminUI as 🖥️ Admin UI
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Admin->>AdminUI: Vào trang "Quản lý câu hỏi"
+    AdminUI->>Server: GET /api/admin/questions?page=1&limit=20
+    Server->>Server: Xác thực JWT (role = ADMIN)
+    Server->>DB: Truy vấn danh sách câu hỏi (phân trang)
+    DB-->>Server: Danh sách câu hỏi + tổng số
+    Server-->>AdminUI: 200 OK + {questions[], total, page}
+    AdminUI->>Admin: Hiển thị bảng danh sách câu hỏi
+
+    opt Admin tìm kiếm / lọc
+        Admin->>AdminUI: Nhập từ khóa tìm kiếm hoặc chọn bộ lọc
+        AdminUI->>Server: GET /api/admin/questions?search=...&lang=...
+        Server->>DB: Truy vấn với điều kiện lọc
+        DB-->>Server: Kết quả lọc
+        Server-->>AdminUI: Danh sách câu hỏi đã lọc
+        AdminUI->>Admin: Cập nhật bảng
+    end

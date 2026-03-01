@@ -1,0 +1,14 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant Server as ☁️ Server
+
+    Player->>App: Nhấn nút Đăng xuất
+    App->>Player: Hiển thị xác nhận "Bạn có muốn đăng xuất?"
+    Player->>App: Xác nhận
+    App->>Server: POST /api/auth/logout (kèm JWT token)
+    Server->>Server: Vô hiệu hóa token (blacklist / xóa refresh token)
+    Server-->>App: 200 OK
+    App->>App: Xóa token khỏi local storage
+    App->>App: Xóa dữ liệu session người dùng
+    App->>Player: Chuyển về màn hình Đăng nhập

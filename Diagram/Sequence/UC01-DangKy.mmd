@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Player->>App: Mở màn hình Đăng ký
+    App->>Player: Hiển thị form (username, email, password)
+    Player->>App: Nhập thông tin & nhấn Đăng ký
+    App->>App: Validate dữ liệu phía client
+    alt Dữ liệu không hợp lệ
+        App->>Player: Hiển thị lỗi (thiếu trường, sai định dạng)
+    else Dữ liệu hợp lệ
+        App->>Server: POST /api/auth/register {username, email, password}
+        Server->>DB: Kiểm tra email/username đã tồn tại?
+        alt Đã tồn tại
+            DB-->>Server: Trùng lặp
+            Server-->>App: 409 Conflict
+            App->>Player: Hiển thị lỗi "Tài khoản đã tồn tại"
+        else Chưa tồn tại
+            Server->>DB: Lưu tài khoản mới (hash password)
+            DB-->>Server: Thành công
+            Server-->>App: 201 Created + JWT token
+            App->>App: Lưu token vào local storage
+            App->>Player: Chuyển đến màn hình chính
+        end
+    end

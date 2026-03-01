@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor Player1 as 👤 Người Chơi 1
+    actor Player2 as 👤 Người Chơi 2
+    participant Server as ☁️ Server
+
+    Note over Player1,Player2: Đang trong trận đấu
+
+    Player2->>Server: Trả lời câu hỏi → cập nhật điểm
+    Server->>Server: Tính điểm Player2
+    Server-->>Player1: Broadcast điểm đối thủ {opponentScore}
+    Player1->>Player1: Cập nhật điểm đối thủ trên màn hình real-time
+
+    Player1->>Server: Trả lời câu hỏi → cập nhật điểm
+    Server->>Server: Tính điểm Player1
+    Server-->>Player2: Broadcast điểm đối thủ {opponentScore}
+    Player2->>Player2: Cập nhật điểm đối thủ trên màn hình real-time
+
+    Note over Player1,Player2: Điểm được cập nhật liên tục trong suốt trận

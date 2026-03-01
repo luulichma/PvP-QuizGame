@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Server as ☁️ Server
+    participant DB as 🗄️ Database
+
+    Note over Server: Khi trận đấu mới được khởi tạo (sau matchmaking)
+
+    Server->>DB: Lấy toàn bộ pool câu hỏi theo ngôn ngữ
+    DB-->>Server: Danh sách câu hỏi
+    Server->>Server: Xáo trộn ngẫu nhiên (Fisher-Yates shuffle)
+    Server->>Server: Lấy N câu hỏi đầu tiên (không trùng)
+    Server->>Server: Gán bộ câu hỏi này vào Room
+    Note over Server: Cả 2 người chơi trong phòng nhận cùng bộ câu hỏi

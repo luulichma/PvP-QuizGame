@@ -1,0 +1,14 @@
+sequenceDiagram
+    actor Player as 👤 Người Chơi
+    participant App as 📱 App (Client)
+    participant Storage as 💾 Local Storage
+
+    Player->>App: Vào màn hình Cài đặt
+    App->>Storage: Đọc ngôn ngữ hiện tại
+    Storage-->>App: Trả về ngôn ngữ (VD: "vi")
+    App->>Player: Hiển thị lựa chọn ngôn ngữ (VI / EN)
+    Player->>App: Chọn ngôn ngữ mới (VD: "en")
+    App->>Storage: Lưu ngôn ngữ đã chọn
+    App->>App: Reload toàn bộ chuỗi ngôn ngữ (i18n)
+    App->>Player: Cập nhật giao diện sang ngôn ngữ mới ngay lập tức
+    Note over App,Player: Không cần khởi động lại app
