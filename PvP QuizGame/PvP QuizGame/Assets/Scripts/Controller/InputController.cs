@@ -55,21 +55,21 @@ public class InputController : MonoBehaviour
         }
 
         // Subscribe game events
-        GameManager.OnGameStateChanged += HandleGameStateChanged;
+        GameController.OnGameStateChanged += HandleGameStateChanged;
         QuizManager.OnQuestionChanged  += HandleQuestionChanged;
     }
 
     private void OnDestroy()
     {
-        GameManager.OnGameStateChanged -= HandleGameStateChanged;
+        GameController.OnGameStateChanged -= HandleGameStateChanged;
         QuizManager.OnQuestionChanged  -= HandleQuestionChanged;
     }
 
     // ==================== KEYBOARD FALLBACK ====================
     private void Update()
     {
-        if (_inputLocked || GameManager.Instance == null) return;
-        if (GameManager.Instance.CurrentState != GameState.Playing) return;
+        if (_inputLocked || GameController.Instance == null) return;
+        if (GameController.Instance.CurrentState != GameState.Playing) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) HandleAnswerClicked(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) HandleAnswerClicked(1);

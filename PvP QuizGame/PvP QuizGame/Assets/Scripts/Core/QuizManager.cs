@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Quản lý câu hỏi: load từ QuizDatabase, xáo trộn (Shuffle)
 /// và cung cấp câu hỏi theo từng lượt trong trận đấu.
-/// Attach vào cùng GameObject với GameManager.
+/// Attach vào cùng GameObject với GameController.
 /// </summary>
 public class QuizManager : MonoBehaviour
 {
