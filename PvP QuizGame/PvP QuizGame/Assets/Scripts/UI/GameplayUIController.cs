@@ -1,45 +1,36 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 /// <summary>
-/// Điều phối toàn bộ giao diện người dùng trong game.
-/// Subscribe các sự kiện từ GameManager, QuizManager, ScoreManager, TimerController
-/// và cập nhật UI tương ứng.
-/// Attach vào GameObject "UIController" trong Scene.
+/// Điều phối giao diện người dùng TRONG trận đấu (GameplayScene).
+/// Chỉ phân phát UI liên quan đến trạng thái chơi: Đếm ngược, Hiển thị Câu hỏi, Game Over.
+/// Không còn chứa MainMenu như cách làm Single-Scene cũ.
 /// </summary>
-public class UIController : MonoBehaviour
+public class GameplayUIController : MonoBehaviour
 {
-    // ==================== SINGLETON ====================
-    public static UIController Instance { get; private set; }
+    public static GameplayUIController Instance { get; private set; }
 
-    // ==================== INSPECTOR — PANELS ====================
-    [Header("Các màn hình (Panels)")]
-    [SerializeField] private GameObject mainMenuPanel;
+    [Header("Các màn hình trận đấu (Panels)")]
     [SerializeField] private GameObject countdownPanel;
     [SerializeField] private GameObject gameplayPanel;
     [SerializeField] private GameObject gameOverPanel;
 
-    // ==================== INSPECTOR — COUNTDOWN ====================
     [Header("Màn hình đếm ngược")]
     [SerializeField] private Text countdownText;
 
-    // ==================== INSPECTOR — GAMEPLAY ====================
     [Header("Màn hình thi đấu")]
     [SerializeField] private Text questionText;
     [SerializeField] private Text timerText;
     [SerializeField] private Text player1ScoreText;
     [SerializeField] private Text player2ScoreText;
-    [SerializeField] private Text questionCounterText; // Ví dụ: "Câu 3/10"
+    [SerializeField] private Text questionCounterText;
 
-    // ==================== INSPECTOR — GAME OVER ====================
     [Header("Màn hình kết quả")]
-    [SerializeField] private Text resultText;           // "THẮNG!" / "THUA!" / "HÒA!"
-    [SerializeField] private Text finalScoreText;       // "Bạn: 70 | Đối thủ: 50"
+    [SerializeField] private Text resultText;
+    [SerializeField] private Text finalScoreText;
     [SerializeField] private Button playAgainButton;
-    [SerializeField] private Button mainMenuButton;
+    [SerializeField] private Button backToMainMenuButton;
 
-    // ==================== LIFECYCLE ====================
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -48,36 +39,43 @@ public class UIController : MonoBehaviour
 
     private void Start()
     {
-        // Subscribe tất cả sự kiện
-        GameManager.OnGameStateChanged  += HandleGameStateChanged;
-        GameManager.OnCountdownTick     += HandleCountdownTick;
-        QuizManager.OnQuestionChanged   += HandleQuestionChanged;
-        ScoreManager.OnScoreChanged     += HandleScoreChanged;
-        TimerController.OnTimerTick     += HandleTimerTick;
-        GameManager.OnGameOver          += HandleGameOver;
+        // Lắng nghe tất cả sự kiện gameplay
+        GameController.OnGameStateChanged  += HandleGameStateChanged;
+        GameController.OnCountdownTick     += HandleCountdownTick;
+        QuizManager.OnQuestionChanged      += HandleQuestionChanged;
+        ScoreManager.OnScoreChanged        += HandleScoreChanged;
+        TimerController.OnTimerTick        += HandleTimerTick;
+        GameController.OnGameOver          += HandleGameOver;
 
-        // Gán nút kết quả
-        playAgainButton?.onClick.AddListener(() => GameManager.Instance.RestartGame());
-        mainMenuButton?.onClick.AddListener(() => GameManager.Instance.ChangeState(GameState.Idle));
+        // Cấu hình Nút
+        playAgainButton?.onClick.AddListener(() => GameController.Instance.RestartGame());
+        
+        // Khi quay ra, ta gọi App Manager (GameManager) để tiêu hủy GameplayScene
+        backToMainMenuButton?.onClick.AddListener(() => {
+            if (GameManager.Instance != null) {
+                GameManager.Instance.LoadMainMenuScene();
+            } else {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
+            }
+        });
 
-        // Bắt đầu ở Main Menu
-        ShowPanel(mainMenuPanel);
+        // Ẩn tất cả khi khởi tạo, chờ GameController tự động báo event Countdown tới
+        ShowPanel(null);
     }
 
     private void OnDestroy()
     {
-        GameManager.OnGameStateChanged  -= HandleGameStateChanged;
-        GameManager.OnCountdownTick     -= HandleCountdownTick;
-        QuizManager.OnQuestionChanged   -= HandleQuestionChanged;
-        ScoreManager.OnScoreChanged     -= HandleScoreChanged;
-        TimerController.OnTimerTick     -= HandleTimerTick;
-        GameManager.OnGameOver          -= HandleGameOver;
+        GameController.OnGameStateChanged  -= HandleGameStateChanged;
+        GameController.OnCountdownTick     -= HandleCountdownTick;
+        QuizManager.OnQuestionChanged      -= HandleQuestionChanged;
+        ScoreManager.OnScoreChanged        -= HandleScoreChanged;
+        TimerController.OnTimerTick        -= HandleTimerTick;
+        GameController.OnGameOver          -= HandleGameOver;
     }
 
     // ==================== ĐIỀU HƯỚNG PANEL ====================
     private void ShowPanel(GameObject target)
     {
-        mainMenuPanel?.SetActive(mainMenuPanel   == target);
         countdownPanel?.SetActive(countdownPanel == target);
         gameplayPanel?.SetActive(gameplayPanel   == target);
         gameOverPanel?.SetActive(gameOverPanel   == target);
@@ -89,18 +87,17 @@ public class UIController : MonoBehaviour
         switch (state)
         {
             case GameState.Idle:
-                ShowPanel(mainMenuPanel);
+                ShowPanel(null); // Không có MainMenu ở scene này
                 break;
             case GameState.Countdown:
                 ShowPanel(countdownPanel);
                 break;
             case GameState.Playing:
                 ShowPanel(gameplayPanel);
-                // Reset hiển thị điểm
-                UpdateScoreUI(0, 0);
+                UpdateScoreUI(0, 0); // Đặt lại giao diện điểm đầu trận
                 break;
             case GameState.GameOver:
-                // GameOver panel được hiển thị trong HandleGameOver
+                // GameOver panel được hiển thị trong HandleGameOver để kết xuất data đầy đủ
                 break;
         }
     }
@@ -118,7 +115,6 @@ public class UIController : MonoBehaviour
         if (questionText != null)
             questionText.text = question.questionText;
 
-        // Cập nhật bộ đếm câu hỏi
         if (questionCounterText != null && QuizManager.Instance != null)
         {
             int answered = QuizManager.Instance.AnsweredCount + 1;
@@ -136,7 +132,7 @@ public class UIController : MonoBehaviour
     {
         if (timerText == null) return;
 
-        // Đổi màu đỏ khi dưới 30 giây
+        // Báo đỏ khi hết giờ gấp
         timerText.color = remaining <= 30f ? Color.red : Color.white;
         timerText.text  = TimerController.Instance != null
             ? TimerController.Instance.GetFormattedTime()
@@ -147,7 +143,6 @@ public class UIController : MonoBehaviour
     {
         ShowPanel(gameOverPanel);
 
-        // Hiện kết quả thắng/thua/hòa
         if (ScoreManager.Instance == null) return;
 
         WinResult result = ScoreManager.Instance.GetWinner();

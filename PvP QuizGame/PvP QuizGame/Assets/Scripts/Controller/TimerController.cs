@@ -5,7 +5,7 @@ using System.Collections;
 /// <summary>
 /// Quản lý bộ đếm ngược thời gian trận đấu (mặc định 180 giây).
 /// Dùng Coroutine — không block main thread.
-/// Attach vào cùng GameObject với GameManager.
+/// Attach vào cùng GameObject với GameController.
 /// </summary>
 public class TimerController : MonoBehaviour
 {

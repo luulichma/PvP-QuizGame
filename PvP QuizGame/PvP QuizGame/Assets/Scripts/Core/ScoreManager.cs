@@ -9,7 +9,7 @@ public enum WinResult { Player1Wins, Player2Wins, Draw }
 /// <summary>
 /// Quản lý điểm số của 2 người chơi trong trận đấu.
 /// Logic: Đúng +10 điểm | Sai +0 điểm.
-/// Attach vào cùng GameObject với GameManager.
+/// Attach vào cùng GameObject với GameController.
 /// </summary>
 public class ScoreManager : MonoBehaviour
 {
