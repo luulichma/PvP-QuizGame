@@ -1,0 +1,43 @@
+flowchart TD
+    A([" Câu hỏi mới xuất hiện\nOnQuestionChanged"]) --> B["🔄 Cập nhật text\n4 nút A / B / C / D"]
+    B --> C["🔓 Mở khoá input\n_inputLocked = false"]
+    C --> D{"Người chơi\ntương tác"}
+
+    D -->|"Chạm nút\nA/B/C/D"| E["HandleAnswerClicked(index)"]
+    D -->|"Phím 1/2/3/4\nEditor test"| E
+
+    E --> F{"_inputLocked\n= true?"}
+    F -->|"Đã khoá → Bỏ qua"| D
+    F -->|"Chưa khoá"| G["🔒 Khoá input\n& Disable tất cả nút"]
+
+    G --> H["ScoreManager\n.CheckAnswer(playerId, index)"]
+    H --> I{"isCorrect?"}
+
+    I -->|"✅ Đúng"| J["Nút được chọn\n→ Màu Xanh Lá 🟢"]
+    I -->|"❌ Sai"| K["Nút được chọn → Đỏ 🔴\nHighlight đáp án đúng → Xanh Lá 🟢"]
+
+    J --> L["📣 Fire OnAnswerSubmitted\n(playerId, index, isCorrect)"]
+    K --> L
+
+    L --> M["⏳ Chờ feedbackDuration\n(1 giây)"]
+    M --> N["🔄 Reset tất cả nút\nvề màu Navy mặc định"]
+    N --> O["🔓 Mở khoá input\n& Enable tất cả nút"]
+    O --> P["➡️ QuizManager\n.NextQuestion()"]
+    P --> A
+
+    style A  fill:#4CAF50,color:#fff,stroke:#388E3C
+    style B  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style C  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style D  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style E  fill:#283593,color:#fff,stroke:#1a237e
+    style F  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style G  fill:#b71c1c,color:#fff,stroke:#7f0000
+    style H  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style I  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style J  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style K  fill:#b71c1c,color:#fff,stroke:#7f0000
+    style L  fill:#F57C00,color:#fff,stroke:#E65100
+    style M  fill:#283593,color:#fff,stroke:#1a237e
+    style N  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style O  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style P  fill:#F57C00,color:#fff,stroke:#E65100

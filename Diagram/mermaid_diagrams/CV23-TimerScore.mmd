@@ -1,0 +1,50 @@
+flowchart TD
+    subgraph TIMER ["⏱️ TimerController"]
+        T1([" StartTimer() được gọi"]) --> T2["Reset RemainingTime\nvề tổng thời gian (180s)"]
+        T2 --> T3["▶️ Bắt đầu Coroutine\nTimerRoutine()"]
+        T3 --> T4{"IsRunning\n= true?"}
+        T4 -->|"Pause"| T5["⏸️ Chờ Resume()"]
+        T5 --> T4
+        T4 -->|"Running"| T6["⏳ Đợi 1 giây"]
+        T6 --> T7["RemainingTime -= 1s"]
+        T7 --> T8["📣 Fire OnTimerTick(float)"]
+        T8 --> T9{"RemainingTime\n= 0?"}
+        T9 -->|"Chưa"| T4
+        T9 -->|"Hết giờ"| T10["📣 Fire OnTimerEnd"]
+        T10 --> T11(["GameManager → GameOver"])
+    end
+
+    subgraph SCORE ["🏆 ScoreManager"]
+        S1([" CheckAnswer(playerId, index)"]) --> S2["Lấy CurrentQuestion\ntừ QuizManager"]
+        S2 --> S3{"answerIndex ==\ncorrectAnswerIndex?"}
+        S3 -->|"✅ Đúng"| S4["AddScore(playerId, +10)"]
+        S3 -->|"❌ Sai"| S5["Không cộng điểm (+0)"]
+        S4 --> S6["📣 Fire OnScoreChanged\n(p1Score, p2Score)"]
+        S5 --> S6
+        S6 --> S7["📱 UIController cập nhật\nthanh điểm số"]
+        S6 --> S8["☁️ FirebaseManager.UpdateMyScore()\n đồng bộ lên server"]
+
+        S9([" GetWinner() cuối trận"]) --> S10{"So sánh\nP1Score vs P2Score"}
+        S10 -->|"P1 > P2"| SA["Player1Wins 🏆"]
+        S10 -->|"P2 > P1"| SB["Player2Wins 🏆"]
+        S10 -->|"Bằng nhau"| SC["Draw 🤝"]
+    end
+
+    T8 -.->|"UIController\ncập nhật đồng hồ"| UI([" UIController\nhiển thị mm:ss\n& đổi màu đỏ < 30s"])
+
+    style T1  fill:#4CAF50,color:#fff,stroke:#388E3C
+    style T3  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style T4  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style T10 fill:#b71c1c,color:#fff,stroke:#7f0000
+    style T11 fill:#b71c1c,color:#fff,stroke:#7f0000
+    style S1  fill:#4CAF50,color:#fff,stroke:#388E3C
+    style S3  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style S4  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style S5  fill:#b71c1c,color:#fff,stroke:#7f0000
+    style S6  fill:#F57C00,color:#fff,stroke:#E65100
+    style S9  fill:#4CAF50,color:#fff,stroke:#388E3C
+    style S10 fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style SA  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style SB  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style SC  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style UI  fill:#283593,color:#fff,stroke:#1a237e

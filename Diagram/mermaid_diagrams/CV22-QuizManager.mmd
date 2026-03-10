@@ -1,0 +1,33 @@
+flowchart TD
+    A([" StartQuiz() được gọi\nbởi GameManager"]) --> B["📋 Load câu hỏi từ\nQuizDatabase (ScriptableObject)"]
+    B --> C{"QuizDatabase\nrỗng?"}
+    C -->|"Có"| ERR(["❌ LogError &\nDừng lại"])
+    C -->|"Không"| D["🔀 Fisher-Yates Shuffle\nXáo trộn danh sách câu hỏi"]
+    D --> E["🔁 Reset _currentIndex = -1"]
+    E --> F["➡️ Gọi NextQuestion()"]
+
+    F --> G["📈 _currentIndex ++"]
+    G --> H{"Còn câu\nhỏi?"}
+    H -->|"Hết"| I["📣 Fire sự kiện\nOnQuestionsExhausted"]
+    I --> J(["🏁 GameManager\nnhận → GameOver"])
+    H -->|"Còn"| K["📣 Fire sự kiện\nOnQuestionChanged (QuestionData)"]
+    K --> L["📱 UIController cập nhật\ntext câu hỏi & bộ đếm"]
+    K --> M["🖱️ InputController cập nhật\ntext 4 nút đáp án"]
+    L & M --> N(["⏳ Chờ người chơi\ntrả lời → NextQuestion()"])
+    N --> F
+
+    style A  fill:#4CAF50,color:#fff,stroke:#388E3C
+    style B  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style C  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style D  fill:#F57C00,color:#fff,stroke:#E65100
+    style E  fill:#283593,color:#fff,stroke:#1a237e
+    style F  fill:#1565C0,color:#fff,stroke:#0d47a1
+    style G  fill:#283593,color:#fff,stroke:#1a237e
+    style H  fill:#6A1B9A,color:#fff,stroke:#4A148C
+    style I  fill:#b71c1c,color:#fff,stroke:#7f0000
+    style J  fill:#b71c1c,color:#fff,stroke:#7f0000
+    style K  fill:#F57C00,color:#fff,stroke:#E65100
+    style L  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style M  fill:#2E7D32,color:#fff,stroke:#1B5E20
+    style N  fill:#1a237e,color:#fff,stroke:#0d47a1
+    style ERR fill:#b71c1c,color:#fff,stroke:#7f0000
