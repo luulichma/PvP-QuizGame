@@ -53,9 +53,9 @@ public class GameplayUIController : MonoBehaviour
         // Khi quay ra, ta gọi App Manager (GameManager) để tiêu hủy GameplayScene
         backToMainMenuButton?.onClick.AddListener(() => {
             if (GameManager.Instance != null) {
-                GameManager.Instance.LoadMainMenuScene();
+                GameManager.Instance.LoadHomeScene();
             } else {
-                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
+                UnityEngine.SceneManagement.SceneManager.LoadScene("HomeScene");
             }
         });
 
@@ -76,9 +76,12 @@ public class GameplayUIController : MonoBehaviour
     // ==================== ĐIỀU HƯỚNG PANEL ====================
     private void ShowPanel(GameObject target)
     {
-        countdownPanel?.SetActive(countdownPanel == target);
-        gameplayPanel?.SetActive(gameplayPanel   == target);
-        gameOverPanel?.SetActive(gameOverPanel   == target);
+        if (countdownPanel != null) countdownPanel.SetActive(countdownPanel == target);
+        if (gameplayPanel != null) gameplayPanel.SetActive(gameplayPanel == target);
+        if (gameOverPanel != null) gameOverPanel.SetActive(gameOverPanel == target);
+
+        if (target != null)
+            Debug.Log($"[GameplayUI] Đang hiển thị Panel: {target.name}");
     }
 
     // ==================== EVENT HANDLERS ====================

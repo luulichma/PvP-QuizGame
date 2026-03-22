@@ -28,6 +28,16 @@
       "source": "builtin",
       "testable": false
     },
+    "com.unity.ide.rider@3.0.39": {
+      "name": "com.unity.ide.rider",
+      "displayName": "JetBrains Rider Editor",
+      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ide.rider@4504839d03f7",
+      "fingerprint": "4504839d03f7a5a4495357084a0ffd6e439892cf",
+      "editorCompatibility": "2021.3.0a1",
+      "version": "3.0.39",
+      "source": "registry",
+      "testable": false
+    },
     "com.unity.ide.visualstudio@2.0.23": {
       "name": "com.unity.ide.visualstudio",
       "displayName": "Visual Studio Editor",

@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System;
 
 /// <summary>
-/// Quản lý UI của màn hình sảnh chính (MainMenuScene).
+/// Quản lý UI của màn hình sảnh chính (HomeScene).
 /// Điều hướng các panel Đăng nhập, Sảnh chính, Cài đặt và Tìm trận (Matchmaking).
 /// </summary>
 public class MainMenuUIController : MonoBehaviour
@@ -45,19 +47,44 @@ public class MainMenuUIController : MonoBehaviour
 
         // Nút Dev test chuyển cảnh
         devFoundMatchButton?.onClick.AddListener(OnMatchFoundSuccess);
+        resetDataButton?.onClick.AddListener(OnResetDataClicked);
 
         // TODO (Firebase): Kiểm tra trạng thái lưu đăng nhập
         // Tạm thời hiển thị panel đăng nhập lúc vừa khởi động sảnh
         ShowPanel(loginPanel);
+        RefreshPlayerStatsUI();
+    }
+
+    private void RefreshPlayerStatsUI()
+    {
+        if (PlayerDataManager.Instance == null) return;
+        
+        var data = PlayerDataManager.Instance.Data;
+        if (levelText) levelText.text = $"Level: {data.level}";
+        if (moneyText) moneyText.text = $"Money: {data.money}$";
+
+        Debug.Log($"<color=white>[MainMenuUI] UI Updated: Level {data.level}, Money {data.money}$</color>");
+    }
+
+    private void OnResetDataClicked()
+    {
+        if (PlayerDataManager.Instance == null) return;
+        PlayerDataManager.Instance.Data.Reset();
+        PlayerDataManager.Instance.SaveData();
+        RefreshPlayerStatsUI();
     }
 
     // ==================== ĐIỀU HƯỚNG PANEL ====================
     private void ShowPanel(GameObject target)
     {
-        loginPanel?.SetActive(loginPanel == target);
-        homePanel?.SetActive(homePanel == target);
-        settingsPanel?.SetActive(settingsPanel == target);
-        matchmakingPanel?.SetActive(matchmakingPanel == target);
+        // Kiểm tra null từng cái để tránh UnassignedReferenceException khi chưa gán Inspector
+        if (loginPanel != null) loginPanel.SetActive(loginPanel == target);
+        if (homePanel != null) homePanel.SetActive(homePanel == target);
+        if (settingsPanel != null) settingsPanel.SetActive(settingsPanel == target);
+        if (matchmakingPanel != null) matchmakingPanel.SetActive(matchmakingPanel == target);
+
+        if (target != null)
+            Debug.Log($"[MainMenu] Đang hiển thị Panel: {target.name}");
     }
     
     public void ShowHomePanel() => ShowPanel(homePanel);
@@ -78,8 +105,16 @@ public class MainMenuUIController : MonoBehaviour
     private void OnFindMatchClicked()
     {
         ShowPanel(matchmakingPanel);
-        Debug.Log("[MainMenu] Bắt đầu tìm trận đấu trên Firebase Realtime DB...");
-        // TODO: Gọi FirebaseManager.Instance.JoinOrCreateRoom()
+        Debug.Log("[MainMenu] Bắt đầu tìm trận đấu (Giả lập)...");
+        
+        // Giả lập tìm trận trong 2.5 giây rồi vào game
+        StartCoroutine(FakeMatchmakingRoutine());
+    }
+
+    private IEnumerator FakeMatchmakingRoutine()
+    {
+        yield return new WaitForSeconds(2.5f);
+        OnMatchFoundSuccess();
     }
 
     // Hàm gọi khi việc tìm phòng (Matchmaking) Firebase thành công
@@ -88,10 +123,7 @@ public class MainMenuUIController : MonoBehaviour
         Debug.Log("[MainMenu] Tìm thấy trận! Chuyển sang GameplayScene...");
         if (GameManager.Instance != null)
         {
-            // Có thể làm một popup tiến trình tải trận đấu ở đây
-            GameManager.Instance.LoadSceneAsync("GameplayScene", progress => {
-                // UIController có thể nghe progress để cập nhật vòng quay xoay chữ "Vào trận thôi..."
-            });
+            GameManager.Instance.LoadGameplayScene();
         }
         else
         {

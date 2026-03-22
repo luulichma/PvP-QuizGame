@@ -4,10 +4,14 @@ using System;
 using System.Collections;
 
 /// <summary>
-/// Xử lý toàn bộ input của 1 người chơi trên 1 thiết bị.
-/// 4 nút đáp án A/B/C/D — có visual feedback xanh/đỏ sau khi chọn.
-/// Keyboard fallback: phím 1/2/3/4 để test trong Unity Editor.
-/// Attach vào GameObject chứa UI thi đấu.
+/// Xử lý input của Player 1 (người thật).
+/// SAU KHI CHỌN: Khoá nút và báo lên LocalMatchProvider.
+/// KHÔNG tự chấm điểm hay chuyển câu — GameController mới được làm điều đó
+/// sau khi nhận event OnBothPlayersAnswered từ LocalMatchProvider.
+///
+/// *** SCALE LÊN ONLINE ***
+/// Khi Firebase online: không cần sửa file này.
+/// Chỉ cần thay LocalMatchProvider bằng FirebaseMatchProvider.
 /// </summary>
 public class InputController : MonoBehaviour
 {
@@ -15,7 +19,7 @@ public class InputController : MonoBehaviour
     public static InputController Instance { get; private set; }
 
     // ==================== EVENTS ====================
-    /// <summary>Phát khi người chơi chọn đáp án — (playerId, answerIndex, isCorrect)</summary>
+    /// <summary>Phát khi GameController xác nhận đáp án — (playerId, answerIndex, isCorrect)</summary>
     public static event Action<int, int, bool> OnAnswerSubmitted;
 
     // ==================== INSPECTOR ====================
@@ -26,17 +30,17 @@ public class InputController : MonoBehaviour
     [SerializeField] private Text[] answerTexts = new Text[4];
 
     [Header("Màu sắc phản hồi")]
-    [SerializeField] private Color correctColor  = new Color(0.18f, 0.49f, 0.20f); // Xanh lá
-    [SerializeField] private Color wrongColor    = new Color(0.72f, 0.11f, 0.11f); // Đỏ
-    [SerializeField] private Color defaultColor  = new Color(0.15f, 0.21f, 0.56f); // Xanh navy
-    [SerializeField] private Color disabledColor = new Color(0.4f,  0.4f,  0.4f);  // Xám
+    [SerializeField] private Color correctColor  = new Color(0.18f, 0.49f, 0.20f);
+    [SerializeField] private Color wrongColor    = new Color(0.72f, 0.11f, 0.11f);
+    [SerializeField] private Color defaultColor  = new Color(0.15f, 0.21f, 0.56f);
 
     [Header("Cài đặt")]
-    [SerializeField] private float feedbackDuration = 1f;
+    [SerializeField] private float feedbackDuration = 1.5f;
 
     // ==================== INTERNAL ====================
     private bool _inputLocked = false;
-    private int _localPlayerId = 1; // Sẽ được set từ FirebaseManager (Task 2.5)
+    private int _localPlayerId = 1;
+    private int _myLastAnswer = -1;
 
     // ==================== LIFECYCLE ====================
     private void Awake()
@@ -47,30 +51,31 @@ public class InputController : MonoBehaviour
 
     private void Start()
     {
-        // Gán sự kiện click cho 4 nút (capture index bằng biến cục bộ)
-        for (int i = 0; i < answerButtons.Length; i++)
+        if (answerButtons != null)
         {
-            int index = i;
-            answerButtons[i].onClick.AddListener(() => HandleAnswerClicked(index));
+            for (int i = 0; i < answerButtons.Length; i++)
+            {
+                if (answerButtons[i] == null) continue;
+                int index = i;
+                answerButtons[i].onClick.AddListener(() => HandleAnswerClicked(index));
+            }
         }
 
-        // Subscribe game events
         GameController.OnGameStateChanged += HandleGameStateChanged;
-        QuizManager.OnQuestionChanged  += HandleQuestionChanged;
+        QuizManager.OnQuestionChanged     += HandleQuestionChanged;
     }
 
     private void OnDestroy()
     {
         GameController.OnGameStateChanged -= HandleGameStateChanged;
-        QuizManager.OnQuestionChanged  -= HandleQuestionChanged;
+        QuizManager.OnQuestionChanged     -= HandleQuestionChanged;
     }
 
-    // ==================== KEYBOARD FALLBACK ====================
+    // ==================== KEYBOARD FALLBACK (Editor testing) ====================
     private void Update()
     {
         if (_inputLocked || GameController.Instance == null) return;
         if (GameController.Instance.CurrentState != GameState.Playing) return;
-
         if (Input.GetKeyDown(KeyCode.Alpha1)) HandleAnswerClicked(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) HandleAnswerClicked(1);
         if (Input.GetKeyDown(KeyCode.Alpha3)) HandleAnswerClicked(2);
@@ -81,80 +86,86 @@ public class InputController : MonoBehaviour
     private void HandleAnswerClicked(int answerIndex)
     {
         if (_inputLocked) return;
-
         _inputLocked = true;
+        _myLastAnswer = answerIndex;
         SetButtonsInteractable(false);
 
-        bool isCorrect = ScoreManager.Instance.CheckAnswer(_localPlayerId, answerIndex);
-        OnAnswerSubmitted?.Invoke(_localPlayerId, answerIndex, isCorrect);
+        Debug.Log($"[InputController] P1 chọn [{answerIndex}]. Đang đợi đối thủ...");
 
-        StartCoroutine(ShowFeedbackRoutine(answerIndex, isCorrect));
+        // Báo lên LocalMatchProvider. Không chấm điểm, không chuyển câu ở đây.
+        LocalMatchProvider.Instance?.SubmitAnswerP1(answerIndex);
     }
 
-    // ==================== VISUAL FEEDBACK ====================
-    private IEnumerator ShowFeedbackRoutine(int answerIndex, bool isCorrect)
+    // ==================== VISUAL FEEDBACK (Gọi từ GameController) ====================
+    /// <summary>Hiển thị phản hồi màu sắc. Được GameController gọi sau khi cả 2 người đã trả lời.</summary>
+    public IEnumerator ShowAnswerFeedback(int correctAnswerIndex)
     {
-        // Đổi màu nút được chọn
-        SetButtonColor(answerIndex, isCorrect ? correctColor : wrongColor);
+        bool isCorrect = (_myLastAnswer == correctAnswerIndex);
 
-        // Highlight đúng đáp án đúng nếu người chơi chọn sai
-        if (!isCorrect)
-        {
-            int correct = QuizManager.Instance.CurrentQuestion.correctAnswerIndex;
-            SetButtonColor(correct, correctColor);
-        }
+        if (_myLastAnswer >= 0)
+            SetButtonColor(_myLastAnswer, isCorrect ? correctColor : wrongColor);
+
+        if (!isCorrect && correctAnswerIndex >= 0)
+            SetButtonColor(correctAnswerIndex, correctColor);
+
+        OnAnswerSubmitted?.Invoke(_localPlayerId, _myLastAnswer, isCorrect);
 
         yield return new WaitForSeconds(feedbackDuration);
 
-        // Reset toàn bộ màu nút
-        for (int i = 0; i < answerButtons.Length; i++)
-            SetButtonColor(i, defaultColor);
-
-        // Mở khoá input và chuyển câu hỏi tiếp
-        _inputLocked = false;
-        SetButtonsInteractable(true);
-        QuizManager.Instance.NextQuestion();
+        if (answerButtons != null)
+        {
+            for (int i = 0; i < answerButtons.Length; i++)
+                SetButtonColor(i, defaultColor);
+        }
     }
 
     // ==================== HELPERS ====================
-    private void SetButtonsInteractable(bool interactable)
+    private void SetButtonsInteractable(bool on)
     {
+        if (answerButtons == null) return;
         foreach (var btn in answerButtons)
-            btn.interactable = interactable;
+        {
+            if (btn != null) btn.interactable = on;
+        }
     }
 
     private void SetButtonColor(int index, Color color)
     {
-        if (index < 0 || index >= answerButtons.Length) return;
+        if (answerButtons == null || index < 0 || index >= answerButtons.Length) return;
+        if (answerButtons[index] == null) return;
         var image = answerButtons[index].GetComponent<Image>();
         if (image != null) image.color = color;
     }
 
-    // ==================== EVENT HANDLERS ====================
     private void HandleGameStateChanged(GameState state)
     {
-        bool isPlaying = state == GameState.Playing;
-        SetButtonsInteractable(isPlaying);
-        _inputLocked = !isPlaying;
+        bool playing = state == GameState.Playing;
+        SetButtonsInteractable(playing);
+        _inputLocked = !playing;
+        _myLastAnswer = -1;
     }
 
     private void HandleQuestionChanged(QuestionData question)
     {
         if (question == null) return;
-
+        Debug.Log($"[UI-LESS TEST] Câu hỏi mới hiện lên: {question.questionText}");
+        
         // Cập nhật text các nút đáp án
-        for (int i = 0; i < answerTexts.Length && i < question.answers.Length; i++)
+        if (answerTexts != null)
         {
-            if (answerTexts[i] != null)
-                answerTexts[i].text = question.answers[i];
-            SetButtonColor(i, defaultColor);
+            for (int i = 0; i < answerTexts.Length && i < question.answers.Length; i++)
+            {
+                if (answerTexts[i] != null) answerTexts[i].text = question.answers[i];
+                SetButtonColor(i, defaultColor);
+                Debug.Log($"[UI-LESS TEST] Đáp án {i}: {question.answers[i]}");
+            }
         }
 
         _inputLocked = false;
+        _myLastAnswer = -1;
         SetButtonsInteractable(true);
     }
 
-    // ==================== CONFIG ====================
     /// <summary>Set ID người chơi (gọi từ FirebaseManager sau khi xác thực)</summary>
     public void SetPlayerId(int id) => _localPlayerId = id;
 }

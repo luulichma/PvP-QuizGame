@@ -135,7 +135,6 @@
 -define:UNITY_EDITOR_ONLY_COMPILATION
 -r:"Assets/Plugins/Demigiant/DOTween/DOTween.dll"
 -r:"Assets/Plugins/Demigiant/DOTween/Editor/DOTweenEditor.dll"
--r:"Assets/Plugins/Demigiant/DOTween/Editor/DOTweenUpgradeManager.dll"
 -r:"F:/Unity Editor/6000.0.58f2/Editor/Data/Managed/UnityEditor.Graphs.dll"
 -r:"F:/Unity Editor/6000.0.58f2/Editor/Data/Managed/UnityEngine/UnityEditor.AccessibilityModule.dll"
 -r:"F:/Unity Editor/6000.0.58f2/Editor/Data/Managed/UnityEngine/UnityEditor.AdaptivePerformanceModule.dll"

@@ -4,7 +4,7 @@ using System.Collections;
 
 /// <summary>
 /// Quản lý UI và luồng khởi tạo của InitScene.
-/// Hiển thị thanh tiến trình khi load các thành phần ngầm (Firebase) và load MainMenuScene.
+/// Hiển thị thanh tiến trình khi load các thành phần ngầm (Firebase) và load HomeScene.
 /// </summary>
 public class InitSceneController : MonoBehaviour
 {
@@ -44,7 +44,7 @@ public class InitSceneController : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.LoadSceneAsync(
-                "MainMenuScene", 
+                "HomeScene", 
                 onProgress: (p) => {
                     // Map tiến trình p (0->1) vào 50% nửa sau của thanh progress bar
                     UpdateProgressUI(0.5f + (p * 0.5f));

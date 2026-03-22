@@ -27,6 +27,15 @@ public class ScoreManager : MonoBehaviour
     private const int CORRECT_POINTS = 10;
     private const int WRONG_POINTS   = 0;
 
+    // ==================== THƯỞNG ====================
+    private const int WIN_XP = 50;
+    private const int DRAW_XP = 20;
+    private const int LOSE_XP = 10;
+
+    private const int WIN_MONEY = 100;
+    private const int DRAW_MONEY = 40;
+    private const int LOSE_MONEY = 10;
+
     // ==================== LIFECYCLE ====================
     private void Awake()
     {
@@ -35,6 +44,41 @@ public class ScoreManager : MonoBehaviour
     }
 
     // ==================== API CÔNG KHAI ====================
+    
+    /// <summary>
+    /// Tính toán và trao thưởng cho người chơi dựa trên kết quả trận đấu.
+    /// </summary>
+    public void AwardRewards()
+    {
+        if (PlayerDataManager.Instance == null) return;
+
+        var result = GetWinner();
+        int expAwarded = 0;
+        int moneyAwarded = 0;
+
+        if (result == WinResult.Player1Wins)
+        {
+            expAwarded = WIN_XP;
+            moneyAwarded = WIN_MONEY;
+        }
+        else if (result == WinResult.Draw)
+        {
+            expAwarded = DRAW_XP;
+            moneyAwarded = DRAW_MONEY;
+        }
+        else
+        {
+            expAwarded = LOSE_XP;
+            moneyAwarded = LOSE_MONEY;
+        }
+
+        PlayerDataManager.Instance.Data.AddExp(expAwarded);
+        PlayerDataManager.Instance.Data.AddMoney(moneyAwarded);
+        PlayerDataManager.Instance.SaveData();
+
+        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: Nhận {expAwarded} XP và {moneyAwarded}$ tiền thưởng!</color>");
+    }
+
     /// <summary>Reset điểm về 0 — gọi khi bắt đầu trận mới</summary>
     public void ResetScores()
     {

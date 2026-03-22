@@ -4,15 +4,18 @@ using System.Collections;
 
 public enum GameState
 {
-    Idle,       // Đang chờ bắt đầu
-    Countdown,  // Đang đếm ngược 3-2-1 trước trận
-    Playing,    // Trận đấu đang diễn ra
-    GameOver    // Trận đấu kết thúc
+    Idle,
+    Countdown,
+    Playing,
+    GameOver
 }
 
 /// <summary>
 /// Singleton trung tâm điều phối trạng thái TRONG MỘT TRẬN ĐẤU.
 /// Attach vào 1 GameObject "GameController" trong màn hình Gameplay.
+///
+/// THAY ĐỔI PVP: Giờ đây lắng nghe LocalMatchProvider.OnBothPlayersAnswered
+/// để chấm điểm & điều hướng câu hỏi mới, thay vì để InputController tự làm.
 /// </summary>
 public class GameController : MonoBehaviour
 {
@@ -23,13 +26,8 @@ public class GameController : MonoBehaviour
     public GameState CurrentState { get; private set; } = GameState.Idle;
 
     // ==================== EVENTS ====================
-    /// <summary>Phát khi trạng thái game thay đổi</summary>
     public static event Action<GameState> OnGameStateChanged;
-
-    /// <summary>Phát khi bắt đầu đếm ngược (giá trị: 3, 2, 1)</summary>
     public static event Action<int> OnCountdownTick;
-
-    /// <summary>Phát khi trận đấu kết thúc</summary>
     public static event Action OnGameOver;
 
     // ==================== REFERENCES ====================
@@ -38,47 +36,42 @@ public class GameController : MonoBehaviour
     [SerializeField] private ScoreManager scoreManager;
     [SerializeField] private TimerController timerController;
 
+    [Header("Cài đặt PvP")]
+    [SerializeField] private float revealDuration = 2.5f; // Thời gian chiếu đáp án xanh/đỏ
+
     // ==================== LIFECYCLE ====================
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        // KHÔNG dùng DontDestroyOnLoad vì GameController sẽ bị hủy khi rời khỏi màn hình Gameplay
     }
 
     private void Start()
     {
-        // Lắng nghe các sự kiện kết thúc trận
-        TimerController.OnTimerEnd += HandleTimerEnd;
-        QuizManager.OnQuestionsExhausted += HandleQuestionsExhausted;
+        TimerController.OnTimerEnd            += HandleTimerEnd;
+        QuizManager.OnQuestionsExhausted      += HandleQuestionsExhausted;
+        LocalMatchProvider.OnBothPlayersAnswered += HandleBothPlayersAnswered;
 
-        // Vừa load xong Scene thi đấu, hệ thống chờ sự kiện được đăng ký xong (1 frame)
-        // và lập tức tiến hành đếm ngược 3-2-1 để vào trận.
         StartCoroutine(StartGameDelayed());
     }
 
     private IEnumerator StartGameDelayed()
     {
-        yield return null; // Đợi 1 frame để tất cả UI kịp đăng ký event
+        yield return null; // Đợi 1 frame để UI đăng ký event kịp
         StartGame();
     }
 
     private void OnDestroy()
     {
-        TimerController.OnTimerEnd -= HandleTimerEnd;
-        QuizManager.OnQuestionsExhausted -= HandleQuestionsExhausted;
+        TimerController.OnTimerEnd               -= HandleTimerEnd;
+        QuizManager.OnQuestionsExhausted         -= HandleQuestionsExhausted;
+        LocalMatchProvider.OnBothPlayersAnswered -= HandleBothPlayersAnswered;
     }
 
     // ==================== ĐIỀU PHỐI STATE ====================
-    /// <summary>Chuyển sang trạng thái mới và thông báo cho các subscriber</summary>
     public void ChangeState(GameState newState)
     {
         if (CurrentState == newState) return;
-
         CurrentState = newState;
         OnGameStateChanged?.Invoke(newState);
 
@@ -87,31 +80,55 @@ public class GameController : MonoBehaviour
             case GameState.Idle:
                 scoreManager.ResetScores();
                 break;
-
             case GameState.Countdown:
                 StartCoroutine(CountdownRoutine());
                 break;
-
             case GameState.Playing:
                 timerController.StartTimer();
                 quizManager.StartQuiz();
                 break;
-
             case GameState.GameOver:
                 timerController.StopTimer();
+                scoreManager.AwardRewards();
                 OnGameOver?.Invoke();
                 break;
         }
     }
 
-    /// <summary>Gọi để chuẩn bị vào trận đấu</summary>
-    public void StartGame() => ChangeState(GameState.Countdown);
+    public void StartGame()   => ChangeState(GameState.Countdown);
+    public void RestartGame() { ChangeState(GameState.Idle); ChangeState(GameState.Countdown); }
 
-    /// <summary>Gọi từ nút "Chơi lại"</summary>
-    public void RestartGame()
+    // ==================== PVP ANSWER HANDLING ====================
+    /// <summary>
+    /// Called by LocalMatchProvider khi CẢ 2 người đã nộp bài.
+    /// Đây là trung tâm điều phối PvP: chấm điểm, hiển thị feedback, chuyển câu.
+    /// </summary>
+    private void HandleBothPlayersAnswered(int p1Answer, int p2Answer)
     {
-        ChangeState(GameState.Idle);
-        ChangeState(GameState.Countdown);
+        if (CurrentState != GameState.Playing) return;
+        StartCoroutine(RevealAndAdvance(p1Answer, p2Answer));
+    }
+
+    private IEnumerator RevealAndAdvance(int p1Answer, int p2Answer)
+    {
+        var question = quizManager.CurrentQuestion;
+        if (question == null) yield break;
+
+        int correctIdx = question.correctAnswerIndex;
+
+        // Chấm điểm
+        scoreManager.CheckAnswer(1, p1Answer);
+        scoreManager.CheckAnswer(2, p2Answer);
+
+        // Yêu cầu InputController hiển thị animation màu xanh/đỏ
+        if (InputController.Instance != null)
+            yield return InputController.Instance.ShowAnswerFeedback(correctIdx);
+        else
+            yield return new WaitForSeconds(revealDuration);
+
+        // Chuyển câu hỏi tiếp theo
+        if (CurrentState == GameState.Playing)
+            quizManager.NextQuestion();
     }
 
     // ==================== COROUTINES ====================
@@ -126,6 +143,6 @@ public class GameController : MonoBehaviour
     }
 
     // ==================== EVENT HANDLERS ====================
-    private void HandleTimerEnd() => ChangeState(GameState.GameOver);
+    private void HandleTimerEnd()         => ChangeState(GameState.GameOver);
     private void HandleQuestionsExhausted() => ChangeState(GameState.GameOver);
 }

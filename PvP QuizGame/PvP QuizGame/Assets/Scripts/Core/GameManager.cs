@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
     // ==================== CHUYỂN SCENE ====================
     public void LoadInitScene() => SceneManager.LoadScene("InitScene");
     
-    public void LoadMainMenuScene() => SceneManager.LoadScene("MainMenuScene");
+    public void LoadHomeScene() => SceneManager.LoadScene("HomeScene");
     
     public void LoadGameplayScene() => SceneManager.LoadScene("GameplayScene");
 
