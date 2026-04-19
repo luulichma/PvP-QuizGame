@@ -292,7 +292,7 @@
       <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\PlaybackEngines\AndroidPlayer\Variations\il2cpp\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>F:\Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame\Library\PackageCache\com.unity.ext.nunit@031a54704bff\net40\unity-custom\nunit.framework.dll</HintPath>
+      <HintPath>F:\TaiLieu_Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame\Library\PackageCache\com.unity.ext.nunit@031a54704bff\net40\unity-custom\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\NetStandard\ref\2.1.0\netstandard.dll</HintPath>
@@ -661,10 +661,10 @@
       <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.Xml.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TestRunner">
-      <HintPath>F:\Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame\Library\ScriptAssemblies\UnityEngine.TestRunner.dll</HintPath>
+      <HintPath>F:\TaiLieu_Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame\Library\ScriptAssemblies\UnityEngine.TestRunner.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>F:\Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame\Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
+      <HintPath>F:\TaiLieu_Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame\Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; align-items: center; justify-content: center; padding: 50px;">
+        <!-- Logo Placeholder -->
+        <ui:VisualElement name="logo" style="width: 200px; height: 200px; background-color: white; border-radius: 40px; margin-bottom: 50px; justify-content: center; align-items: center;">
+            <ui:Label text="PVP" style="color: #4a148c; font-size: 50px; -unity-font-style: bold;" />
+        </ui:VisualElement>
+        
+        <ui:Label name="status-label" text="DANG TAI DU LIEU..." style="color: white; font-size: 18px; margin-bottom: 20px; -unity-font-style: bold;" />
+        
+        <!-- Loading Bar -->
+        <ui:VisualElement name="loading-bar-container" class="progress-container" style="width: 100%; max-width: 400px;">
+            <ui:VisualElement name="loading-fill" class="progress-fill" style="width: 0%;" />
+        </ui:VisualElement>
+        <ui:Label name="progress-label" text="0%" style="color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-top: 5px;" />
+    </ui:VisualElement>
+</ui:UXML>

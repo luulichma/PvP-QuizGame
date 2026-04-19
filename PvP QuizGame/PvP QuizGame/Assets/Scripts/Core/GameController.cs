@@ -121,8 +121,8 @@ public class GameController : MonoBehaviour
         scoreManager.CheckAnswer(2, p2Answer);
 
         // Yêu cầu InputController hiển thị animation màu xanh/đỏ
-        if (InputController.Instance != null)
-            yield return InputController.Instance.ShowAnswerFeedback(correctIdx);
+        if (InputController_UXML.Instance != null)
+            yield return InputController_UXML.Instance.ShowAnswerFeedback(correctIdx);
         else
             yield return new WaitForSeconds(revealDuration);
 

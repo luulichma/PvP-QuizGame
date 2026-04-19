@@ -1,18 +1,18 @@
 {
   "context": {
-    "projectPath": "F:/Nam 3 Ky 2/TTCS/PvP-QuizGame/PvP QuizGame/PvP QuizGame/Packages",
+    "projectPath": "F:/TaiLieu_Nam 3 Ky 2/TTCS/PvP-QuizGame/PvP QuizGame/PvP QuizGame/Packages",
     "unityVersion": "6000.0.58f2"
   },
   "inputs": [
-    "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Packages\\manifest.json",
-    "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Packages\\packages-lock.json",
+    "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Packages\\manifest.json",
+    "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Packages\\packages-lock.json",
     "F:\\Unity Editor\\6000.0.58f2\\Editor\\Data\\Resources\\PackageManager\\BuiltInPackages\\BuiltInPackagesCombined.sha1"
   ],
   "outputs": {
     "com.unity.collab-proxy@2.11.3": {
       "name": "com.unity.collab-proxy",
       "displayName": "Unity Version Control",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.collab-proxy@e566cd3e7623",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.collab-proxy@e566cd3e7623",
       "fingerprint": "e566cd3e762373591f6828e86f2018eed8021356",
       "editorCompatibility": "2021.3.0f1",
       "version": "2.11.3",
@@ -22,7 +22,7 @@
     "com.unity.feature.2d@2.0.1": {
       "name": "com.unity.feature.2d",
       "displayName": "2D",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.feature.2d@dd1ea8910f12",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.feature.2d@dd1ea8910f12",
       "fingerprint": "dd1ea8910f12f021c166e8d0d78de44f1390ff6b",
       "version": "2.0.1",
       "source": "builtin",
@@ -31,7 +31,7 @@
     "com.unity.ide.rider@3.0.39": {
       "name": "com.unity.ide.rider",
       "displayName": "JetBrains Rider Editor",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ide.rider@4504839d03f7",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ide.rider@4504839d03f7",
       "fingerprint": "4504839d03f7a5a4495357084a0ffd6e439892cf",
       "editorCompatibility": "2021.3.0a1",
       "version": "3.0.39",
@@ -41,7 +41,7 @@
     "com.unity.ide.visualstudio@2.0.23": {
       "name": "com.unity.ide.visualstudio",
       "displayName": "Visual Studio Editor",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ide.visualstudio@198cdf337d13",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ide.visualstudio@198cdf337d13",
       "fingerprint": "198cdf337d13c83ca953581515630d66b779e92b",
       "editorCompatibility": "2019.4.25f1",
       "version": "2.0.23",
@@ -51,7 +51,7 @@
     "com.unity.inputsystem@1.14.2": {
       "name": "com.unity.inputsystem",
       "displayName": "Input System",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.inputsystem@be6c4fd0abf5",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.inputsystem@be6c4fd0abf5",
       "fingerprint": "be6c4fd0abf5b9b45f956b97294032a67f3c2f4d",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.14.2",
@@ -61,7 +61,7 @@
     "com.unity.multiplayer.center@1.0.0": {
       "name": "com.unity.multiplayer.center",
       "displayName": "Multiplayer Center",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.multiplayer.center@f3fb577b3546",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.multiplayer.center@f3fb577b3546",
       "fingerprint": "f3fb577b3546594b97b8cc34307cd621f60f1c73",
       "editorCompatibility": "6000.0.0a1",
       "version": "1.0.0",
@@ -71,7 +71,7 @@
     "com.unity.render-pipelines.universal@17.0.4": {
       "name": "com.unity.render-pipelines.universal",
       "displayName": "Universal Render Pipeline",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.render-pipelines.universal@e1fa89d1f997",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.render-pipelines.universal@e1fa89d1f997",
       "fingerprint": "e1fa89d1f99751d643e8ae62813763962926f0d9",
       "editorCompatibility": "6000.0.0a1",
       "version": "17.0.4",
@@ -81,7 +81,7 @@
     "com.unity.test-framework@1.5.1": {
       "name": "com.unity.test-framework",
       "displayName": "Test Framework",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.test-framework@1f954279c37e",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.test-framework@1f954279c37e",
       "fingerprint": "1f954279c37e8ebe39ba5255476ba9f21e2a19ec",
       "editorCompatibility": "6000.0.44f1",
       "version": "1.5.1",
@@ -91,7 +91,7 @@
     "com.unity.timeline@1.8.9": {
       "name": "com.unity.timeline",
       "displayName": "Timeline",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.timeline@6b9e48457ddb",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.timeline@6b9e48457ddb",
       "fingerprint": "6b9e48457ddb4f64813d77fd77efc79a8f3102ae",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.8.9",
@@ -101,7 +101,7 @@
     "com.unity.ugui@2.0.0": {
       "name": "com.unity.ugui",
       "displayName": "Unity UI",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ugui@aa507f3228f0",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ugui@aa507f3228f0",
       "fingerprint": "aa507f3228f0351d0fbba1e8c7142b41bc567fe8",
       "editorCompatibility": "2019.2.0a1",
       "version": "2.0.0",
@@ -111,7 +111,7 @@
     "com.unity.visualscripting@1.9.7": {
       "name": "com.unity.visualscripting",
       "displayName": "Visual Scripting",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.visualscripting@6279e2b7c485",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.visualscripting@6279e2b7c485",
       "fingerprint": "6279e2b7c4858e56cca7f367cd38c49ef66778c9",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.9.7",
@@ -393,7 +393,7 @@
     "com.unity.ext.nunit@2.0.5": {
       "name": "com.unity.ext.nunit",
       "displayName": "Custom NUnit",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ext.nunit@031a54704bff",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.ext.nunit@031a54704bff",
       "fingerprint": "031a54704bffe39e6a0324909f8eaa4565bdebf2",
       "editorCompatibility": "2019.4.0a1",
       "version": "2.0.5",
@@ -403,7 +403,7 @@
     "com.unity.render-pipelines.core@17.0.4": {
       "name": "com.unity.render-pipelines.core",
       "displayName": "Scriptable Render Pipeline Core",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.render-pipelines.core@05f02f04fe74",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.render-pipelines.core@05f02f04fe74",
       "fingerprint": "05f02f04fe74d4956422b6c44feb85f4f9fcdd48",
       "editorCompatibility": "6000.0.0a1",
       "version": "17.0.4",
@@ -413,7 +413,7 @@
     "com.unity.shadergraph@17.0.4": {
       "name": "com.unity.shadergraph",
       "displayName": "Shader Graph",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.shadergraph@7ccd16edcc88",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.shadergraph@7ccd16edcc88",
       "fingerprint": "7ccd16edcc88f63a6fcfc1074df77f8fa9a62913",
       "editorCompatibility": "6000.0.0a1",
       "version": "17.0.4",
@@ -423,7 +423,7 @@
     "com.unity.render-pipelines.universal-config@17.0.3": {
       "name": "com.unity.render-pipelines.universal-config",
       "displayName": "Universal Render Pipeline Config",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.render-pipelines.universal-config@dd206bf35d04",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.render-pipelines.universal-config@dd206bf35d04",
       "fingerprint": "dd206bf35d0451204981fdb31d4c6831a0ee2a7e",
       "editorCompatibility": "6000.0.0a1",
       "version": "17.0.3",
@@ -433,7 +433,7 @@
     "com.unity.2d.animation@10.2.1": {
       "name": "com.unity.2d.animation",
       "displayName": "2D Animation",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.animation@81ad133dbdf1",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.animation@81ad133dbdf1",
       "fingerprint": "81ad133dbdf13da9a686af329d3a20b84565fd89",
       "editorCompatibility": "6000.0.0a1",
       "version": "10.2.1",
@@ -443,7 +443,7 @@
     "com.unity.2d.pixel-perfect@5.0.3": {
       "name": "com.unity.2d.pixel-perfect",
       "displayName": "2D Pixel Perfect",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.pixel-perfect@e3ae982b672d",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.pixel-perfect@e3ae982b672d",
       "fingerprint": "e3ae982b672dc7cca42a6303bdf53b84c69991da",
       "editorCompatibility": "2021.1.0a1",
       "version": "5.0.3",
@@ -453,7 +453,7 @@
     "com.unity.2d.psdimporter@9.1.0": {
       "name": "com.unity.2d.psdimporter",
       "displayName": "2D PSD Importer",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.psdimporter@e0ffc26deb40",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.psdimporter@e0ffc26deb40",
       "fingerprint": "e0ffc26deb4024d7b96fd4903fd4a89dbce4059c",
       "editorCompatibility": "6000.0.0a1",
       "version": "9.1.0",
@@ -463,7 +463,7 @@
     "com.unity.2d.sprite@1.0.0": {
       "name": "com.unity.2d.sprite",
       "displayName": "2D Sprite",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.sprite@897b7eecf04e",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.sprite@897b7eecf04e",
       "fingerprint": "897b7eecf04ec94126f19c6ce2cba3404cc15178",
       "editorCompatibility": "2019.2.0a1",
       "version": "1.0.0",
@@ -473,7 +473,7 @@
     "com.unity.2d.spriteshape@10.0.7": {
       "name": "com.unity.2d.spriteshape",
       "displayName": "2D SpriteShape",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.spriteshape@9e35352ae135",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.spriteshape@9e35352ae135",
       "fingerprint": "9e35352ae135f602746220e7edc09eb95bbec530",
       "editorCompatibility": "2023.1.0a1",
       "version": "10.0.7",
@@ -483,7 +483,7 @@
     "com.unity.2d.tilemap@1.0.0": {
       "name": "com.unity.2d.tilemap",
       "displayName": "2D Tilemap Editor",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.tilemap@b1f6833cdf82",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.tilemap@b1f6833cdf82",
       "fingerprint": "b1f6833cdf8289151d95155943f34fb46177c88d",
       "editorCompatibility": "2019.2.0a1",
       "version": "1.0.0",
@@ -493,7 +493,7 @@
     "com.unity.2d.tilemap.extras@4.1.0": {
       "name": "com.unity.2d.tilemap.extras",
       "displayName": "2D Tilemap Extras",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.tilemap.extras@13634da7dbe0",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.tilemap.extras@13634da7dbe0",
       "fingerprint": "13634da7dbe06c39bac6bbe2d1a166cf91f58ad7",
       "editorCompatibility": "6000.0.0a1",
       "version": "4.1.0",
@@ -503,7 +503,7 @@
     "com.unity.2d.aseprite@1.1.10": {
       "name": "com.unity.2d.aseprite",
       "displayName": "2D Aseprite Importer",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.aseprite@dba7c65ef731",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.aseprite@dba7c65ef731",
       "fingerprint": "dba7c65ef731c2cd2715a1be4eb9353b39eb570c",
       "editorCompatibility": "2021.3.15f1",
       "version": "1.1.10",
@@ -513,7 +513,7 @@
     "com.unity.searcher@4.9.3": {
       "name": "com.unity.searcher",
       "displayName": "Searcher",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.searcher@1e17ce91558d",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.searcher@1e17ce91558d",
       "fingerprint": "1e17ce91558d1d9127554adc03d275f39a7466a2",
       "editorCompatibility": "2019.1.0a1",
       "version": "4.9.3",
@@ -523,7 +523,7 @@
     "com.unity.burst@1.8.24": {
       "name": "com.unity.burst",
       "displayName": "Burst",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.burst@f7a407abf4d5",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.burst@f7a407abf4d5",
       "fingerprint": "f7a407abf4d5abf19ce630824dcde261e02ed97e",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.8.24",
@@ -533,7 +533,7 @@
     "com.unity.mathematics@1.3.2": {
       "name": "com.unity.mathematics",
       "displayName": "Mathematics",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.mathematics@8017b507cc74",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.mathematics@8017b507cc74",
       "fingerprint": "8017b507cc74bf0a1dd14b18aa860569f807314d",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.3.2",
@@ -543,7 +543,7 @@
     "com.unity.collections@2.5.1": {
       "name": "com.unity.collections",
       "displayName": "Collections",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.collections@56bff8827a7e",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.collections@56bff8827a7e",
       "fingerprint": "56bff8827a7ef6d44fcee4f36e558a74da89c1a0",
       "editorCompatibility": "2022.3.11f1",
       "version": "2.5.1",
@@ -553,7 +553,7 @@
     "com.unity.rendering.light-transport@1.0.1": {
       "name": "com.unity.rendering.light-transport",
       "displayName": "Unity Light Transport Library",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.rendering.light-transport@9bd588f963c0",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.rendering.light-transport@9bd588f963c0",
       "fingerprint": "9bd588f963c0ca6105f0978f9cfc66444032a804",
       "editorCompatibility": "2023.3.0b1",
       "version": "1.0.1",
@@ -563,7 +563,7 @@
     "com.unity.2d.common@9.1.1": {
       "name": "com.unity.2d.common",
       "displayName": "2D Common",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.common@bc041c6e0d0d",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.2d.common@bc041c6e0d0d",
       "fingerprint": "bc041c6e0d0d69f1195446076eff5ef3189d3e92",
       "editorCompatibility": "6000.0.0a1",
       "version": "9.1.1",
@@ -573,7 +573,7 @@
     "com.unity.nuget.mono-cecil@1.11.4": {
       "name": "com.unity.nuget.mono-cecil",
       "displayName": "Mono Cecil",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.nuget.mono-cecil@d6f9955a5d5f",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.nuget.mono-cecil@d6f9955a5d5f",
       "fingerprint": "d6f9955a5d5f84d45442ff1ad0fb694cc6e2fd62",
       "editorCompatibility": "2018.4.0a1",
       "version": "1.11.4",
@@ -583,7 +583,7 @@
     "com.unity.test-framework.performance@3.1.0": {
       "name": "com.unity.test-framework.performance",
       "displayName": "Performance testing API",
-      "resolvedPath": "F:\\Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.test-framework.performance@92d1d09a72ed",
+      "resolvedPath": "F:\\TaiLieu_Nam 3 Ky 2\\TTCS\\PvP-QuizGame\\PvP QuizGame\\PvP QuizGame\\Library\\PackageCache\\com.unity.test-framework.performance@92d1d09a72ed",
       "fingerprint": "92d1d09a72ed696fa23fd76c675b29d211664b50",
       "editorCompatibility": "2020.3.0a1",
       "version": "3.1.0",
