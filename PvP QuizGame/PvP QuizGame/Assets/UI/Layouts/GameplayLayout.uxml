@@ -1,48 +1,44 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
-    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; padding: 20px;">
-        
-        <!-- Top HUD (Scores) -->
-        <ui:VisualElement name="hud" style="flex-direction: row; justify-content: space-between; margin-bottom: 30px;">
-            <ui:VisualElement name="p1-score-box" class="card" style="flex-direction: row; align-items: center; padding: 5px 15px; background-color: #00e5ff;">
-                <ui:Label text="👤" style="font-size: 20px; margin-right: 5px;" />
-                <ui:Label name="p1-score" text="1200" style="color: white; -unity-font-style: bold; font-size: 18px;" />
+    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; padding: 40px;">
+        <!-- HUD -->
+        <ui:VisualElement name="hud" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 50px;">
+            <ui:VisualElement name="p1-info" class="card" style="flex-direction: row; align-items: center; padding: 20px 40px; border-radius: 20px;">
+                <ui:Label text="ME" style="color: #444; font-size: 24px; margin-right: 15px;" />
+                <ui:Label name="p1-score" text="0" style="color: #4a148c; font-size: 48px; -unity-font-style: bold;" />
             </ui:VisualElement>
             
-            <ui:VisualElement name="p2-score-box" class="card" style="flex-direction: row; align-items: center; padding: 5px 15px; background-color: #ff5252;">
-                <ui:Label name="p2-score" text="950" style="color: white; -unity-font-style: bold; font-size: 18px; margin-right: 5px;" />
-                <ui:Label text="🤖" style="font-size: 20px;" />
+            <ui:VisualElement name="timer-container" style="align-items: center;">
+                <ui:Label name="timer-text" text="03:00" style="color: white; font-size: 54px; -unity-font-style: bold;" />
+                <ui:VisualElement name="timer-bar" class="progress-container" style="width: 250px; height: 15px; margin-top: 5px;">
+                    <ui:VisualElement name="timer-fill" class="progress-fill" style="width: 100%;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="p2-info" class="card" style="flex-direction: row; align-items: center; padding: 20px 40px; border-radius: 20px;">
+                <ui:Label name="p2-score" text="0" style="color: #4a148c; font-size: 48px; -unity-font-style: bold;" />
+                <ui:Label text="OPP" style="color: #444; font-size: 24px; margin-left: 15px;" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Question Card -->
-        <ui:VisualElement name="question-area" class="card" style="min-height: 180px; justify-content: center; align-items: center; margin-bottom: 25px;">
-            <ui:Label name="question-counter" text="CAU 3 / 10" class="header-tag" style="position: absolute; top: -12px;" />
-            <ui:Label name="question-text" text="Thu do cua Viet Nam la thanh pho nao?" style="font-size: 22px; color: #212121; -unity-font-style: bold; -unity-text-align: middle-center; white-space: normal;" />
-        </ui:VisualElement>
-
-        <!-- Answer Grid -->
-        <ui:VisualElement name="answers-container" style="flex-grow: 1;">
-            <ui:VisualElement style="flex-direction: row; flex-grow: 1;">
-                <ui:Button name="ans-0" text="TP. Ho Chi Minh" class="btn" style="flex-grow: 1; height: auto;" />
-                <ui:Button name="ans-1" text="Ha Noi" class="btn" style="flex-grow: 1; height: auto; background-color: #00e676;" />
-            </ui:VisualElement>
-            <ui:VisualElement style="flex-direction: row; flex-grow: 1; margin-top: 10px;">
-                <ui:Button name="ans-2" text="Da Nang" class="btn" style="flex-grow: 1; height: auto;" />
-                <ui:Button name="ans-3" text="Can Tho" class="btn" style="flex-grow: 1; height: auto;" />
+        <!-- QUESTION AREA -->
+        <ui:VisualElement name="question-area" style="flex-grow: 1; justify-content: center; align-items: center;">
+            <ui:Label name="question-counter" text="CAU 1 / 10" style="color: #ffea00; font-size: 32px; margin-bottom: 20px;" />
+            <ui:VisualElement class="card" style="width: 100%; max-width: 900px; min-height: 250px; justify-content: center; align-items: center; padding: 40px;">
+                <ui:Label name="question-text" text="Cau hoi dang duoc tai...?" style="color: #212121; font-size: 48px; -unity-text-align: middle-center; -unity-font-style: bold;" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Bottom Timer -->
-        <ui:VisualElement name="timer-area" style="margin-top: 40px; margin-bottom: 20px;">
-            <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 8px;">
-                <ui:Label text="THOI GIAN" style="color: white; -unity-font-style: bold;" />
-                <ui:Label name="timer-text" text="12s" style="color: #ffea00; -unity-font-style: bold;" />
+        <!-- ANSWERS GRID -->
+        <ui:VisualElement name="answers-grid" style="margin-top: 50px;">
+            <ui:VisualElement style="flex-direction: row; justify-content: space-around; margin-bottom: 20px;">
+                <ui:Button name="ans-0" text="DA 1" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
+                <ui:Button name="ans-1" text="DA 2" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
             </ui:VisualElement>
-            <ui:VisualElement name="timer-bar" class="progress-container">
-                <ui:VisualElement name="timer-fill" class="progress-fill" style="width: 70%;" />
+            <ui:VisualElement style="flex-direction: row; justify-content: space-around;">
+                <ui:Button name="ans-2" text="DA 3" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
+                <ui:Button name="ans-3" text="DA 4" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
             </ui:VisualElement>
         </ui:VisualElement>
-
     </ui:VisualElement>
 </ui:UXML>

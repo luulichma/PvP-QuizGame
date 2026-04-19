@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// </summary>
 public class GameplayUIController_Old : MonoBehaviour
 {
-    public static GameplayUIController Instance { get; private set; }
+    public static GameplayUIController_Old Instance { get; private set; }
 
     [Header("Các màn hình trận đấu (Panels)")]
     [SerializeField] private GameObject countdownPanel;

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 /// </summary>
 public class InputController_UXML : MonoBehaviour
 {
-    public static InputController Instance { get; private set; }
+    public static InputController_UXML Instance { get; private set; }
 
     public static event Action<int, int, bool> OnAnswerSubmitted;
 
@@ -36,19 +36,34 @@ public class InputController_UXML : MonoBehaviour
     private void OnEnable()
     {
         if (uiDocument == null) uiDocument = GetComponent<UIDocument>();
-        if (uiDocument == null) return;
+        
+        // Fallback: Nếu không thấy trên cùng GameObject, tìm trong toàn scene
+        if (uiDocument == null) uiDocument = UnityEngine.Object.FindAnyObjectByType<UIDocument>();
+
+        if (uiDocument == null)
+        {
+            Debug.LogError("[InputController_UXML] Không tìm thấy UIDocument trong scene! Các nút bấm sẽ không hoạt động.");
+            return;
+        }
 
         var root = uiDocument.rootVisualElement;
+        _answerButtons.Clear(); // Dọn dẹp danh sách cũ
 
         // Query 4 nút đáp án dựa trên Name trong GameplayLayout.uxml
         for (int i = 0; i < 4; i++)
         {
-            var btn = root.Q<Button>($"ans-{i}");
+            string btnName = $"ans-{i}";
+            var btn = root.Q<Button>(btnName);
             if (btn != null)
             {
                 int index = i;
                 btn.clicked += () => HandleAnswerClicked(index);
                 _answerButtons.Add(btn);
+                Debug.Log($"[InputController_UXML] Đã đăng ký sự kiện cho nút: {btnName}");
+            }
+            else
+            {
+                Debug.LogWarning($"[InputController_UXML] Không tìm thấy nút: {btnName} trong document.");
             }
         }
 

@@ -22,6 +22,7 @@ public class TimerController : MonoBehaviour
     // ==================== INSPECTOR ====================
     [Header("Cài đặt thời gian")]
     [SerializeField] private float totalTime = 180f;
+    public float TotalTime => totalTime;
 
     // ==================== TRẠNG THÁI ====================
     public float RemainingTime { get; private set; }

@@ -16,7 +16,7 @@ using System.Collections;
 public class InputController_Old : MonoBehaviour
 {
     // ==================== SINGLETON ====================
-    public static InputController Instance { get; private set; }
+    public static InputController_Old Instance { get; private set; }
 
     // ==================== EVENTS ====================
     /// <summary>Phát khi GameController xác nhận đáp án — (playerId, answerIndex, isCorrect)</summary>

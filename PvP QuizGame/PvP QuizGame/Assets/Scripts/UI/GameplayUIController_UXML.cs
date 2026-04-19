@@ -7,7 +7,7 @@ using System.Collections;
 /// </summary>
 public class GameplayUIController_UXML : MonoBehaviour
 {
-    public static GameplayUIController Instance { get; private set; }
+    public static GameplayUIController_UXML Instance { get; private set; }
 
     [Header("UI Toolkit References")]
     [SerializeField] private UIDocument uiDocument;
@@ -105,7 +105,7 @@ public class GameplayUIController_UXML : MonoBehaviour
 
         if (_timerFill != null && TimerController.Instance != null)
         {
-            float percent = (remaining / TimerController.Instance.MaxTime) * 100f;
+            float percent = (remaining / TimerController.Instance.TotalTime) * 100f;
             _timerFill.style.width = Length.Percent(percent);
         }
     }

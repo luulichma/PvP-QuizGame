@@ -250,6 +250,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1251390083}
   - component: {fileID: 1251390084}
+  - component: {fileID: 1251390085}
   m_Layer: 0
   m_Name: UIHomeController
   m_TagString: Untagged
@@ -284,15 +285,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a935aefb8a6b5b4b9f92a55ff0b35af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loginPanel: {fileID: 0}
-  homePanel: {fileID: 0}
-  settingsPanel: {fileID: 0}
-  matchmakingPanel: {fileID: 0}
-  loginSubmitButton: {fileID: 0}
-  findMatchButton: {fileID: 176068233}
-  settingsButton: {fileID: 0}
-  backToHomeButtons: []
-  devFoundMatchButton: {fileID: 0}
+  uiDocument: {fileID: 1251390085}
+--- !u!114 &1251390085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251390082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: c4676256f19c6b04e9701fba1c120546, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: dfdc219349c70bf43bdb3ecae1580b38, type: 3}
+  m_SortingOrder: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
 --- !u!1 &1465003014
 GameObject:
   m_ObjectHideFlags: 0
@@ -793,7 +805,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &8647797095148780361
 MonoBehaviour:
   m_ObjectHideFlags: 0
