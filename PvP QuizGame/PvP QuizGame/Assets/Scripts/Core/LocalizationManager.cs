@@ -28,10 +28,19 @@ public class LocalizationManager : MonoBehaviour
 
     private Dictionary<string, string> _localizedText;
     private string _currentLanguage = "vi";
+    private string _previousLanguage = "vi";   // Dùng để rollback khi tải ngôn ngữ mới thất bại
     private bool _isReady = false;
     public bool IsReady => _isReady;
 
+    private Coroutine _switchCoroutine;        // Coroutine đang chạy SwitchLanguage (để cancel khi cần)
+
     private const string CACHE_FILE_NAME = "localization_cache.csv";
+
+    /// <summary>
+    /// Các ngôn ngữ có file JSON local. Nếu thêm ngôn ngữ mới, cần thêm file .json vào
+    /// StreamingAssets/Localization/ và khai báo ở đây.
+    /// </summary>
+    private static readonly HashSet<string> _supportedLocalLangs = new HashSet<string> { "vi", "en" };
 
     private void Awake()
     {
@@ -64,7 +73,7 @@ public class LocalizationManager : MonoBehaviour
         // 3. Cuối cùng nếu vẫn chưa có dữ liệu, nạp JSON local
         if (!_isReady)
         {
-            yield return StartCoroutine(LoadLocalLanguageCoroutine(savedLang));
+            yield return StartCoroutine(LoadLocalLanguageCoroutine(savedLang, null));
         }
     }
 
@@ -140,9 +149,18 @@ public class LocalizationManager : MonoBehaviour
 
     /// <summary>
     /// Chuyển đổi ngôn ngữ runtime. Ưu tiên nạp lại từ cache CSV để đảm bảo dữ liệu mới nhất.
+    /// BUG FIX: Hủy coroutine cũ trước khi bắt đầu mới; rollback về ngôn ngữ cũ nếu tải thất bại.
     /// </summary>
     public void SwitchLanguage(string langCode)
     {
+        // Hủy coroutine đang chạy (nếu có) để tránh race condition
+        if (_switchCoroutine != null)
+        {
+            StopCoroutine(_switchCoroutine);
+            _switchCoroutine = null;
+        }
+
+        _previousLanguage = _currentLanguage; // Lưu ngôn ngữ cũ để rollback nếu cần
         _currentLanguage = langCode;
         PlayerPrefs.SetString("Language", langCode);
         PlayerPrefs.Save();
@@ -162,25 +180,33 @@ public class LocalizationManager : MonoBehaviour
         }
 
         // Nếu không có cache hoặc parse lỗi, fallback về JSON local
-        LoadLocalLanguage(langCode);
+        // Dùng coroutine và truyền _previousLanguage để rollback nếu file không tồn tại
+        _switchCoroutine = StartCoroutine(LoadLocalLanguageCoroutine(langCode, _previousLanguage));
     }
 
     /// <summary>
     /// Nạp tệp ngôn ngữ từ StreamingAssets (Dự phòng).
-    /// Public vì SwitchLanguage gọi fallback về đây.
+    /// Public vì InitLocalization gọi fallback về đây.
     /// </summary>
     public void LoadLocalLanguage(string langCode)
     {
-        StartCoroutine(LoadLocalLanguageCoroutine(langCode));
+        if (_switchCoroutine != null) StopCoroutine(_switchCoroutine);
+        _switchCoroutine = StartCoroutine(LoadLocalLanguageCoroutine(langCode, null));
     }
 
-    private IEnumerator LoadLocalLanguageCoroutine(string langCode)
+    /// <summary>
+    /// BUG FIX: Nhận thêm tham số fallbackLang để rollback nếu file ngôn ngữ không tồn tại.
+    /// Sử dụng string nối thay vì Path.Combine để đảm bảo URI jar:file:// hợp lệ trên Android.
+    /// </summary>
+    private IEnumerator LoadLocalLanguageCoroutine(string langCode, string fallbackLang)
     {
-        string filePath = Path.Combine(Application.streamingAssetsPath, $"Localization/{langCode}.json");
+        // BUG FIX: Dùng string concat thay vì Path.Combine — Path.Combine không thiết kế cho URI
+        // "jar:file:///...!/assets" + "/" + "Localization/vi.json" luôn cho kết quả đúng trên mọi platform
+        string filePath = Application.streamingAssetsPath + "/Localization/" + langCode + ".json";
         string jsonContent = null;
 
         // Trên Android/WebGL, StreamingAssets là URI (jar:file:// hoặc http://), phải dùng UnityWebRequest
-        if (filePath.Contains("://") || filePath.Contains(":///"))
+        if (filePath.Contains("://"))
         {
             using (UnityWebRequest request = UnityWebRequest.Get(filePath))
             {
@@ -192,7 +218,7 @@ public class LocalizationManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError($"[Localization] Không tìm thấy hoặc lỗi tải tệp ngôn ngữ local: {filePath} - {request.error}");
+                    Debug.LogWarning($"[Localization] Không tải được file ngôn ngữ '{langCode}': {request.error} | Path: {filePath}");
                 }
             }
         }
@@ -205,7 +231,7 @@ public class LocalizationManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"[Localization] Không tìm thấy tệp ngôn ngữ: {filePath}");
+                Debug.LogWarning($"[Localization] Không tìm thấy file ngôn ngữ '{langCode}': {filePath}");
             }
         }
 
@@ -221,13 +247,30 @@ public class LocalizationManager : MonoBehaviour
 
             _currentLanguage = langCode;
             _isReady = true;
+            _switchCoroutine = null;
             Debug.Log($"[Localization] Đã nạp JSON local: {_localizedText.Count} key (lang={langCode}).");
             OnLanguageChanged?.Invoke();
         }
         else
         {
-            _localizedText ??= new Dictionary<string, string>();
-            _isReady = true; // Đánh dấu sẵn sàng để không bị kẹt game, dù dữ liệu trống
+            // BUG FIX: Khi tải thất bại, ROLLBACK về ngôn ngữ cũ thay vì giữ _currentLanguage sai
+            // (trước đây: _localizedText ??= ... → giữ dữ liệu cũ nhưng _currentLanguage đã bị đổi)
+            if (!string.IsNullOrEmpty(fallbackLang) && fallbackLang != langCode)
+            {
+                Debug.LogWarning($"[Localization] Rollback về ngôn ngữ trước: '{fallbackLang}' ('{langCode}' không có file local).");
+                _currentLanguage = fallbackLang;
+                PlayerPrefs.SetString("Language", fallbackLang);
+                PlayerPrefs.Save();
+                // _localizedText vẫn còn dữ liệu của fallbackLang từ lần load trước → không cần load lại
+            }
+            else
+            {
+                // Trường hợp init lần đầu mà không có file: set dict rỗng, đánh dấu ready để game không bị kẹt
+                _localizedText ??= new Dictionary<string, string>();
+            }
+
+            _isReady = true;
+            _switchCoroutine = null;
             OnLanguageChanged?.Invoke();
         }
     }

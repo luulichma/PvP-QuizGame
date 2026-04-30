@@ -154,17 +154,33 @@ public class InputController_UXML : MonoBehaviour
         }
 
         if (_myLastAnswer >= 0)
+        {
             SetButtonColor(_myLastAnswer, isCorrect ? _correctColor : _wrongColor);
+            if (!isCorrect)
+            {
+                UIAnimator.DOShakePosition(_answerButtons[_myLastAnswer], 0.5f);
+            }
+            else
+            {
+                _answerButtons[_myLastAnswer].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(new Vector2(1.1f, 1.1f)));
+            }
+        }
 
         if (!isCorrect && correctAnswerIndex >= 0)
+        {
             SetButtonColor(correctAnswerIndex, _correctColor);
+            _answerButtons[correctAnswerIndex].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(new Vector2(1.1f, 1.1f)));
+        }
 
         OnAnswerSubmitted?.Invoke(_localPlayerId, _myLastAnswer, isCorrect);
 
         yield return new WaitForSeconds(1.5f);
 
         for (int i = 0; i < _answerButtons.Count; i++)
+        {
             SetButtonColor(i, _defaultColor);
+            _answerButtons[i].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(Vector2.one));
+        }
     }
 
     private void SetButtonsInteractable(bool on)
@@ -238,6 +254,9 @@ public class InputController_UXML : MonoBehaviour
         _inputLocked = false;
         _myLastAnswer = -1;
         SetButtonsInteractable(true);
+
+        // ANIMATION: Hiển thị hiệu ứng lượn sóng cho 4 đáp án
+        UIAnimator.AnimateAnswersEntry(_answerButtons);
     }
 
     private void QueryButtons()

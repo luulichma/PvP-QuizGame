@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections;
+using System.Linq;
+using DG.Tweening;
 
 /// <summary>
 /// Quản lý UI của màn hình sảnh chính (HomeScene) sử dụng UI Toolkit.
@@ -249,6 +251,11 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         uiDocument.rootVisualElement.Add(_settingsPopup);
 
+        // ANIMATION
+        var overlay = _settingsPopup.Q<VisualElement>("overlay") ?? _settingsPopup.Children().First();
+        var popupCard = _settingsPopup.Q<VisualElement>("popup") ?? overlay.Children().First();
+        UIAnimator.ShowPopupAnim(overlay, popupCard);
+
         // Khởi tạo ngôn ngữ ban đầu cho popup
         RefreshSettingsPopupLocalization();
 
@@ -258,22 +265,32 @@ public class MainMenuUIController_UXML : MonoBehaviour
             closeBtn.clicked += CloseSettingsPopup;
         }
 
-        // Dropdown Ngôn ngữ (8 thứ tiếng)
+        // Dropdown Ngôn ngữ
+        // BUG FIX: Chỉ hiển thị các ngôn ngữ có file JSON local tương ứng.
+        // Khi thêm ngôn ngữ mới, cần tạo file StreamingAssets/Localization/<code>.json
+        // rồi bổ sung vào danh sách này.
         var langDropdown = _settingsPopup.Q<DropdownField>("language-dropdown");
         if (langDropdown != null)
         {
             langDropdown.choices = new System.Collections.Generic.List<string> {
-                "Tiếng Việt", "English", "Français", "Italiano", "Deutsch", "Español", "日本語", "한국어"
+                "Tiếng Việt",   // vi.json  ✓
+                "English",      // en.json  ✓
+                // "Français",  // fr.json  ← chưa có file → tạm tắt
+                // "Italiano",  // it.json  ← chưa có file → tạm tắt
+                // "Deutsch",   // de.json  ← chưa có file → tạm tắt
+                // "Español",   // es.json  ← chưa có file → tạm tắt
+                // "日本語",    // ja.json  ← chưa có file → tạm tắt
+                // "한국어",   // ko.json  ← chưa có file → tạm tắt
             };
 
-            // Set giá trị hiện tại
+            // Set giá trị hiện tại — chỉ tìm trong danh sách đã lọc
             string current = LocalizationManager.Instance.CurrentLanguage;
-            langDropdown.index = GetLanguageIndex(current);
+            int idx = GetSupportedLanguageIndex(current);
+            langDropdown.index = idx;
 
             langDropdown.RegisterValueChangedCallback(evt => {
-                string code = GetLanguageCode(evt.newValue);
+                string code = GetSupportedLanguageCode(evt.newValue);
                 LocalizationManager.Instance.SwitchLanguage(code);
-                
                 Debug.Log($"[MainMenu] Đã chọn ngôn ngữ: {evt.newValue} ({code})");
             });
         }
@@ -321,6 +338,11 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         uiDocument.rootVisualElement.Add(popup);
 
+        // ANIMATION
+        var overlay = popup.Q<VisualElement>("overlay") ?? popup.Children().First();
+        var popupCard = popup.Q<VisualElement>("popup") ?? overlay.Children().First();
+        UIAnimator.ShowPopupAnim(overlay, popupCard);
+
         var titleLabel = popup.Q<Label>("logout-title");
         var msgLabel = popup.Q<Label>("logout-msg");
         var confirmBtn = popup.Q<Button>("confirm-logout-btn");
@@ -362,7 +384,11 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         if (cancelBtn != null)
         {
-            cancelBtn.clicked += () => popup.RemoveFromHierarchy();
+            cancelBtn.clicked += () => {
+                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                    popup.RemoveFromHierarchy();
+                });
+            };
         }
     }
 
@@ -380,6 +406,11 @@ public class MainMenuUIController_UXML : MonoBehaviour
         _profilePopup.style.left = 0; _profilePopup.style.right = 0;
 
         uiDocument.rootVisualElement.Add(_profilePopup);
+
+        // ANIMATION
+        var overlay = _profilePopup.Q<VisualElement>("overlay") ?? _profilePopup.Children().First();
+        var popupCard = _profilePopup.Q<VisualElement>("popup") ?? overlay.Children().First();
+        UIAnimator.ShowPopupAnim(overlay, popupCard);
 
         var nameInput = _profilePopup.Q<TextField>("name-input");
         var saveBtn = _profilePopup.Q<Button>("save-profile-btn");
@@ -451,11 +482,17 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 }
 
                 RefreshPlayerStatsUI();
-                _profilePopup.RemoveFromHierarchy();
+                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                    _profilePopup.RemoveFromHierarchy();
+                });
             };
         }
 
-        if (closeBtn != null) closeBtn.clicked += () => _profilePopup.RemoveFromHierarchy();
+        if (closeBtn != null) closeBtn.clicked += () => {
+            UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                _profilePopup.RemoveFromHierarchy();
+            });
+        };
     }
 
     private void UpdateAvatarSelectionUI(Button btn, bool isSelected)
@@ -475,12 +512,13 @@ public class MainMenuUIController_UXML : MonoBehaviour
         btn.style.borderRightWidth = width;
     }
 
+    // ======== Legacy helpers (giữ lại để tương thích nếu nơi khác gọi) ========
     private int GetLanguageIndex(string code)
     {
         return code switch {
             "vi" => 0, "en" => 1, "fr" => 2, "it" => 3,
             "de" => 4, "es" => 5, "ja" => 6, "ko" => 7,
-            _ => 1 // mặc định en
+            _ => 1
         };
     }
 
@@ -490,6 +528,27 @@ public class MainMenuUIController_UXML : MonoBehaviour
             "Tiếng Việt" => "vi", "English" => "en", "Français" => "fr", "Italiano" => "it",
             "Deutsch" => "de", "Español" => "es", "日本語" => "ja", "한국어" => "ko",
             _ => "en"
+        };
+    }
+
+    // ======== Helpers cho dropdown chỉ hiển thị ngôn ngữ có file JSON ========
+    /// <summary>Ánh xạ mã ngôn ngữ → index trong dropdown rút gọn (vi=0, en=1)</summary>
+    private int GetSupportedLanguageIndex(string code)
+    {
+        return code switch {
+            "vi" => 0,
+            "en" => 1,
+            _    => 1 // mặc định English nếu đang dùng ngôn ngữ chưa có file
+        };
+    }
+
+    /// <summary>Ánh xạ tên hiển thị → mã ngôn ngữ trong dropdown rút gọn</summary>
+    private string GetSupportedLanguageCode(string name)
+    {
+        return name switch {
+            "Tiếng Việt" => "vi",
+            "English"    => "en",
+            _            => "en"
         };
     }
 
@@ -517,8 +576,12 @@ public class MainMenuUIController_UXML : MonoBehaviour
     {
         if (_settingsPopup != null)
         {
-            _settingsPopup.RemoveFromHierarchy();
-            _settingsPopup = null;
+            var overlay = _settingsPopup.Q<VisualElement>("overlay") ?? _settingsPopup.Children().First();
+            var popupCard = _settingsPopup.Q<VisualElement>("popup") ?? overlay.Children().First();
+            UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                _settingsPopup.RemoveFromHierarchy();
+                _settingsPopup = null;
+            });
         }
     }
 

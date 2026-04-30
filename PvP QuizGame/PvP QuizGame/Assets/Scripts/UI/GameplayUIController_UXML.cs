@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections;
+using System.Linq;
+using DG.Tweening;
 
 /// <summary>
 /// Điều phối giao diện người dùng TRONG trận đấu (GameplayScene) sử dụng UI Toolkit.
@@ -109,6 +111,16 @@ public class GameplayUIController_UXML : MonoBehaviour
             _questionText.text = LocalizationManager.Instance != null
                                  ? LocalizationManager.Instance.GetText(qKey)
                                  : qKey;
+            
+            // Animation cho câu hỏi (Trượt từ trên xuống)
+            var questionCard = _questionText.parent;
+            if (questionCard != null)
+            {
+                questionCard.style.translate = new StyleTranslate(new Translate(new Length(0), new Length(-50)));
+                questionCard.style.opacity = 0f;
+                UIAnimator.DOFade(questionCard, 1f, 0.3f);
+                UIAnimator.DOTranslate(questionCard, Vector2.zero, 0.4f).SetEase(DG.Tweening.Ease.OutBack);
+            }
         }
 
         if (_questionCounter != null && QuizManager.Instance != null)
@@ -178,7 +190,10 @@ public class GameplayUIController_UXML : MonoBehaviour
         _resultPopupInstance.style.left = 0;
         _resultPopupInstance.style.right = 0;
 
-        uiDocument.rootVisualElement.Add(_resultPopupInstance);
+        // ANIMATION: Result Popup
+        var overlay = _resultPopupInstance.Q<VisualElement>("overlay") ?? _resultPopupInstance.Children().First();
+        var popupCard = _resultPopupInstance.Q<VisualElement>("popup") ?? overlay.Children().First();
+        UIAnimator.ShowPopupAnim(overlay, popupCard);
 
         if (ScoreManager.Instance == null) return;
 
@@ -276,15 +291,19 @@ public class GameplayUIController_UXML : MonoBehaviour
         _exitPopupInstance.style.left = 0;
         _exitPopupInstance.style.right = 0;
  
-        uiDocument.rootVisualElement.Add(_exitPopupInstance);
+        var overlay = _exitPopupInstance.Q<VisualElement>("overlay") ?? _exitPopupInstance.Children().First();
+        var popupCard = _exitPopupInstance.Q<VisualElement>("popup") ?? overlay.Children().First();
+        UIAnimator.ShowPopupAnim(overlay, popupCard);
  
         var confirmBtn = _exitPopupInstance.Q<Button>("confirm-btn");
         if (confirmBtn != null)
         {
             confirmBtn.clicked += () => {
-                _exitPopupInstance.RemoveFromHierarchy();
-                _exitPopupInstance = null;
-                if (GameController.Instance != null) GameController.Instance.ForcedSurrender();
+                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                    _exitPopupInstance.RemoveFromHierarchy();
+                    _exitPopupInstance = null;
+                    if (GameController.Instance != null) GameController.Instance.ForcedSurrender();
+                });
             };
         }
  
@@ -292,8 +311,10 @@ public class GameplayUIController_UXML : MonoBehaviour
         if (cancelBtn != null)
         {
             cancelBtn.clicked += () => {
-                _exitPopupInstance.RemoveFromHierarchy();
-                _exitPopupInstance = null;
+                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                    _exitPopupInstance.RemoveFromHierarchy();
+                    _exitPopupInstance = null;
+                });
             };
         }
     }
