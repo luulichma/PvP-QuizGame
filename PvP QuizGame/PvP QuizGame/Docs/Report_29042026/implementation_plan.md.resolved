@@ -1,0 +1,39 @@
+# Kế hoạch Phân cấp Matchmaking & Số lượng câu hỏi theo Level
+
+Để đáp ứng yêu cầu phân loại người chơi và giới hạn số lượng câu hỏi dựa trên cấp độ (Level 1-10: 10 câu, Level 11-30: 20 câu, Level 31-50: 30 câu), tôi đề xuất giải pháp kiến trúc sau:
+
+## 1. Phân chia "Tier" (Bậc) trong Matchmaking
+Thay vì tất cả người chơi cùng tìm trận trong một danh sách `matchmakingQueue` duy nhất, chúng ta sẽ chia nhỏ danh sách này thành các nhánh riêng biệt dựa trên Tier:
+- `matchmakingQueue/tier_1` (Level 1 - 10)
+- `matchmakingQueue/tier_2` (Level 11 - 30)
+- `matchmakingQueue/tier_3` (Level 31+)
+
+Khi người chơi bấm "Tìm trận", hệ thống sẽ đọc Level hiện tại của họ từ `PlayerDataManager`, xác định Tier tương ứng, và **chỉ tìm kiếm hoặc đăng ký vào queue của Tier đó**. Điều này đảm bảo 100% người chơi sẽ chỉ gặp người có cùng hạng Level.
+
+## 2. Lưu trữ cấu hình vào Room Firebase
+Khi 2 người chơi ghép cặp thành công, hệ thống (Host) sẽ tính toán số lượng câu hỏi tương ứng với Tier đó (10, 20 hoặc 30) và lưu vào dữ liệu của Room trên Firebase (biến `questionCount`).
+Cả 2 máy con (client) khi join room sẽ đọc thông số này để đảm bảo cả 2 đều thống nhất số lượng câu hỏi của trận đấu đó.
+
+## 3. Các File cần chỉnh sửa
+
+### [MODIFY] `Assets/Scripts/Network/FirebaseManager.cs`
+- Thêm 2 hàm tiện ích: `GetPlayerTier(int level)` và `GetQuestionCountForTier(int tier)`.
+- Sửa hàm `RetryFindOpponent` và `CancelMatchmaking` để chúng trỏ đường dẫn tới `matchmakingQueue/tier_{X}` thay vì thư mục gốc.
+- Sửa hàm `CreateRoomWithFoundOpponent` để ghi thêm `questionCount` vào dữ liệu Room.
+- Thêm hàm `ReadQuestionCountFromRoom()` để client đọc số câu hỏi từ server.
+
+### [MODIFY] `Assets/Scripts/Core/QuizManager.cs`
+- Thêm tham số `limit` vào hàm `StartQuiz(int seed = -1, int limit = 10)`.
+- Sau khi xáo trộn danh sách câu hỏi (`_shuffledQuestions`), hệ thống sẽ cắt (truncate) danh sách này để nó chỉ chứa đúng số lượng `limit` câu hỏi. Khi người chơi trả lời hết danh sách đã bị cắt này, game sẽ tự động gọi `OnQuestionsExhausted` và kết thúc trận đấu.
+
+### [MODIFY] `Assets/Scripts/Core/GameController.cs`
+- Trong hàm `StartQuizWithSeed()`, thêm logic chờ đọc `questionCount` từ Firebase (hoặc tự tính toán dựa trên Level nếu đang chơi Offline).
+- Truyền `questionCount` này vào lệnh `quizManager.StartQuiz(seed, questionCount)`.
+
+## User Review Required
+> [!IMPORTANT]
+> Cách tiếp cận này thay đổi cấu trúc database trên Firebase (tạo ra các node `tier_1`, `tier_2`, `tier_3`). 
+> Dữ liệu Level hiện tại được lưu trong biến `PlayerDataManager.Instance.Data.level`. Bạn có xác nhận thiết kế các mốc Level và số lượng câu hỏi này là chuẩn xác để tôi bắt đầu code chưa?
+> + Level 1 - 10: 10 câu
+> + Level 11 - 30: 20 câu
+> + Level 31 - 50: 30 câu

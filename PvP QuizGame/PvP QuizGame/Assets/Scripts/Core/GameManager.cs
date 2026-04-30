@@ -23,6 +23,11 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // Mobile optimization: ép framerate 60fps (Android mặc định 30fps)
+        Application.targetFrameRate = 60;
+        // Giữ màn hình sáng khi đang chơi PvP (tránh sleep giữa trận)
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
     }
 
     // ==================== CHUYỂN SCENE ====================

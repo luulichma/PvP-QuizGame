@@ -1,0 +1,12 @@
+# ninja log v5
+64	568	7991900537525462	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	8bad142eb5da962b
+569	1686	7991900545587167	F:/TaiLieu_Nam 3 Ky 2/TTCS/PvP-QuizGame/PvP QuizGame/PvP QuizGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/7105j695/obj/arm64-v8a/libswappywrapper.so	bf2b6b90e2342bfe
+55	3960	7991900571264946	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	71b1f20f544f71d1
+21	4164	7991900572887325	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	2cdcf2c797abbe43
+14	4190	7991900572939820	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	83c5c49c61790cf3
+37	4307	7991900574392899	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	35bbbc4c373c0fc9
+8	4565	7991900577294112	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	73e8c713c1f50027
+29	4778	7991900579518696	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	a031493efc8f934b
+1	4813	7991900579826148	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	771ddd1683ecdf9a
+46	4962	7991900581345923	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	880fe5f47430bdc8
+4962	5202	7991900583543883	F:/TaiLieu_Nam 3 Ky 2/TTCS/PvP-QuizGame/PvP QuizGame/PvP QuizGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/7105j695/obj/arm64-v8a/libgame.so	f9f8b01a0afc3873

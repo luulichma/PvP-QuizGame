@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+    <ui:VisualElement name="overlay" class="overlay">
+        <ui:VisualElement name="popup" class="card" style="width: 90%; max-width: 700px; padding: 50px; height: auto; align-self: center;">
+            <ui:Label name="profile-title" text="HO SO CA NHAN" style="font-size: 48px; -unity-font-style: bold; align-self: center; margin-bottom: 40px; color: #461A42;" />
+
+            <!-- AVATAR SELECTION -->
+            <ui:Label name="profile-avatar-lbl" text="CHON ANH DAI DIEN" style="font-size: 24px; color: #666; margin-bottom: 20px;" />
+            <ui:VisualElement name="avatar-grid" style="flex-direction: row; flex-wrap: wrap; justify-content: center; margin-bottom: 40px;">
+                <!-- Avatars will be injected here or predefined -->
+                <ui:Button name="avatar-0" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-1" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-2" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-3" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-4" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-5" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-6" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+                <ui:Button name="avatar-7" class="avatar-item" style="width: 120px; height: 120px; margin: 10px; border-radius: 60px; background-color: #f0f0f0; border-width: 4px; border-color: transparent;" />
+            </ui:VisualElement>
+
+            <!-- NAME SELECTION -->
+            <ui:Label name="profile-name-lbl" text="TEN HIEN THI" style="font-size: 24px; color: #666; margin-bottom: 10px;" />
+            <ui:TextField name="name-input" style="height: 100px; font-size: 36px; margin-bottom: 50px;" />
+
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                <ui:Button name="save-profile-btn" text="LUU THAY DOI" class="btn btn-primary" style="flex-grow: 1; height: 100px; font-size: 32px; margin-right: 20px;" />
+                <ui:Button name="close-profile-btn" text="HUY" class="btn" style="width: 200px; height: 100px; font-size: 32px; background-color: rgba(0,0,0,0.05); border-width: 0; color: #666;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

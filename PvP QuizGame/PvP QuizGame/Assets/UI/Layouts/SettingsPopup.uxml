@@ -1,27 +1,28 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="overlay" class="overlay">
-        <ui:VisualElement name="popup" class="card" style="width: 85%; max-width: 350px; padding: 30px;">
-            <ui:Label text="CAI DAT" style="font-size: 24px; -unity-font-style: bold; align-self: center; margin-bottom: 30px; color: #4a148c;" />
-            
+        <ui:VisualElement name="popup" class="card" style="width: 90%; max-width: 600px; padding: 50px; height: auto; align-self: center;">
+            <ui:Label name="settings-title" text="CAI DAT" style="font-size: 48px; -unity-font-style: bold; align-self: center; margin-bottom: 40px; color: #461A42;" />
+
             <ui:VisualElement name="settings-list">
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <ui:Label text="Am thanh" style="font-size: 18px; color: #212121;" />
-                    <ui:Toggle name="music-toggle" value="true" />
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <ui:Label name="music-label" text="Am thanh" style="font-size: 36px; color: #212121;" />
+                    <ui:Toggle name="music-toggle" value="true" style="scale: 1.5;" />
                 </ui:VisualElement>
-                
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <ui:Label text="Hieu ung" style="font-size: 18px; color: #212121;" />
-                    <ui:Toggle name="sfx-toggle" value="true" />
+
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <ui:Label name="sfx-label" text="Hieu ung" style="font-size: 36px; color: #212121;" />
+                    <ui:Toggle name="sfx-toggle" value="true" style="scale: 1.5;" />
                 </ui:VisualElement>
-                
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <ui:Label text="Ngon ngu" style="font-size: 18px; color: #212121;" />
-                    <ui:Label text="Tieng Viet" style="color: #00e5ff; -unity-font-style: bold;" />
+
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <ui:Label name="language-label" text="Ngon ngu" style="font-size: 36px; color: #212121;" />
+                    <ui:DropdownField name="language-dropdown" style="width: 250px; font-size: 28px;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:Button name="close-btn" text="DONG" class="btn" style="margin-top: 30px; width: 100%; background-color: #ff5252;" />
+            <ui:Button name="logout-btn" text="DANG XUAT" class="btn" style="margin-top: 40px; width: 100%; height: 70px; font-size: 28px; background-color: rgba(0,0,0,0.2); border-width: 0; color: #E21B3C;" />
+            <ui:Button name="close-btn" text="DONG" class="btn btn-danger" style="margin-top: 20px; width: 100%; height: 80px; font-size: 36px;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

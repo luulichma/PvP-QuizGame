@@ -264,7 +264,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f96794a2a38e2749b70c09506f2b0c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiDocument: {fileID: 0}
+  uiDocument: {fileID: 1680522305}
 --- !u!1 &345312726
 GameObject:
   m_ObjectHideFlags: 0
@@ -524,7 +524,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 1680522305}
-  resultPopupTemplate: {fileID: 0}
+  resultPopupTemplate: {fileID: 9197481963319205126, guid: 0559d91921f5dac4f839fbd2afb0b46d, type: 3}
+  exitPopupTemplate: {fileID: 9197481963319205126, guid: e997ab7e3fb3d7f4c9449ee1aee5f6fb, type: 3}
 --- !u!114 &1680522305
 MonoBehaviour:
   m_ObjectHideFlags: 0

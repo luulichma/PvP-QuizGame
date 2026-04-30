@@ -1,0 +1,110 @@
+{
+  "items": [
+    { "key": "menu_find_match", "value": "TÌM TRẬN" },
+    { "key": "menu_practice", "value": "ĐẤU VỚI MÁY" },
+    { "key": "menu_settings", "value": "CÀI ĐẶT" },
+    { "key": "menu_cancel", "value": "HỦY" },
+    { "key": "menu_searching", "value": "ĐANG TÌM ĐỐI THỦ..." },
+    { "key": "menu_title", "value": "PVP QUIZ GAME" },
+    { "key": "menu_leaderboard", "value": "BẢNG XẾP HẠNG" },
+
+    { "key": "game_score_me", "value": "TÔI" },
+    { "key": "game_score_opp", "value": "ĐỐI THỦ" },
+    { "key": "game_win", "value": "THẮNG!" },
+    { "key": "game_lose", "value": "THUA!" },
+    { "key": "game_draw", "value": "HÒA!" },
+    { "key": "game_play_again", "value": "CHƠI LẠI" },
+    { "key": "game_back_home", "value": "VỀ SẢNH" },
+    { "key": "game_question_counter", "value": "CÂU {0} / {1}" },
+    { "key": "game_loading_question", "value": "Câu hỏi đang được tải..." },
+    { "key": "game_your_score", "value": "Điểm của bạn" },
+    { "key": "game_opp_score", "value": "Điểm đối thủ" },
+    { "key": "game_reward", "value": "Tiền thưởng" },
+
+    { "key": "init_loading", "value": "ĐANG TẢI DỮ LIỆU..." },
+    { "key": "init_loading_home", "value": "Đang tải sảnh chờ..." },
+    { "key": "init_connecting", "value": "Đang kết nối máy chủ..." },
+    { "key": "init_signing_in", "value": "Đang đăng nhập..." },
+
+    { "key": "auth_title", "value": "NHẬP TÊN HIỂN THỊ" },
+    { "key": "auth_hint", "value": "Tên này sẽ hiển thị cho đối thủ thấy trong trận đấu." },
+    { "key": "auth_confirm", "value": "XÁC NHẬN" },
+    { "key": "auth_err_short", "value": "Tên phải có ít nhất 2 ký tự." },
+
+    { "key": "match_searching", "value": "ĐANG TÌM ĐỐI THỦ..." },
+    { "key": "match_found", "value": "Đã tìm thấy đối thủ!" },
+    { "key": "match_error_no_connection", "value": "Lỗi kết nối máy chủ" },
+    { "key": "match_opponent_left", "value": "Đối thủ đã rời trận!" },
+
+    { "key": "msg_waiting", "value": "ĐANG ĐỢI..." },
+    { "key": "msg_version", "value": "Phiên bản 1.0.0 (Unity 6)" },
+
+    { "key": "settings_title", "value": "CÀI ĐẶT" },
+    { "key": "settings_music", "value": "Âm thanh" },
+    { "key": "settings_sfx", "value": "Hiệu ứng" },
+    { "key": "settings_language", "value": "Ngôn ngữ" },
+    { "key": "settings_close", "value": "ĐÓNG" },
+    { "key": "settings_lang_vi", "value": "Tiếng Việt" },
+    { "key": "settings_lang_en", "value": "English" },
+
+    { "key": "q_it_001", "value": "CPU là viết tắt của từ gì?" },
+    { "key": "a_it_001_1", "value": "Central Processing Unit" },
+    { "key": "a_it_001_2", "value": "Computer Personal Unit" },
+    { "key": "a_it_001_3", "value": "Central Process Unifier" },
+    { "key": "a_it_001_4", "value": "Computer Power Utility" },
+
+    { "key": "q_it_002", "value": "Ngôn ngữ chính để phát triển game trong Unity là?" },
+    { "key": "a_it_002_1", "value": "C#" },
+    { "key": "a_it_002_2", "value": "Java" },
+    { "key": "a_it_002_3", "value": "Python" },
+    { "key": "a_it_002_4", "value": "Rust" },
+
+    { "key": "q_it_003", "value": "HTML là viết tắt của?" },
+    { "key": "a_it_003_1", "value": "HyperText Markup Language" },
+    { "key": "a_it_003_2", "value": "High Tech Modern Language" },
+    { "key": "a_it_003_3", "value": "Hyperlink Text Module Language" },
+    { "key": "a_it_003_4", "value": "Home Tool Markup Language" },
+
+    { "key": "q_geo_001", "value": "Thủ đô của Nhật Bản là?" },
+    { "key": "a_geo_001_1", "value": "Tokyo" },
+    { "key": "a_geo_001_2", "value": "Osaka" },
+    { "key": "a_geo_001_3", "value": "Kyoto" },
+    { "key": "a_geo_001_4", "value": "Sapporo" },
+
+    { "key": "q_geo_002", "value": "Sông nào dài nhất thế giới?" },
+    { "key": "a_geo_002_1", "value": "Sông Nile" },
+    { "key": "a_geo_002_2", "value": "Sông Amazon" },
+    { "key": "a_geo_002_3", "value": "Sông Mississippi" },
+    { "key": "a_geo_002_4", "value": "Sông Mê Kông" },
+
+    { "key": "q_math_001", "value": "Số π làm tròn 2 chữ số thập phân là?" },
+    { "key": "a_math_001_1", "value": "3.14" },
+    { "key": "a_math_001_2", "value": "3.41" },
+    { "key": "a_math_001_3", "value": "3.12" },
+    { "key": "a_math_001_4", "value": "2.71" },
+
+    { "key": "q_math_002", "value": "Tổng các góc trong tam giác là?" },
+    { "key": "a_math_002_1", "value": "180 độ" },
+    { "key": "a_math_002_2", "value": "90 độ" },
+    { "key": "a_math_002_3", "value": "360 độ" },
+    { "key": "a_math_002_4", "value": "270 độ" },
+
+    { "key": "q_history_001", "value": "Bác Hồ đọc Tuyên ngôn Độc lập năm nào?" },
+    { "key": "a_history_001_1", "value": "1945" },
+    { "key": "a_history_001_2", "value": "1954" },
+    { "key": "a_history_001_3", "value": "1930" },
+    { "key": "a_history_001_4", "value": "1975" },
+
+    { "key": "q_history_002", "value": "Chiến thắng Điện Biên Phủ diễn ra vào năm?" },
+    { "key": "a_history_002_1", "value": "1954" },
+    { "key": "a_history_002_2", "value": "1945" },
+    { "key": "a_history_002_3", "value": "1968" },
+    { "key": "a_history_002_4", "value": "1975" },
+
+    { "key": "q_science_001", "value": "Hành tinh nào gần Mặt Trời nhất?" },
+    { "key": "a_science_001_1", "value": "Sao Thủy" },
+    { "key": "a_science_001_2", "value": "Sao Kim" },
+    { "key": "a_science_001_3", "value": "Trái Đất" },
+    { "key": "a_science_001_4", "value": "Sao Hỏa" }
+  ]
+}

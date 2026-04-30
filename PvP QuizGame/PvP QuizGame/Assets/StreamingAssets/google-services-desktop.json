@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "240383888312",
+    "firebase_url": "https://pvp-quizgame-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "pvp-quizgame",
+    "storage_bucket": "pvp-quizgame.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240383888312:android:da50ed5596867e09ce9d4d",
+        "android_client_info": {
+          "package_name": "com.chien.pvpquiz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTk-9OligMneuT8SjWOwjUbVZ7n2RSJec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

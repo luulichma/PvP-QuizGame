@@ -42,6 +42,13 @@ public class TimerController : MonoBehaviour
     public void StartTimer()
     {
         StopTimer();
+
+        // Lấy thời gian từ FirebaseManager (Remote Config) cho cả Online/Offline
+        if (FirebaseManager.Instance != null)
+        {
+            totalTime = FirebaseManager.Instance.QuestionDuration;
+        }
+        
         RemainingTime = totalTime;
         IsRunning = true;
         _timerCoroutine = StartCoroutine(TimerRoutine());

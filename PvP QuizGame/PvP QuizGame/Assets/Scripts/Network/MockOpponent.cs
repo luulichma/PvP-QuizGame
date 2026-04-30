@@ -36,6 +36,10 @@ public class MockOpponent : MonoBehaviour
     // ==================== INTERNAL ====================
     private void HandleNewQuestion()
     {
+        // Chỉ chạy Bot nếu đang ở chế độ Offline
+        if (FirebaseManager.Instance != null && !FirebaseManager.Instance.isOfflineMode)
+            return;
+
         // Huỷ coroutine cũ nếu đang chạy (câu bị skip)
         if (_thinkRoutine != null)
             StopCoroutine(_thinkRoutine);
@@ -54,15 +58,34 @@ public class MockOpponent : MonoBehaviour
         int answerIndex;
         var currentQ = QuizManager.Instance?.CurrentQuestion;
 
-        if (currentQ != null && Random.value < correctAnswerChance)
+        if (currentQ == null || currentQ.answers == null || currentQ.answers.Length == 0)
+        {
+            // Edge case: không có câu hỏi hợp lệ → random fallback
+            answerIndex = Random.Range(0, 4);
+        }
+        else if (Random.value < correctAnswerChance)
         {
             // Trả lời đúng
             answerIndex = currentQ.correctAnswerIndex;
         }
         else
         {
-            // Random một đáp án sai
-            answerIndex = Random.Range(0, 4);
+            // FIX: Random một đáp án SAI thực sự (loại trừ correctAnswerIndex)
+            int answerCount = currentQ.answers.Length;
+            int correctIdx = currentQ.correctAnswerIndex;
+
+            if (answerCount <= 1)
+            {
+                // Chỉ có 1 đáp án — buộc phải chọn nó
+                answerIndex = 0;
+            }
+            else
+            {
+                // Random trong khoảng [0, answerCount-1] và loại trừ correctIdx
+                int wrongIdx = Random.Range(0, answerCount - 1);
+                if (wrongIdx >= correctIdx) wrongIdx++;
+                answerIndex = wrongIdx;
+            }
         }
 
         Debug.Log($"[MockOpponent] 🤖 Bot chọn đáp án: {answerIndex}");

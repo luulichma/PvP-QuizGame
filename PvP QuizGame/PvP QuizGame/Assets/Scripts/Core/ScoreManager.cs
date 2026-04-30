@@ -1,33 +1,26 @@
 using UnityEngine;
 using System;
 
-/// <summary>
-/// Kết quả cuối trận
-/// </summary>
 public enum WinResult { Player1Wins, Player2Wins, Draw }
 
 /// <summary>
-/// Quản lý điểm số của 2 người chơi trong trận đấu.
-/// Logic: Đúng +10 điểm | Sai +0 điểm.
-/// Attach vào cùng GameObject với GameController.
+/// Quản lý điểm số 2 người chơi.
+///
+/// Online mode: P1 chấm điểm local + push lên Firebase. P2 nhận qua FirebaseMatchProvider.OnOpponentScoreUpdated.
+/// Offline mode: tự chấm cả P1 + P2.
 /// </summary>
 public class ScoreManager : MonoBehaviour
 {
-    // ==================== SINGLETON ====================
     public static ScoreManager Instance { get; private set; }
 
-    // ==================== EVENTS ====================
-    /// <summary>Phát khi điểm thay đổi — tham số: (p1Score, p2Score)</summary>
     public static event Action<int, int> OnScoreChanged;
 
-    // ==================== ĐIỂM SỐ ====================
     public int Player1Score { get; private set; }
     public int Player2Score { get; private set; }
 
     private const int CORRECT_POINTS = 10;
     private const int WRONG_POINTS   = 0;
 
-    // ==================== THƯỞNG ====================
     private const int WIN_XP = 50;
     private const int DRAW_XP = 20;
     private const int LOSE_XP = 10;
@@ -36,18 +29,27 @@ public class ScoreManager : MonoBehaviour
     private const int DRAW_MONEY = 40;
     private const int LOSE_MONEY = 10;
 
-    // ==================== LIFECYCLE ====================
+    public int LastRewardMoney { get; private set; }
+    public int LastRewardExp { get; private set; }
+
+    private WinResult? _forcedWinnerResult = null;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
-    // ==================== API CÔNG KHAI ====================
-    
-    /// <summary>
-    /// Tính toán và trao thưởng cho người chơi dựa trên kết quả trận đấu.
-    /// </summary>
+    private void Start()
+    {
+        FirebaseMatchProvider.OnOpponentScoreUpdated += SetOpponentScore;
+    }
+
+    private void OnDestroy()
+    {
+        FirebaseMatchProvider.OnOpponentScoreUpdated -= SetOpponentScore;
+    }
+
     public void AwardRewards()
     {
         if (PlayerDataManager.Instance == null) return;
@@ -68,31 +70,45 @@ public class ScoreManager : MonoBehaviour
         }
         else
         {
-            expAwarded = LOSE_XP;
-            moneyAwarded = LOSE_MONEY;
+            // Thua ép buộc (đầu hàng) -> 0 điểm thưởng
+            if (_forcedWinnerResult == WinResult.Player2Wins)
+            {
+                expAwarded = 0;
+                moneyAwarded = 0;
+            }
+            else
+            {
+                expAwarded = LOSE_XP;
+                moneyAwarded = LOSE_MONEY;
+            }
         }
+
+        LastRewardExp = expAwarded;
+        LastRewardMoney = moneyAwarded;
 
         PlayerDataManager.Instance.Data.AddExp(expAwarded);
         PlayerDataManager.Instance.Data.AddMoney(moneyAwarded);
         PlayerDataManager.Instance.SaveData();
 
-        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: Nhận {expAwarded} XP và {moneyAwarded}$ tiền thưởng!</color>");
+        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: +{expAwarded} XP và +{moneyAwarded}$ tiền thưởng!</color>");
     }
 
-    /// <summary>Reset điểm về 0 — gọi khi bắt đầu trận mới</summary>
+    public void SetForcedWinner(WinResult result)
+    {
+        _forcedWinnerResult = result;
+    }
+
     public void ResetScores()
     {
         Player1Score = 0;
         Player2Score = 0;
+        _forcedWinnerResult = null;
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }
 
     /// <summary>
-    /// Kiểm tra đáp án của người chơi và cộng điểm nếu đúng.
+    /// Chấm điểm + cộng. Online: với playerId=1, push lên Firebase.
     /// </summary>
-    /// <param name="playerId">1 hoặc 2</param>
-    /// <param name="answerIndex">Chỉ số đáp án người chơi chọn (0-3)</param>
-    /// <returns>true nếu đúng, false nếu sai</returns>
     public bool CheckAnswer(int playerId, int answerIndex)
     {
         var question = QuizManager.Instance?.CurrentQuestion;
@@ -107,32 +123,50 @@ public class ScoreManager : MonoBehaviour
 
         if (points > 0) AddScore(playerId, points);
 
-        Debug.Log($"[ScoreManager] Player{playerId} chọn [{answerIndex}] — " +
-                  $"{(isCorrect ? $"ĐÚNG +{points}đ" : "SAI +0đ")} " +
-                  $"| P1:{Player1Score} P2:{Player2Score}");
+        // Phát âm thanh đúng/sai cho người chơi hiện tại
+        if (playerId == 1 && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(isCorrect ? AudioManager.Instance.correctSound : AudioManager.Instance.wrongSound);
+        }
 
+        Debug.Log($"[ScoreManager] Player{playerId} chọn [{answerIndex}] — {(isCorrect ? $"ĐÚNG +{points}đ" : "SAI")}. P1:{Player1Score} P2:{Player2Score}");
         return isCorrect;
     }
 
-    /// <summary>Cộng điểm trực tiếp (dùng khi nhận điểm từ Firebase)</summary>
+    /// <summary>
+    /// Cập nhật điểm P2 từ Firebase (trong online mode). Không trigger push ngược lại.
+    /// </summary>
     public void SetOpponentScore(int opponentScore)
     {
-        // TODO (Task 2.5): Cập nhật điểm đối thủ từ Firebase
         Player2Score = opponentScore;
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }
 
-    /// <summary>Thêm điểm cho một người chơi</summary>
     public void AddScore(int playerId, int points)
     {
-        if (playerId == 1) Player1Score += points;
-        else if (playerId == 2) Player2Score += points;
+        if (playerId == 1)
+        {
+            Player1Score += points;
+            // Online: push lên Firebase để đối thủ thấy
+            if (FirebaseManager.Instance != null
+                && !FirebaseManager.Instance.isOfflineMode
+                && FirebaseManager.Instance.IsConnected
+                && !string.IsNullOrEmpty(FirebaseManager.Instance.CurrentRoomId))
+            {
+                FirebaseManager.Instance.UpdateMyScore(Player1Score);
+            }
+        }
+        else if (playerId == 2)
+        {
+            Player2Score += points;
+        }
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }
 
-    /// <summary>Xác định người thắng cuối trận</summary>
     public WinResult GetWinner()
     {
+        if (_forcedWinnerResult.HasValue) return _forcedWinnerResult.Value;
+
         if (Player1Score > Player2Score) return WinResult.Player1Wins;
         if (Player2Score > Player1Score) return WinResult.Player2Wins;
         return WinResult.Draw;

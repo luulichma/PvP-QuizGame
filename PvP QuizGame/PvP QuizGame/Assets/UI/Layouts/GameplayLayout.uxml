@@ -3,9 +3,12 @@
     <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; padding: 40px;">
         <!-- HUD -->
         <ui:VisualElement name="hud" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 50px;">
-            <ui:VisualElement name="p1-info" class="card" style="flex-direction: row; align-items: center; padding: 20px 40px; border-radius: 20px;">
-                <ui:Label text="ME" style="color: #444; font-size: 24px; margin-right: 15px;" />
-                <ui:Label name="p1-score" text="0" style="color: #4a148c; font-size: 48px; -unity-font-style: bold;" />
+            <ui:VisualElement name="p1-info" class="card" style="flex-direction: row; align-items: center; padding: 15px 30px; border-radius: 20px;">
+                <ui:VisualElement name="p1-avatar" style="width: 80px; height: 80px; background-color: #ddd; border-radius: 40px; margin-right: 15px;" />
+                <ui:VisualElement>
+                    <ui:Label name="p1-label" text="ME" style="color: #666; font-size: 20px;" />
+                    <ui:Label name="p1-score" text="0" style="color: #461A42; font-size: 44px; -unity-font-style: bold;" />
+                </ui:VisualElement>
             </ui:VisualElement>
             
             <ui:VisualElement name="timer-container" style="align-items: center;">
@@ -15,9 +18,12 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:VisualElement name="p2-info" class="card" style="flex-direction: row; align-items: center; padding: 20px 40px; border-radius: 20px;">
-                <ui:Label name="p2-score" text="0" style="color: #4a148c; font-size: 48px; -unity-font-style: bold;" />
-                <ui:Label text="OPP" style="color: #444; font-size: 24px; margin-left: 15px;" />
+            <ui:VisualElement name="p2-info" class="card" style="flex-direction: row; align-items: center; padding: 15px 30px; border-radius: 20px;">
+                <ui:VisualElement>
+                    <ui:Label name="p2-label" text="OPP" style="color: #666; font-size: 20px; -unity-text-align: upper-right;" />
+                    <ui:Label name="p2-score" text="0" style="color: #461A42; font-size: 44px; -unity-font-style: bold; -unity-text-align: upper-right;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="p2-avatar" style="width: 80px; height: 80px; background-color: #ddd; border-radius: 40px; margin-left: 15px;" />
             </ui:VisualElement>
         </ui:VisualElement>
 
@@ -25,20 +31,19 @@
         <ui:VisualElement name="question-area" style="flex-grow: 1; justify-content: center; align-items: center;">
             <ui:Label name="question-counter" text="CAU 1 / 10" style="color: #ffea00; font-size: 32px; margin-bottom: 20px;" />
             <ui:VisualElement class="card" style="width: 100%; max-width: 900px; min-height: 250px; justify-content: center; align-items: center; padding: 40px;">
-                <ui:Label name="question-text" text="Cau hoi dang duoc tai...?" style="color: #212121; font-size: 48px; -unity-text-align: middle-center; -unity-font-style: bold;" />
+                <ui:Label name="question-text" text="Cau hoi dang duoc tai...?" style="color: #212121; font-size: 36px; -unity-text-align: middle-center; -unity-font-style: bold; white-space: normal;" />
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- ANSWERS GRID -->
-        <ui:VisualElement name="answers-grid" style="margin-top: 50px;">
-            <ui:VisualElement style="flex-direction: row; justify-content: space-around; margin-bottom: 20px;">
-                <ui:Button name="ans-0" text="DA 1" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
-                <ui:Button name="ans-1" text="DA 2" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
-            </ui:VisualElement>
-            <ui:VisualElement style="flex-direction: row; justify-content: space-around;">
-                <ui:Button name="ans-2" text="DA 3" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
-                <ui:Button name="ans-3" text="DA 4" class="btn" style="flex-grow: 1; height: 140px; font-size: 36px;" />
-            </ui:VisualElement>
+        <ui:VisualElement name="answers-grid" style="margin-top: 30px; flex-direction: column; width: 100%; max-width: 900px; align-self: center;">
+            <ui:Button name="ans-0" text="DA 1" class="btn btn-ans-red" style="min-height: 90px; font-size: 26px; margin-bottom: 15px; margin-left: 0; margin-right: 0;" />
+            <ui:Button name="ans-1" text="DA 2" class="btn btn-ans-blue" style="min-height: 90px; font-size: 26px; margin-bottom: 15px; margin-left: 0; margin-right: 0;" />
+            <ui:Button name="ans-2" text="DA 3" class="btn btn-ans-yellow" style="min-height: 90px; font-size: 26px; margin-bottom: 15px; margin-left: 0; margin-right: 0;" />
+            <ui:Button name="ans-3" text="DA 4" class="btn btn-ans-green" style="min-height: 90px; font-size: 26px; margin-left: 0; margin-right: 0;" />
         </ui:VisualElement>
+
+        <!-- EXIT BUTTON -->
+        <ui:Button name="exit-btn" text="✖" style="position: absolute; top: -20px; left: -20px; width: 80px; height: 80px; padding: 0; margin: 0; background-color: rgba(255, 255, 255, 0.2); border-radius: 40px; border-width: 0; font-size: 40px; color: white; -unity-font-style: bold; justify-content: center; align-items: center;" />
     </ui:VisualElement>
 </ui:UXML>

@@ -1,0 +1,12 @@
+# ninja log v5
+84	398	7991900859385322	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	b1d3289d17c8e13c
+400	914	7991900863614819	F:/TaiLieu_Nam 3 Ky 2/TTCS/PvP-QuizGame/PvP QuizGame/PvP QuizGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/7105j695/obj/armeabi-v7a/libswappywrapper.so	3924b4440ef1142e
+56	1806	7991900873440290	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	89fa7f0f01069025
+39	1817	7991900873580610	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	83d979a53c811087
+31	1910	7991900874510029	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	cbb4d3922781b2a6
+74	1946	7991900874882415	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	d8414d342e829c93
+9	1998	7991900875422925	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	8a8863fb159da7c0
+65	2018	7991900875599111	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	88020c07b9a7e3e8
+47	2105	7991900876498164	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	809e934cdd9c9391
+1	2232	7991900877736446	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	3ba61b7acea8a75a
+2232	2317	7991900878632245	F:/TaiLieu_Nam 3 Ky 2/TTCS/PvP-QuizGame/PvP QuizGame/PvP QuizGame/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/7105j695/obj/armeabi-v7a/libgame.so	f99808749a42f18

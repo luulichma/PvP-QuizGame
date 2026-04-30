@@ -1,0 +1,110 @@
+{
+  "items": [
+    { "key": "menu_find_match", "value": "FIND MATCH" },
+    { "key": "menu_practice", "value": "PRACTICE" },
+    { "key": "menu_settings", "value": "SETTINGS" },
+    { "key": "menu_cancel", "value": "CANCEL" },
+    { "key": "menu_searching", "value": "SEARCHING OPPONENT..." },
+    { "key": "menu_title", "value": "PVP QUIZ GAME" },
+    { "key": "menu_leaderboard", "value": "LEADERBOARD" },
+
+    { "key": "game_score_me", "value": "ME" },
+    { "key": "game_score_opp", "value": "OPP" },
+    { "key": "game_win", "value": "WIN!" },
+    { "key": "game_lose", "value": "LOSE!" },
+    { "key": "game_draw", "value": "DRAW!" },
+    { "key": "game_play_again", "value": "PLAY AGAIN" },
+    { "key": "game_back_home", "value": "HOME" },
+    { "key": "game_question_counter", "value": "Q {0} / {1}" },
+    { "key": "game_loading_question", "value": "Loading question..." },
+    { "key": "game_your_score", "value": "Your Score" },
+    { "key": "game_opp_score", "value": "Opponent Score" },
+    { "key": "game_reward", "value": "Reward" },
+
+    { "key": "init_loading", "value": "LOADING DATA..." },
+    { "key": "init_loading_home", "value": "Loading lobby..." },
+    { "key": "init_connecting", "value": "Connecting to server..." },
+    { "key": "init_signing_in", "value": "Signing in..." },
+
+    { "key": "auth_title", "value": "ENTER DISPLAY NAME" },
+    { "key": "auth_hint", "value": "This name will be visible to your opponent." },
+    { "key": "auth_confirm", "value": "CONFIRM" },
+    { "key": "auth_err_short", "value": "Name must be at least 2 characters." },
+
+    { "key": "match_searching", "value": "SEARCHING OPPONENT..." },
+    { "key": "match_found", "value": "Opponent found!" },
+    { "key": "match_error_no_connection", "value": "Server connection error" },
+    { "key": "match_opponent_left", "value": "Opponent left the match!" },
+
+    { "key": "msg_waiting", "value": "WAITING..." },
+    { "key": "msg_version", "value": "Version 1.0.0 (Unity 6)" },
+
+    { "key": "settings_title", "value": "SETTINGS" },
+    { "key": "settings_music", "value": "Music" },
+    { "key": "settings_sfx", "value": "SFX" },
+    { "key": "settings_language", "value": "Language" },
+    { "key": "settings_close", "value": "CLOSE" },
+    { "key": "settings_lang_vi", "value": "Tiếng Việt" },
+    { "key": "settings_lang_en", "value": "English" },
+
+    { "key": "q_it_001", "value": "What does CPU stand for?" },
+    { "key": "a_it_001_1", "value": "Central Processing Unit" },
+    { "key": "a_it_001_2", "value": "Computer Personal Unit" },
+    { "key": "a_it_001_3", "value": "Central Process Unifier" },
+    { "key": "a_it_001_4", "value": "Computer Power Utility" },
+
+    { "key": "q_it_002", "value": "Which is the main scripting language in Unity?" },
+    { "key": "a_it_002_1", "value": "C#" },
+    { "key": "a_it_002_2", "value": "Java" },
+    { "key": "a_it_002_3", "value": "Python" },
+    { "key": "a_it_002_4", "value": "Rust" },
+
+    { "key": "q_it_003", "value": "HTML stands for?" },
+    { "key": "a_it_003_1", "value": "HyperText Markup Language" },
+    { "key": "a_it_003_2", "value": "High Tech Modern Language" },
+    { "key": "a_it_003_3", "value": "Hyperlink Text Module Language" },
+    { "key": "a_it_003_4", "value": "Home Tool Markup Language" },
+
+    { "key": "q_geo_001", "value": "What is the capital of Japan?" },
+    { "key": "a_geo_001_1", "value": "Tokyo" },
+    { "key": "a_geo_001_2", "value": "Osaka" },
+    { "key": "a_geo_001_3", "value": "Kyoto" },
+    { "key": "a_geo_001_4", "value": "Sapporo" },
+
+    { "key": "q_geo_002", "value": "What is the longest river in the world?" },
+    { "key": "a_geo_002_1", "value": "Nile River" },
+    { "key": "a_geo_002_2", "value": "Amazon River" },
+    { "key": "a_geo_002_3", "value": "Mississippi River" },
+    { "key": "a_geo_002_4", "value": "Mekong River" },
+
+    { "key": "q_math_001", "value": "Pi rounded to 2 decimal places equals?" },
+    { "key": "a_math_001_1", "value": "3.14" },
+    { "key": "a_math_001_2", "value": "3.41" },
+    { "key": "a_math_001_3", "value": "3.12" },
+    { "key": "a_math_001_4", "value": "2.71" },
+
+    { "key": "q_math_002", "value": "Sum of interior angles of a triangle is?" },
+    { "key": "a_math_002_1", "value": "180 degrees" },
+    { "key": "a_math_002_2", "value": "90 degrees" },
+    { "key": "a_math_002_3", "value": "360 degrees" },
+    { "key": "a_math_002_4", "value": "270 degrees" },
+
+    { "key": "q_history_001", "value": "When did Vietnam declare independence?" },
+    { "key": "a_history_001_1", "value": "1945" },
+    { "key": "a_history_001_2", "value": "1954" },
+    { "key": "a_history_001_3", "value": "1930" },
+    { "key": "a_history_001_4", "value": "1975" },
+
+    { "key": "q_history_002", "value": "When did the Battle of Dien Bien Phu take place?" },
+    { "key": "a_history_002_1", "value": "1954" },
+    { "key": "a_history_002_2", "value": "1945" },
+    { "key": "a_history_002_3", "value": "1968" },
+    { "key": "a_history_002_4", "value": "1975" },
+
+    { "key": "q_science_001", "value": "Which planet is closest to the Sun?" },
+    { "key": "a_science_001_1", "value": "Mercury" },
+    { "key": "a_science_001_2", "value": "Venus" },
+    { "key": "a_science_001_3", "value": "Earth" },
+    { "key": "a_science_001_4", "value": "Mars" }
+  ]
+}

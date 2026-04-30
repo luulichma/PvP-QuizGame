@@ -7,6 +7,7 @@ public class PlayerData : ScriptableObject
     public int level = 1;
     public int currentExp = 0;
     public int money = 0;
+    public int avatarIndex = 0; // Chỉ số ảnh đại diện (0-9)
 
     /// <summary>
     /// Tính toán lượng Exp cần để lên cấp tiếp theo
@@ -48,5 +49,6 @@ public class PlayerData : ScriptableObject
         level = 1;
         currentExp = 0;
         money = 0;
+        avatarIndex = 0;
     }
 }

@@ -1,0 +1,20 @@
+# Tổng kết: Nâng cấp Settings Popup & Đa ngôn ngữ
+
+Tôi đã hoàn thành việc triển khai Task 2 theo đúng kế hoạch.
+
+## Các thay đổi chính
+
+### 1. Giao diện Settings Popup (`SettingsPopup.uxml`)
+- **Phóng to:** Kích thước popup được tăng lên (max-width 600px) để hiển thị rõ ràng hơn trên các thiết bị.
+- **Dropdown:** Thay thế nút đổi ngôn ngữ thủ công bằng `DropdownField` chuyên nghiệp.
+- **Font chữ:** Tăng font chữ tiêu đề (48px), nội dung (36px) và nút bấm để cải thiện UX.
+
+### 2. Logic Localization (`LocalizationManager.cs`)
+- **SwitchLanguage:** Thêm hàm mới cho phép đổi ngôn ngữ và tự động đọc lại file CSV cache từ Google Sheet. Điều này đảm bảo khi bạn đổi sang Tiếng Anh hay Nhật, game sẽ bốc đúng dữ liệu mới nhất đã tải về máy.
+
+### 3. Điều khiển sảnh chính (`MainMenuUIController_UXML.cs`)
+- **Khởi tạo Dropdown:** Nạp 8 ngôn ngữ (Việt, Anh, Pháp, Ý, Đức, Tây Ban Nha, Nhật, Hàn) vào danh sách chọn.
+- **Xử lý sự kiện:** Khi người chơi chọn một mục trong danh sách, hệ thống sẽ tự động ánh xạ tên hiển thị sang mã ngôn ngữ và cập nhật toàn bộ game ngay lập tức.
+
+## Kết quả
+Bây giờ khi bạn nhấn vào nút Setting ở Sảnh chờ, bạn sẽ thấy một bảng cài đặt to rõ, cho phép chọn thoải mái giữa 8 ngôn ngữ khác nhau.

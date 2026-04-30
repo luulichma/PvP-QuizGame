@@ -1,27 +1,27 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="overlay" class="overlay">
-        <ui:VisualElement name="popup" class="card" style="width: 90%; max-width: 400px; padding: 40px; align-items: center;">
+        <ui:VisualElement name="popup" class="card" style="width: 90%; max-width: 700px; padding: 50px; align-items: center;">
             
-            <ui:Label name="result-title" text="THANG!" style="font-size: 48px; -unity-font-style: bold; color: #00e676; margin-bottom: 20px; -unity-text-outline-width: 1px; -unity-text-outline-color: black;" />
+            <ui:Label name="result-title" text="THANG!" style="font-size: 80px; -unity-font-style: bold; color: #00e676; margin-bottom: 30px; -unity-text-outline-width: 2px; -unity-text-outline-color: black;" />
             
-            <ui:VisualElement name="stats-box" style="width: 100%; border-top-width: 1px; border-bottom-width: 1px; border-color: #eee; padding: 20px 0; margin-bottom: 30px;">
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 10px;">
-                    <ui:Label text="Diem cua ban" style="color: #666;" />
-                    <ui:Label name="p1-score-final" text="1,200" style="color: #4a148c; -unity-font-style: bold;" />
+            <ui:VisualElement name="stats-box" style="width: 100%; border-top-width: 2px; border-bottom-width: 2px; border-color: #eee; padding: 30px 0; margin-bottom: 40px;">
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 15px;">
+                    <ui:Label text="Điểm của bạn" style="color: #666; font-size: 36px;" />
+                    <ui:Label name="p1-score-final" text="1,200" style="color: #461A42; font-size: 40px; -unity-font-style: bold;" />
                 </ui:VisualElement>
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 10px;">
-                    <ui:Label text="Diem doi thu" style="color: #666;" />
-                    <ui:Label name="p2-score-final" text="950" style="color: #ff5252; -unity-font-style: bold;" />
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 15px;">
+                    <ui:Label text="Điểm đối thủ" style="color: #666; font-size: 36px;" />
+                    <ui:Label name="p2-score-final" text="950" style="color: #ff5252; font-size: 40px; -unity-font-style: bold;" />
                 </ui:VisualElement>
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-top: 10px;">
-                    <ui:Label text="Tien thuong" style="color: #666;" />
-                    <ui:Label name="reward-amount" text="+$250" style="color: #ffea00; -unity-font-style: bold; -unity-text-outline-width: 0.5px; -unity-text-outline-color: #444;" />
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-top: 15px;">
+                    <ui:Label text="Tiền thưởng" style="color: #666; font-size: 36px;" />
+                    <ui:Label name="reward-amount" text="+$250" style="color: #ffea00; font-size: 48px; -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: #444;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:Button name="play-again-btn" text="CHOI LAI" class="btn" style="width: 100%; background-color: #00e676; height: 60px;" />
-            <ui:Button name="back-home-btn" text="VE SANH" class="btn" style="width: 100%; background-color: #00e5ff; margin-top: 10px;" />
+            <ui:Button name="play-again-btn" text="CHOI LAI" class="btn btn-primary" style="width: 100%; height: 90px; font-size: 40px; margin-bottom: 25px;" />
+            <ui:Button name="back-home-btn" text="VE SANH" class="btn btn-secondary" style="width: 100%; height: 90px; font-size: 40px;" />
 
         </ui:VisualElement>
     </ui:VisualElement>
