@@ -44,6 +44,6 @@
         </ui:VisualElement>
 
         <!-- EXIT BUTTON -->
-        <ui:Button name="exit-btn" text="✖" style="position: absolute; top: -20px; left: -20px; width: 80px; height: 80px; padding: 0; margin: 0; background-color: rgba(255, 255, 255, 0.2); border-radius: 40px; border-width: 0; font-size: 40px; color: white; -unity-font-style: bold; justify-content: center; align-items: center;" />
+        <ui:Button name="exit-btn" text="✖" style="position: absolute; top: 40px; left: 40px; width: 80px; height: 80px; padding: 0; margin: 0; background-color: rgba(0, 0, 0, 0.4); border-radius: 40px; border-width: 0; font-size: 40px; color: white; -unity-font-style: bold; justify-content: center; align-items: center;" />
     </ui:VisualElement>
 </ui:UXML>

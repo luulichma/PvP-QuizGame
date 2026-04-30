@@ -46,6 +46,7 @@
     { "key": "settings_close", "value": "CLOSE" },
     { "key": "settings_lang_vi", "value": "Tiếng Việt" },
     { "key": "settings_lang_en", "value": "English" },
+    { "key": "settings_logout", "value": "LOGOUT" },
 
     { "key": "q_it_001", "value": "What does CPU stand for?" },
     { "key": "a_it_001_1", "value": "Central Processing Unit" },
