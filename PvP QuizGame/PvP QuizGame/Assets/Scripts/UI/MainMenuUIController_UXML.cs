@@ -273,23 +273,16 @@ public class MainMenuUIController_UXML : MonoBehaviour
         if (langDropdown != null)
         {
             langDropdown.choices = new System.Collections.Generic.List<string> {
-                "Tiếng Việt",   // vi.json  ✓
-                "English",      // en.json  ✓
-                // "Français",  // fr.json  ← chưa có file → tạm tắt
-                // "Italiano",  // it.json  ← chưa có file → tạm tắt
-                // "Deutsch",   // de.json  ← chưa có file → tạm tắt
-                // "Español",   // es.json  ← chưa có file → tạm tắt
-                // "日本語",    // ja.json  ← chưa có file → tạm tắt
-                // "한국어",   // ko.json  ← chưa có file → tạm tắt
+                "Tiếng Việt", "English", "Français", "Italiano", "Deutsch", "Español", "日本語", "한국어"
             };
 
-            // Set giá trị hiện tại — chỉ tìm trong danh sách đã lọc
+            // Set giá trị hiện tại
             string current = LocalizationManager.Instance.CurrentLanguage;
-            int idx = GetSupportedLanguageIndex(current);
+            int idx = GetLanguageIndex(current);
             langDropdown.index = idx;
 
             langDropdown.RegisterValueChangedCallback(evt => {
-                string code = GetSupportedLanguageCode(evt.newValue);
+                string code = GetLanguageCode(evt.newValue);
                 LocalizationManager.Instance.SwitchLanguage(code);
                 Debug.Log($"[MainMenu] Đã chọn ngôn ngữ: {evt.newValue} ({code})");
             });
@@ -531,26 +524,9 @@ public class MainMenuUIController_UXML : MonoBehaviour
         };
     }
 
-    // ======== Helpers cho dropdown chỉ hiển thị ngôn ngữ có file JSON ========
-    /// <summary>Ánh xạ mã ngôn ngữ → index trong dropdown rút gọn (vi=0, en=1)</summary>
-    private int GetSupportedLanguageIndex(string code)
-    {
-        return code switch {
-            "vi" => 0,
-            "en" => 1,
-            _    => 1 // mặc định English nếu đang dùng ngôn ngữ chưa có file
-        };
-    }
+    // Note: Cấu trúc SwitchLanguage mới đã hỗ trợ tải trực tiếp từ Sheet 
+    // nên không cần lọc danh sách ngôn ngữ ở đây nữa.
 
-    /// <summary>Ánh xạ tên hiển thị → mã ngôn ngữ trong dropdown rút gọn</summary>
-    private string GetSupportedLanguageCode(string name)
-    {
-        return name switch {
-            "Tiếng Việt" => "vi",
-            "English"    => "en",
-            _            => "en"
-        };
-    }
 
     private void RefreshSettingsPopupLocalization()
     {

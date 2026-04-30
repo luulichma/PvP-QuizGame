@@ -147,10 +147,6 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Chuyển đổi ngôn ngữ runtime. Ưu tiên nạp lại từ cache CSV để đảm bảo dữ liệu mới nhất.
-    /// BUG FIX: Hủy coroutine cũ trước khi bắt đầu mới; rollback về ngôn ngữ cũ nếu tải thất bại.
-    /// </summary>
     public void SwitchLanguage(string langCode)
     {
         // Hủy coroutine đang chạy (nếu có) để tránh race condition
@@ -160,12 +156,14 @@ public class LocalizationManager : MonoBehaviour
             _switchCoroutine = null;
         }
 
-        _previousLanguage = _currentLanguage; // Lưu ngôn ngữ cũ để rollback nếu cần
-        _currentLanguage = langCode;
-        PlayerPrefs.SetString("Language", langCode);
-        PlayerPrefs.Save();
+        _switchCoroutine = StartCoroutine(SwitchLanguageCoroutine(langCode));
+    }
 
-        // Thử parse lại từ cache CSV đang có sẵn (để lấy dữ liệu từ Google Sheet)
+    private IEnumerator SwitchLanguageCoroutine(string langCode)
+    {
+        _previousLanguage = _currentLanguage; // Lưu ngôn ngữ cũ để rollback nếu cần
+        
+        // 1. Thử parse từ cache CSV đang có sẵn (nhanh nhất)
         string cachePath = Path.Combine(Application.persistentDataPath, CACHE_FILE_NAME);
         if (File.Exists(cachePath))
         {
@@ -173,15 +171,36 @@ public class LocalizationManager : MonoBehaviour
             if (ParseCSV(csv, langCode))
             {
                 Debug.Log($"[Localization] Đã chuyển ngôn ngữ: {langCode} (từ cache CSV)");
+                _currentLanguage = langCode;
+                PlayerPrefs.SetString("Language", langCode);
+                PlayerPrefs.Save();
                 _isReady = true;
                 OnLanguageChanged?.Invoke();
-                return;
+                _switchCoroutine = null;
+                yield break;
             }
         }
 
-        // Nếu không có cache hoặc parse lỗi, fallback về JSON local
-        // Dùng coroutine và truyền _previousLanguage để rollback nếu file không tồn tại
-        _switchCoroutine = StartCoroutine(LoadLocalLanguageCoroutine(langCode, _previousLanguage));
+        // 2. Nếu cache không có ngôn ngữ này, thử tải lại từ Google Sheet (nếu có mạng)
+        if (!string.IsNullOrEmpty(sheetUrl))
+        {
+            Debug.Log($"[Localization] Ngôn ngữ '{langCode}' không có trong cache, đang tải lại từ Sheet...");
+            yield return StartCoroutine(DownloadFromSheet(langCode));
+            
+            // Nếu download thành công và đã set _currentLanguage mới
+            if (_isReady && _currentLanguage == langCode)
+            {
+                PlayerPrefs.SetString("Language", langCode);
+                PlayerPrefs.Save();
+                _switchCoroutine = null;
+                yield break;
+            }
+        }
+
+        // 3. Nếu Sheet thất bại (offline), fallback về JSON local
+        Debug.LogWarning($"[Localization] Không tải được '{langCode}' từ Cache/Sheet, fallback về JSON local.");
+        yield return StartCoroutine(LoadLocalLanguageCoroutine(langCode, _previousLanguage));
+        _switchCoroutine = null;
     }
 
     /// <summary>
