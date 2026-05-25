@@ -50,8 +50,9 @@ public class MockOpponent : MonoBehaviour
     private IEnumerator ThinkAndAnswer()
     {
         float thinkTime = Random.Range(minThinkTime, maxThinkTime);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         Debug.Log($"[MockOpponent] 🤖 Bot đang suy nghĩ... ({thinkTime:F1}s)");
-
+#endif
         yield return new WaitForSeconds(thinkTime);
 
         // Quyết định đáp án: có xác suất trả lời đúng
@@ -88,7 +89,9 @@ public class MockOpponent : MonoBehaviour
             }
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         Debug.Log($"[MockOpponent] 🤖 Bot chọn đáp án: {answerIndex}");
+#endif
         LocalMatchProvider.Instance?.SubmitAnswerP2(answerIndex);
     }
 }

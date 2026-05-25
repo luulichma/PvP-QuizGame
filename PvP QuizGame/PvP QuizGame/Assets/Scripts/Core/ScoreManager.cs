@@ -14,6 +14,9 @@ public class ScoreManager : MonoBehaviour
     public static ScoreManager Instance { get; private set; }
 
     public static event Action<int, int> OnScoreChanged;
+    // UX-01: Streak tracking
+    public static event Action<int> OnStreakChanged; // streak count
+    public int CurrentStreak { get; private set; }
 
     public int Player1Score { get; private set; }
     public int Player2Score { get; private set; }
@@ -103,6 +106,7 @@ public class ScoreManager : MonoBehaviour
         Player1Score = 0;
         Player2Score = 0;
         _forcedWinnerResult = null;
+        CurrentStreak = 0;
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }
 
@@ -122,6 +126,21 @@ public class ScoreManager : MonoBehaviour
         int points = isCorrect ? CORRECT_POINTS : WRONG_POINTS;
 
         if (points > 0) AddScore(playerId, points);
+
+        // UX-01: Cập nhật streak
+        if (playerId == 1)
+        {
+            if (isCorrect)
+            {
+                CurrentStreak++;
+                OnStreakChanged?.Invoke(CurrentStreak);
+            }
+            else
+            {
+                CurrentStreak = 0;
+                OnStreakChanged?.Invoke(0);
+            }
+        }
 
         // Phát âm thanh đúng/sai cho người chơi hiện tại
         if (playerId == 1 && AudioManager.Instance != null)

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebase;
@@ -34,10 +35,12 @@ public class FirebaseManager : MonoBehaviour
     public static event Action OnMatchFound;       // Khi đã ghép cặp xong, có roomId
     public static event Action<string> OnMatchmakingError;
     public static event Action OnOpponentDisconnected;
+    public static event Action OnMatchmakingTimeout; // UX-06: Hết thời gian tìm trận
 
     // ==================== STATE ====================
     public bool IsConnected { get; private set; } = false;
     public bool IsAuthenticated => _auth?.CurrentUser != null;
+    public bool IsAnonymous => _auth?.CurrentUser != null && _auth.CurrentUser.IsAnonymous;
     public string LocalUserId => _auth?.CurrentUser?.UserId;
     public string LocalDisplayName { get; private set; } = "Player";
     public string CurrentRoomId { get; private set; }
@@ -182,10 +185,17 @@ public class FirebaseManager : MonoBehaviour
             var authResult = await _auth.CreateUserWithEmailAndPasswordAsync(email, password);
             return await HandleAuthResult(authResult.User, displayName);
         }
+        catch (FirebaseException ex)
+        {
+            string errorMsg = GetFriendlyAuthError(ex);
+            Debug.LogError($"[FirebaseManager] SignUp Failed: {errorMsg}");
+            OnAuthError?.Invoke(errorMsg);
+            return false;
+        }
         catch (Exception ex)
         {
-            Debug.LogError($"[FirebaseManager] SignUp Failed: {ex.Message}");
-            OnAuthError?.Invoke(ex.Message);
+            Debug.LogError($"[FirebaseManager] SignUp Failed (Unexpected): {ex.Message}");
+            OnAuthError?.Invoke("Lỗi không xác định.");
             return false;
         }
     }
@@ -202,12 +212,64 @@ public class FirebaseManager : MonoBehaviour
             var authResult = await _auth.SignInWithEmailAndPasswordAsync(email, password);
             return await HandleAuthResult(authResult.User);
         }
-        catch (Exception ex)
+        catch (FirebaseException ex)
         {
-            Debug.LogError($"[FirebaseManager] SignIn Failed: {ex.Message}");
-            OnAuthError?.Invoke(ex.Message);
+            string errorMsg = GetFriendlyAuthError(ex);
+            Debug.LogError($"[FirebaseManager] SignIn Failed: {errorMsg}");
+            OnAuthError?.Invoke(errorMsg);
             return false;
         }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[FirebaseManager] SignIn Failed (Unexpected): {ex.Message}");
+            OnAuthError?.Invoke("Lỗi không xác định.");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gửi email đặt lại mật khẩu.
+    /// </summary>
+    public async Task<bool> SendPasswordResetEmail(string email)
+    {
+        if (!IsConnected || _auth == null) { OnAuthError?.Invoke("Firebase chưa sẵn sàng."); return false; }
+
+        try
+        {
+            await _auth.SendPasswordResetEmailAsync(email);
+            return true;
+        }
+        catch (FirebaseException ex)
+        {
+            string errorMsg = GetFriendlyAuthError(ex);
+            Debug.LogError($"[FirebaseManager] Password Reset Failed: {errorMsg}");
+            OnAuthError?.Invoke(errorMsg);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[FirebaseManager] Password Reset Failed (Unexpected): {ex.Message}");
+            OnAuthError?.Invoke("Lỗi không xác định.");
+            return false;
+        }
+    }
+
+    private string GetFriendlyAuthError(FirebaseException ex)
+    {
+        AuthError errorCode = (AuthError)ex.ErrorCode;
+        string message = errorCode switch
+        {
+            AuthError.InvalidEmail => "Email không hợp lệ. Vui lòng kiểm tra lại định dạng.",
+            AuthError.WrongPassword => "Mật khẩu không chính xác.",
+            AuthError.UserNotFound => "Tài khoản không tồn tại.",
+            AuthError.EmailAlreadyInUse => "Email này đã được sử dụng cho một tài khoản khác.",
+            AuthError.WeakPassword => "Mật khẩu quá yếu. Vui lòng nhập ít nhất 6 ký tự.",
+            AuthError.AccountExistsWithDifferentCredentials => "Email này đã liên kết với một phương thức đăng nhập khác.",
+            AuthError.NetworkRequestFailed => "Lỗi kết nối mạng. Vui lòng thử lại.",
+            AuthError.TooManyRequests => "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+            _ => $"Lỗi hệ thống ({errorCode}): {ex.Message}"
+        };
+        return message;
     }
 
     private async Task<bool> HandleAuthResult(FirebaseUser user, string desiredDisplayName = null)
@@ -217,13 +279,14 @@ public class FirebaseManager : MonoBehaviour
 
         // Load profile từ cloud
         var snapshot = await _root.Child("users").Child(uid).GetValueAsync();
+        var pd = PlayerDataManager.Instance?.Data;
+
         if (snapshot.Exists)
         {
             if (snapshot.Child("displayName").Value != null)
                 LocalDisplayName = snapshot.Child("displayName").Value.ToString();
 
             // Sync về PlayerData local
-            var pd = PlayerDataManager.Instance?.Data;
             if (pd != null)
             {
                 pd.playerName = LocalDisplayName;
@@ -231,7 +294,6 @@ public class FirebaseManager : MonoBehaviour
                 if (snapshot.Child("currentExp").Value != null) pd.currentExp = int.Parse(snapshot.Child("currentExp").Value.ToString());
                 if (snapshot.Child("money").Value != null) pd.money = int.Parse(snapshot.Child("money").Value.ToString());
                 if (snapshot.Child("avatarIndex").Value != null) pd.avatarIndex = int.Parse(snapshot.Child("avatarIndex").Value.ToString());
-                PlayerDataManager.Instance.SaveData();
             }
 
             Debug.Log($"[FirebaseManager] Loaded cloud profile: {LocalDisplayName}");
@@ -241,10 +303,17 @@ public class FirebaseManager : MonoBehaviour
             // Profile mới
             LocalDisplayName = !string.IsNullOrEmpty(desiredDisplayName)
                 ? desiredDisplayName
-                : (PlayerDataManager.Instance?.Data?.playerName ?? "Player");
+                : (pd?.playerName ?? "Player");
+            
+            // Đảm bảo local data có tên mới trước khi đẩy lên cloud
+            if (pd != null) pd.playerName = LocalDisplayName;
+
             await SaveProfileToCloud();
             Debug.Log($"[FirebaseManager] Created new cloud profile: {LocalDisplayName}");
         }
+
+        // Luôn lưu lại dữ liệu local để đảm bảo đồng bộ PlayerPrefs (PlayerName)
+        PlayerDataManager.Instance?.SaveData();
 
         // Cập nhật lastSeen
         await _root.Child("users").Child(uid).Child("lastSeen").SetValueAsync(ServerValue.Timestamp);
@@ -264,7 +333,8 @@ public class FirebaseManager : MonoBehaviour
             Debug.Log("[FirebaseManager] Đã đăng xuất khỏi Firebase.");
         }
         
-        IsConnected = false; // Force re-init if needed
+        // BUG-05 FIX: Không set IsConnected = false — Firebase SDK vẫn connected
+        // IsConnected đại diện cho trạng thái kết nối SDK, không phải authentication
         LocalDisplayName = "Player";
         CurrentRoomId = null;
         OpponentId = null;
@@ -338,12 +408,6 @@ public class FirebaseManager : MonoBehaviour
     {
         Debug.Log("[FirebaseManager] Đang đợi đối thủ...");
 
-        string queuePath = GetCurrentQueuePath();
-
-        // OnDisconnect: nếu rớt mạng, tự xoá khỏi queue
-        _matchmakingRef = _root.Child(queuePath).Child(LocalUserId);
-        _matchmakingRef.OnDisconnect().RemoveValue();
-
         // Listen `users/{myUid}/currentRoom` — người ghép xong sẽ ghi vào đây
         _matchmakingHandler = (sender, args) => {
             if (args.DatabaseError != null) return;
@@ -374,19 +438,16 @@ public class FirebaseManager : MonoBehaviour
     private string _pendingOpponentName;
     private int _pendingOpponentAvatar;
 
+    // UX-06: Matchmaking timeout
+    private Coroutine _matchmakingTimeoutCoroutine;
+    private const float MATCHMAKING_TIMEOUT = 45f; // 45 giây timeout
+
     private void CreateRoomWithFoundOpponent()
     {
-        // Vì transaction đã xoá đối thủ khỏi queue mà không lưu lại uid,
-        // ta dùng cách thay thế: thay vì chạy transaction trên cả queue, ta:
-        //  1. Đọc queue 1 lần
-        //  2. Nếu có người → chạy transaction CHỈ XOÁ person đó (atomic check-and-remove)
-        //  3. Nếu thành công → biết uid, tạo room
-        // Hàm này chỉ gọi khi đã có _pendingOpponentUid (set trong RetryFindOpponent).
-
         if (string.IsNullOrEmpty(_pendingOpponentUid))
         {
             // Không có info → retry
-            RetryFindOpponent();
+            SearchAndMatch();
             return;
         }
 
@@ -430,88 +491,133 @@ public class FirebaseManager : MonoBehaviour
 
             SetupRoomPresence();
             Debug.Log($"[FirebaseManager] Tạo room {roomId} (Host={IsHost}). Vào trận.");
+            // UX-06: Hủy timeout khi match thành công
+            if (_matchmakingTimeoutCoroutine != null)
+            {
+                StopCoroutine(_matchmakingTimeoutCoroutine);
+                _matchmakingTimeoutCoroutine = null;
+            }
             OnMatchFound?.Invoke();
         });
     }
 
     /// <summary>
-    /// Chạy transaction "atomic": tìm 1 đối thủ + xoá khỏi queue + ghi nhớ uid.
-    /// Đây là cách thực hiện đúng đắn cho FindMatch (override StartFindMatchTransaction).
+    /// Thêm mình vào queue trước rồi mới tìm trận.
     /// </summary>
-    private void RetryFindOpponent()
+    private void AddSelfToQueueAndSearch()
     {
         string queuePath = GetCurrentQueuePath();
-        var queueRef = _root.Child(queuePath);
-        queueRef.GetValueAsync().ContinueWithOnMainThread(t => {
-            if (t.IsFaulted) { OnMatchmakingError?.Invoke("Lỗi đọc queue."); return; }
+        Debug.Log($"[FirebaseManager] Đang thêm mình vào queue: {queuePath}");
 
-            var snap = t.Result;
-            string foundUid = null;
-            string foundName = "Opponent";
+        var myEntry = new Dictionary<string, object> {
+            { "name", LocalDisplayName },
+            { "avatar", PlayerDataManager.Instance?.Data?.avatarIndex ?? 0 },
+            { "joinedAt", ServerValue.Timestamp }
+        };
 
-            foreach (var child in snap.Children)
+        _root.Child(queuePath).Child(LocalUserId).SetValueAsync(myEntry).ContinueWithOnMainThread(t => {
+            if (t.IsFaulted)
             {
-                if (child.Key != LocalUserId)
-                {
-                    foundUid = child.Key;
-                    if (child.Child("name").Value != null) foundName = child.Child("name").Value.ToString();
-                    if (child.Child("avatar").Value != null) int.TryParse(child.Child("avatar").Value.ToString(), out _pendingOpponentAvatar);
-                    else _pendingOpponentAvatar = 0;
-                    break;
-                }
+                OnMatchmakingError?.Invoke("Không thể vào hàng chờ.");
+                return;
             }
 
-            if (foundUid == null)
+            // OnDisconnect: nếu rớt mạng, tự xoá khỏi queue
+            _matchmakingRef = _root.Child(queuePath).Child(LocalUserId);
+            _matchmakingRef.OnDisconnect().RemoveValue();
+
+            // Sau khi vào queue thành công, bắt đầu tìm kiếm
+            SearchAndMatch();
+        });
+    }
+
+    /// <summary>
+    /// Đọc hàng chờ và tìm đối thủ. Áp dụng quy tắc người vào trước là chủ.
+    /// </summary>
+    private void SearchAndMatch()
+    {
+        string queuePath = GetCurrentQueuePath();
+        var queueRef = _root.Child(queuePath).OrderByChild("joinedAt");
+
+        queueRef.GetValueAsync().ContinueWithOnMainThread(t => {
+            if (t.IsFaulted)
             {
-                // Không có ai → ghi mình vào queue và đợi
-                var myEntry = new Dictionary<string, object> {
-                    { "name", LocalDisplayName },
-                    { "avatar", PlayerDataManager.Instance?.Data?.avatarIndex ?? 0 },
-                    { "joinedAt", ServerValue.Timestamp }
-                };
-                _root.Child(queuePath).Child(LocalUserId).SetValueAsync(myEntry).ContinueWithOnMainThread(_ => {
-                    SetupWaitingForOpponent();
-                });
+                OnMatchmakingError?.Invoke("Lỗi đọc hàng chờ.");
+                return;
+            }
+
+            var snap = t.Result;
+            var enumerator = snap.Children.GetEnumerator();
+            
+            if (!enumerator.MoveNext())
+            {
+                // Queue rỗng (vô lý vì mình vừa add xong, nhưng có thể do trễ)
+                Debug.LogWarning("[FirebaseManager] Queue rỗng sau khi add!");
+                SetupWaitingForOpponent();
+                return;
+            }
+
+            var firstChild = enumerator.Current;
+
+            if (firstChild.Key == LocalUserId)
+            {
+                // Mình là người cũ nhất! Đứng yên và chờ.
+                Debug.Log("[FirebaseManager] Tôi là người cũ nhất. Chờ đối thủ...");
+                SetupWaitingForOpponent();
             }
             else
             {
-                // Có người → atomic remove (transaction trên node của họ)
-                _pendingOpponentUid = foundUid;
-                _pendingOpponentName = foundName;
+                // Có người cũ hơn. Thử claim họ.
+                string foundUid = firstChild.Key;
+                string foundName = firstChild.Child("name").Value?.ToString() ?? "Opponent";
+                int avatar = 0;
+                if (firstChild.Child("avatar").Value != null) 
+                    int.TryParse(firstChild.Child("avatar").Value.ToString(), out avatar);
 
-                // FIX: RunTransaction() trong Firebase Unity SDK trả về `Task` non-generic
-                // (không có .Result). Dùng local flag để track xem có aborted hay không.
-                bool didAbort = false;
-
-                _root.Child(queuePath).Child(foundUid).RunTransaction(md => {
-                    if (md.Value == null)
-                    {
-                        // Đã có ai khác xoá rồi → mình thua cuộc đua, retry
-                        didAbort = true;
-                        return TransactionResult.Abort();
-                    }
-                    didAbort = false;
-                    md.Value = null;
-                    return TransactionResult.Success(md);
-                }).ContinueWithOnMainThread(rt => {
-                    if (rt.IsFaulted || rt.IsCanceled || didAbort)
-                    {
-                        // Cuộc đua thua — retry
-                        _pendingOpponentUid = null;
-                        _pendingOpponentName = null;
-                        RetryFindOpponent();
-                    }
-                    else
-                    {
-                        CreateRoomWithFoundOpponent();
-                    }
-                });
+                TryClaimOpponent(foundUid, foundName, avatar);
             }
         });
     }
 
     /// <summary>
-    /// Public entry — thay thế FindMatch cũ. UI gọi hàm này khi user bấm "Tìm trận".
+    /// Thử chiếm opponent bằng transaction.
+    /// </summary>
+    private void TryClaimOpponent(string oppUid, string oppName, int oppAvatar)
+    {
+        string queuePath = GetCurrentQueuePath();
+        _pendingOpponentUid = oppUid;
+        _pendingOpponentName = oppName;
+        _pendingOpponentAvatar = oppAvatar;
+
+        bool didAbort = false;
+
+        _root.Child(queuePath).Child(oppUid).RunTransaction(md => {
+            if (md.Value == null)
+            {
+                didAbort = true;
+                return TransactionResult.Abort(); // Ai đó đã nhận rồi
+            }
+            didAbort = false;
+            md.Value = null;
+            return TransactionResult.Success(md);
+        }).ContinueWithOnMainThread(rt => {
+            if (rt.IsFaulted || rt.IsCanceled || didAbort)
+            {
+                _pendingOpponentUid = null;
+                _pendingOpponentName = null;
+                SearchAndMatch(); // Thử lại
+            }
+            else
+            {
+                // Thành công! Xoá MÌNH khỏi queue và tạo phòng
+                _root.Child(queuePath).Child(LocalUserId).RemoveValueAsync();
+                CreateRoomWithFoundOpponent();
+            }
+        });
+    }
+
+    /// <summary>
+    /// Public entry — UI gọi hàm này khi user bấm "Tìm trận".
     /// </summary>
     public void StartMatchmaking()
     {
@@ -520,7 +626,19 @@ public class FirebaseManager : MonoBehaviour
             OnMatchmakingError?.Invoke("Chưa đăng nhập Firebase.");
             return;
         }
-        RetryFindOpponent();
+        // UX-06: Bắt đầu timeout
+        if (_matchmakingTimeoutCoroutine != null) StopCoroutine(_matchmakingTimeoutCoroutine);
+        _matchmakingTimeoutCoroutine = StartCoroutine(MatchmakingTimeoutRoutine());
+        AddSelfToQueueAndSearch();
+    }
+
+    // UX-06: Timeout coroutine
+    private IEnumerator MatchmakingTimeoutRoutine()
+    {
+        yield return new WaitForSeconds(MATCHMAKING_TIMEOUT);
+        Debug.LogWarning("[FirebaseManager] Hết thời gian tìm trận.");
+        CancelMatchmaking();
+        OnMatchmakingTimeout?.Invoke();
     }
 
     /// <summary>
@@ -529,6 +647,13 @@ public class FirebaseManager : MonoBehaviour
     public void CancelMatchmaking()
     {
         if (!IsConnected || !IsAuthenticated) return;
+
+        // UX-06: Hủy timeout
+        if (_matchmakingTimeoutCoroutine != null)
+        {
+            StopCoroutine(_matchmakingTimeoutCoroutine);
+            _matchmakingTimeoutCoroutine = null;
+        }
 
         if (_matchmakingHandler != null)
         {
@@ -569,6 +694,12 @@ public class FirebaseManager : MonoBehaviour
             IsHost = string.Compare(LocalUserId, OpponentId, StringComparison.Ordinal) < 0;
             SetupRoomPresence();
             Debug.Log($"[FirebaseManager] Đã join room {roomId} (Host={IsHost}, Opp={OpponentName}).");
+            // UX-06: Hủy timeout khi match thành công
+            if (_matchmakingTimeoutCoroutine != null)
+            {
+                StopCoroutine(_matchmakingTimeoutCoroutine);
+                _matchmakingTimeoutCoroutine = null;
+            }
             OnMatchFound?.Invoke();
         });
     }

@@ -60,7 +60,12 @@ public class PlayerDataManager : MonoBehaviour
     /// </summary>
     public void ClearData()
     {
-        PlayerPrefs.DeleteAll();
+        // BUG-09 FIX: Chỉ xóa player data keys, không xóa settings (MusicEnabled, SFXEnabled, SelectedLanguage)
+        PlayerPrefs.DeleteKey("PlayerLevel");
+        PlayerPrefs.DeleteKey("PlayerExp");
+        PlayerPrefs.DeleteKey("PlayerMoney");
+        PlayerPrefs.DeleteKey("PlayerAvatar");
+        PlayerPrefs.DeleteKey("PlayerName");
         PlayerPrefs.Save();
         
         // Reset local SO values
@@ -73,7 +78,7 @@ public class PlayerDataManager : MonoBehaviour
             playerData.playerName = "Player_" + Random.Range(1000, 9999);
         }
         
-        Debug.Log("[PlayerDataManager] Đã xóa sạch dữ liệu local.");
+        Debug.Log("[PlayerDataManager] Đã xóa dữ liệu local player (giữ nguyên cài đặt).");
     }
 
     private void OnApplicationQuit()

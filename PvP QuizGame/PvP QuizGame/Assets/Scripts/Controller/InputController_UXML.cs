@@ -3,6 +3,7 @@ using UnityEngine.UIElements;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 
 /// <summary>
 /// Xử lý input của Player 1 sử dụng UI Toolkit.
@@ -172,6 +173,12 @@ public class InputController_UXML : MonoBehaviour
             _answerButtons[correctAnswerIndex].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(new Vector2(1.1f, 1.1f)));
         }
 
+        // G-18: Score fly text khi đúng
+        if (isCorrect && _myLastAnswer >= 0 && _myLastAnswer < _answerButtons.Count)
+        {
+            ShowScoreFlyText(_answerButtons[_myLastAnswer].parent ?? _answerButtons[_myLastAnswer], "+10");
+        }
+
         OnAnswerSubmitted?.Invoke(_localPlayerId, _myLastAnswer, isCorrect);
 
         yield return new WaitForSeconds(1.5f);
@@ -303,4 +310,34 @@ public class InputController_UXML : MonoBehaviour
     }
 
     public void SetPlayerId(int id) => _localPlayerId = id;
+
+    // G-18: Score fly text — "+10" bay lên từ nút đáp án
+    private void ShowScoreFlyText(VisualElement parent, string text)
+    {
+        if (parent == null || uiDocument == null) return;
+
+        var flyLabel = new Label(text);
+        flyLabel.style.position = Position.Absolute;
+        flyLabel.style.top = -30;
+        flyLabel.style.left = Length.Percent(50);
+        flyLabel.style.fontSize = 36;
+        flyLabel.style.color = new Color(0f, 0.9f, 0.46f);
+        flyLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+        flyLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+        flyLabel.style.opacity = 1f;
+        flyLabel.style.translate = new StyleTranslate(new Translate(new Length(0), new Length(0)));
+
+        parent.Add(flyLabel);
+
+        // Animate: fly up + fade out
+        System.Action removeAction = () => {
+            if (flyLabel != null && flyLabel.parent != null)
+                flyLabel.RemoveFromHierarchy();
+        };
+
+        var seq = DG.Tweening.DOTween.Sequence();
+        seq.Join(flyLabel.DOFade(0f, 0.8f));
+        seq.Join(UIAnimator.DOTranslate(flyLabel, new Vector2(0, -60), 0.8f).SetEase(DG.Tweening.Ease.OutCubic));
+        seq.OnComplete(() => removeAction());
+    }
 }

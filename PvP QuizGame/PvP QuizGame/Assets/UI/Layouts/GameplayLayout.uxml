@@ -1,49 +1,50 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
-    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; padding: 40px;">
+    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; padding: 30px;">
         <!-- HUD -->
-        <ui:VisualElement name="hud" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 50px;">
-            <ui:VisualElement name="p1-info" class="card" style="flex-direction: row; align-items: center; padding: 15px 30px; border-radius: 20px;">
-                <ui:VisualElement name="p1-avatar" style="width: 80px; height: 80px; background-color: #ddd; border-radius: 40px; margin-right: 15px;" />
+        <ui:VisualElement name="hud" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <ui:VisualElement name="p1-info" style="flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 12px 24px; border-width: 1px; border-color: rgba(255, 255, 255, 0.15);">
+                <ui:VisualElement name="p1-avatar" style="width: 70px; height: 70px; border-radius: 35px; margin-right: 12px; justify-content: center; align-items: center; overflow: hidden;" />
                 <ui:VisualElement>
-                    <ui:Label name="p1-label" text="ME" style="color: #666; font-size: 20px;" />
-                    <ui:Label name="p1-score" text="0" style="color: #461A42; font-size: 44px; -unity-font-style: bold;" />
+                    <ui:Label name="p1-label" text="ME" style="color: rgba(255, 255, 255, 0.6); font-size: 18px; letter-spacing: 1px;" />
+                    <ui:Label name="p1-score" text="0" style="color: white; font-size: 38px; -unity-font-style: bold;" />
                 </ui:VisualElement>
             </ui:VisualElement>
             
-            <ui:VisualElement name="timer-container" style="align-items: center;">
-                <ui:Label name="timer-text" text="03:00" style="color: white; font-size: 54px; -unity-font-style: bold;" />
-                <ui:VisualElement name="timer-bar" class="progress-container" style="width: 250px; height: 15px; margin-top: 5px;">
-                    <ui:VisualElement name="timer-fill" class="progress-fill" style="width: 100%;" />
-                </ui:VisualElement>
+            <!-- G-16: Timer Ring -->
+            <ui:VisualElement name="timer-container" style="align-items: center; justify-content: center; width: 110px; height: 110px;">
+                <ui:VisualElement name="timer-ring-bg" style="position: absolute; width: 100%; height: 100%; border-radius: 55px; border-width: 6px; border-color: rgba(255, 255, 255, 0.12);" />
+                <ui:VisualElement name="timer-ring-fill" style="position: absolute; width: 100%; height: 100%; border-radius: 55px; border-width: 6px; border-color: #FFD166;" />
+                <ui:Label name="timer-text" text="15" style="color: white; font-size: 40px; -unity-font-style: bold;" />
             </ui:VisualElement>
 
-            <ui:VisualElement name="p2-info" class="card" style="flex-direction: row; align-items: center; padding: 15px 30px; border-radius: 20px;">
+            <ui:VisualElement name="p2-info" style="flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 12px 24px; border-width: 1px; border-color: rgba(255, 255, 255, 0.15);">
                 <ui:VisualElement>
-                    <ui:Label name="p2-label" text="OPP" style="color: #666; font-size: 20px; -unity-text-align: upper-right;" />
-                    <ui:Label name="p2-score" text="0" style="color: #461A42; font-size: 44px; -unity-font-style: bold; -unity-text-align: upper-right;" />
+                    <ui:Label name="p2-label" text="OPP" style="color: rgba(255, 255, 255, 0.6); font-size: 18px; letter-spacing: 1px; -unity-text-align: upper-right;" />
+                    <ui:Label name="p2-score" text="0" style="color: white; font-size: 38px; -unity-font-style: bold; -unity-text-align: upper-right;" />
+                    <ui:Label name="p2-status" text="Đang suy nghĩ…" style="color: rgba(255, 255, 255, 0.4); font-size: 16px; -unity-text-align: upper-right;" />
                 </ui:VisualElement>
-                <ui:VisualElement name="p2-avatar" style="width: 80px; height: 80px; background-color: #ddd; border-radius: 40px; margin-left: 15px;" />
+                <ui:VisualElement name="p2-avatar" style="width: 70px; height: 70px; border-radius: 35px; margin-left: 12px; justify-content: center; align-items: center; overflow: hidden;" />
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- QUESTION AREA -->
         <ui:VisualElement name="question-area" style="flex-grow: 1; justify-content: center; align-items: center;">
-            <ui:Label name="question-counter" text="CAU 1 / 10" style="color: #ffea00; font-size: 32px; margin-bottom: 20px;" />
-            <ui:VisualElement class="card" style="width: 100%; max-width: 900px; min-height: 250px; justify-content: center; align-items: center; padding: 40px;">
-                <ui:Label name="question-text" text="Cau hoi dang duoc tai...?" style="color: #212121; font-size: 36px; -unity-text-align: middle-center; -unity-font-style: bold; white-space: normal;" />
+            <ui:Label name="question-counter" text="CÂU 1 / 10" style="color: #ffea00; font-size: 28px; margin-bottom: 15px; letter-spacing: 2px;" />
+            <ui:VisualElement style="width: 100%; max-width: 900px; min-height: 220px; justify-content: center; align-items: center; background-color: rgba(255, 255, 255, 0.10); border-radius: 28px; padding: 30px; border-width: 2px; border-color: rgba(255, 255, 255, 0.12);">
+                <ui:Label name="question-text" text="Câu hỏi đang được tải...?" style="color: white; font-size: 34px; -unity-text-align: middle-center; -unity-font-style: bold; white-space: normal;" />
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- ANSWERS GRID -->
-        <ui:VisualElement name="answers-grid" style="margin-top: 30px; flex-direction: column; width: 100%; max-width: 900px; align-self: center;">
-            <ui:Button name="ans-0" text="DA 1" class="btn btn-ans-red" style="min-height: 90px; font-size: 26px; margin-bottom: 15px; margin-left: 0; margin-right: 0;" />
-            <ui:Button name="ans-1" text="DA 2" class="btn btn-ans-blue" style="min-height: 90px; font-size: 26px; margin-bottom: 15px; margin-left: 0; margin-right: 0;" />
-            <ui:Button name="ans-2" text="DA 3" class="btn btn-ans-yellow" style="min-height: 90px; font-size: 26px; margin-bottom: 15px; margin-left: 0; margin-right: 0;" />
-            <ui:Button name="ans-3" text="DA 4" class="btn btn-ans-green" style="min-height: 90px; font-size: 26px; margin-left: 0; margin-right: 0;" />
+        <ui:VisualElement name="answers-grid" style="margin-top: 25px; flex-direction: column; width: 100%; max-width: 900px; align-self: center;">
+            <ui:Button name="ans-0" text="ĐÁ 1" class="btn btn-ans-red" style="min-height: 80px; font-size: 24px; margin-bottom: 12px; margin-left: 0; margin-right: 0; border-radius: 18px;" />
+            <ui:Button name="ans-1" text="ĐÁ 2" class="btn btn-ans-blue" style="min-height: 80px; font-size: 24px; margin-bottom: 12px; margin-left: 0; margin-right: 0; border-radius: 18px;" />
+            <ui:Button name="ans-2" text="ĐÁ 3" class="btn btn-ans-yellow" style="min-height: 80px; font-size: 24px; margin-bottom: 12px; margin-left: 0; margin-right: 0; border-radius: 18px;" />
+            <ui:Button name="ans-3" text="ĐÁ 4" class="btn btn-ans-green" style="min-height: 80px; font-size: 24px; margin-left: 0; margin-right: 0; border-radius: 18px;" />
         </ui:VisualElement>
 
         <!-- EXIT BUTTON -->
-        <ui:Button name="exit-btn" text="✖" style="position: absolute; top: 40px; left: 40px; width: 80px; height: 80px; padding: 0; margin: 0; background-color: rgba(0, 0, 0, 0.4); border-radius: 40px; border-width: 0; font-size: 40px; color: white; -unity-font-style: bold; justify-content: center; align-items: center;" />
+        <ui:Button name="exit-btn" text="&#10005;" style="position: absolute; top: 30px; left: 30px; width: 60px; height: 60px; padding: 0; margin: 0; background-color: rgba(0, 0, 0, 0.3); border-radius: 30px; border-width: 0; font-size: 30px; color: rgba(255, 255, 255, 0.7); -unity-font-style: bold; justify-content: center; align-items: center;" />
     </ui:VisualElement>
 </ui:UXML>

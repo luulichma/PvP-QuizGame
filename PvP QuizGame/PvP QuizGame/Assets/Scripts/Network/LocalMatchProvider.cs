@@ -31,7 +31,8 @@ public class LocalMatchProvider : MonoBehaviour
     private bool _isWaiting = false;
 
     [Header("Cài đặt Debug")]
-    [SerializeField] private bool showDebugLogs = true;
+    [Tooltip("Bật log debug. Nên tắt trong bản Release.")]
+    [SerializeField] private bool showDebugLogs = false;
 
     // ==================== LIFECYCLE ====================
     private void Awake()

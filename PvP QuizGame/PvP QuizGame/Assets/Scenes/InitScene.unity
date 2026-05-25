@@ -558,6 +558,10 @@ MonoBehaviour:
   wrongSound: {fileID: 0}
   winSound: {fileID: 0}
   loseSound: {fileID: 0}
+  countdownTickSound: {fileID: 0}
+  countdownGoSound: {fileID: 0}
+  timerUrgentSound: {fileID: 0}
+  swooshSound: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

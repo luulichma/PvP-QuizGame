@@ -1,60 +1,50 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="overlay" class="overlay">
-        <ui:VisualElement name="popup" class="card" style="width: 90%; max-width: 600px; padding: 40px; align-items: center;">
-            
-            <!-- 1. MAIN CHOICE CONTAINER -->
-            <ui:VisualElement name="main-choice-container" style="width: 100%; display: flex;">
-                <ui:Label text="CHÀO MỪNG" style="font-size: 60px; -unity-font-style: bold; color: #461A42; margin-bottom: 50px; -unity-text-align: middle-center;" />
-                <ui:Button name="goto-login-btn" text="ĐĂNG NHẬP" class="btn btn-primary" style="width: 100%; height: 110px; font-size: 42px; margin-bottom: 25px;" />
-                <ui:Button name="goto-register-btn" text="ĐĂNG KÝ" class="btn btn-secondary" style="width: 100%; height: 110px; font-size: 42px; margin-bottom: 25px;" />
-                <ui:Button name="goto-guest-btn" text="CHƠI KHÁCH" class="btn" style="width: 100%; height: 90px; font-size: 36px; background-color: rgb(142, 68, 173); color: rgb(255, 255, 255); border-width: 0;" />
+        <ui:VisualElement name="popup-container" class="card" style="width: 90%; max-width: 520px; background-color: rgba(15, 10, 30, 0.85); border-width: 2px; border-color: rgba(255, 255, 255, 0.15); border-radius: 32px; padding: 40px;">
+            <ui:Label name="popup-title" text="CHỌN CÁCH ĐĂNG NHẬP" style="font-size: 34px; color: white; -unity-font-style: bold; margin-bottom: 15px; -unity-text-align: middle-center; letter-spacing: 1px;" />
+            <ui:Label name="auth-error" text="" style="color: #F72548; font-size: 22px; -unity-text-align: middle-center; margin-bottom: 20px; white-space: normal;" />
+
+            <!-- MAIN CHOICE CONTAINER (default) -->
+            <ui:VisualElement name="main-choice-container">
+                <ui:Button name="goto-login-btn" text="ĐĂNG NHẬP BẰNG EMAIL" class="btn btn-secondary" style="width: 100%; font-size: 26px; height: 70px; border-radius: 18px; margin-bottom: 12px;" />
+                <ui:Button name="goto-register-btn" text="TẠO TÀI KHOẢN" class="btn btn-primary" style="width: 100%; font-size: 26px; height: 70px; border-radius: 18px; margin-bottom: 12px;" />
+                <ui:Button name="goto-guest-btn" text="CHƠI VỚI TƯ CÁCH KHÁCH" class="btn" style="width: 100%; font-size: 26px; height: 70px; border-radius: 18px; background-color: rgba(255,255,255,0.08); border-bottom-color: rgba(255,255,255,0.15);" />
             </ui:VisualElement>
 
-            <!-- 2. LOGIN CONTAINER -->
-            <ui:VisualElement name="login-container" style="width: 100%; display: none;">
-                <ui:Label text="ĐĂNG NHẬP" style="font-size: 60px; -unity-font-style: bold; color: #461A42; margin-bottom: 40px; -unity-text-align: middle-center;" />
-                
-                <ui:Label text="Email" style="font-size: 30px; color: #666; margin-bottom: 10px;" />
-                <ui:TextField name="login-email" style="font-size: 38px; width: 100%; height: 90px; margin-bottom: 25px;" />
-                
-                <ui:Label text="Mật khẩu" style="font-size: 30px; color: #666; margin-bottom: 10px;" />
-                <ui:TextField name="login-password" password="true" style="font-size: 38px; width: 100%; height: 90px; margin-bottom: 35px;" />
-                
-                <ui:Button name="login-confirm-btn" text="XÁC NHẬN" class="btn btn-primary" style="width: 100%; height: 90px; font-size: 42px; margin-bottom: 25px;" />
-                <ui:Button name="login-back-btn" text="QUAY LẠI" class="btn" style="width: 100%; height: 80px; font-size: 32px; background-color: transparent; border-width: 0; color: #666;" />
+            <!-- LOGIN CONTAINER (Email) -->
+            <ui:VisualElement name="login-container" style="display: none;">
+                <ui:TextField name="login-email" label="Email" style="font-size: 22px; margin-bottom: 12px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:TextField name="login-password" label="Mật khẩu" password="true" style="font-size: 22px; margin-bottom: 20px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:Button name="login-confirm-btn" text="ĐĂNG NHẬP" class="btn btn-secondary" style="width: 100%; font-size: 28px; height: 70px; border-radius: 18px;" />
+                <ui:Button name="forgot-pass-btn" text="Quên mật khẩu?" class="btn btn-cancel" style="width: 100%; font-size: 20px; height: 44px; border-radius: 14px; margin-top: 8px; border-bottom-width: 0;" />
+                <ui:Button name="login-back-btn" text="QUAY LẠI" class="btn btn-cancel" style="width: 100%; font-size: 22px; height: 50px; border-radius: 14px; margin-top: 4px;" />
             </ui:VisualElement>
 
-            <!-- 3. REGISTER CONTAINER -->
-            <ui:VisualElement name="register-container" style="width: 100%; display: none;">
-                <ui:Label text="ĐĂNG KÝ" style="font-size: 48px; -unity-font-style: bold; color: #461A42; margin-bottom: 30px; -unity-text-align: middle-center;" />
-                
-                <ui:Label text="Tên hiển thị" style="font-size: 24px; color: #666; margin-bottom: 5px;" />
-                <ui:TextField name="reg-display-name" style="font-size: 32px; width: 100%; height: 80px; margin-bottom: 20px;" />
-
-                <ui:Label text="Email" style="font-size: 24px; color: #666; margin-bottom: 5px;" />
-                <ui:TextField name="reg-email" style="font-size: 32px; width: 100%; height: 80px; margin-bottom: 20px;" />
-                
-                <ui:Label text="Mật khẩu" style="font-size: 24px; color: #666; margin-bottom: 5px;" />
-                <ui:TextField name="reg-password" password="true" style="font-size: 32px; width: 100%; height: 80px; margin-bottom: 30px;" />
-                
-                <ui:Button name="reg-confirm-btn" text="XÁC NHẬN" class="btn btn-primary" style="width: 100%; height: 80px; font-size: 36px; margin-bottom: 20px;" />
-                <ui:Button name="reg-back-btn" text="QUAY LẠI" class="btn" style="width: 100%; height: 70px; font-size: 28px; background-color: transparent; border-width: 0; color: #666;" />
+            <!-- REGISTER CONTAINER (Email) -->
+            <ui:VisualElement name="register-container" style="display: none;">
+                <ui:TextField name="reg-display-name" label="Tên hiển thị" style="font-size: 22px; margin-bottom: 12px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:TextField name="reg-email" label="Email" style="font-size: 22px; margin-bottom: 12px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:TextField name="reg-password" label="Mật khẩu" password="true" style="font-size: 22px; margin-bottom: 20px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:Button name="reg-confirm-btn" text="ĐĂNG KÝ" class="btn btn-primary" style="width: 100%; font-size: 28px; height: 70px; border-radius: 18px;" />
+                <ui:Button name="reg-back-btn" text="QUAY LẠI" class="btn btn-cancel" style="width: 100%; font-size: 22px; height: 50px; border-radius: 14px; margin-top: 10px;" />
             </ui:VisualElement>
 
-            <!-- 4. GUEST CONTAINER -->
-            <ui:VisualElement name="guest-container" style="width: 100%; display: none;">
-                <ui:Label text="CHƠI KHÁCH" style="font-size: 48px; -unity-font-style: bold; color: #461A42; margin-bottom: 30px; -unity-text-align: middle-center;" />
-                <ui:Label text="Tên này sẽ hiển thị cho đối thủ thấy." style="font-size: 24px; color: #666; margin-bottom: 30px; -unity-text-align: middle-center;" />
-                
-                <ui:TextField name="guest-name-field" value="Player_VN" max-length="20" style="font-size: 32px; width: 100%; height: 80px; margin-bottom: 30px;" />
-                
-                <ui:Button name="guest-confirm-btn" text="BẮT ĐẦU" class="btn btn-primary" style="width: 100%; height: 80px; font-size: 36px; margin-bottom: 20px;" />
-                <ui:Button name="guest-back-btn" text="QUAY LẠI" class="btn" style="width: 100%; height: 70px; font-size: 28px; background-color: transparent; border-width: 0; color: #666;" />
+            <!-- GUEST CONTAINER -->
+            <ui:VisualElement name="guest-container" style="display: none;">
+                <ui:Label text="Nhập tên của bạn:" style="color: rgba(255,255,255,0.6); font-size: 22px; margin-bottom: 10px;" />
+                <ui:TextField name="guest-name-field" style="font-size: 22px; margin-bottom: 20px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:Button name="guest-confirm-btn" text="CHƠI THỬ" class="btn btn-secondary" style="width: 100%; font-size: 28px; height: 70px; border-radius: 18px;" />
+                <ui:Button name="guest-back-btn" text="QUAY LẠI" class="btn btn-cancel" style="width: 100%; font-size: 22px; height: 50px; border-radius: 14px; margin-top: 10px;" />
             </ui:VisualElement>
 
-            <!-- ERROR LABEL -->
-            <ui:Label name="auth-error" text="" style="font-size: 20px; color: #ff5252; margin-top: 10px; min-height: 30px; -unity-text-align: middle-center; white-space: normal;" />
+            <!-- FORGOT PASSWORD CONTAINER -->
+            <ui:VisualElement name="forgot-container" style="display: none;">
+                <ui:Label text="Nhập email để đặt lại mật khẩu:" style="color: rgba(255,255,255,0.6); font-size: 22px; margin-bottom: 10px;" />
+                <ui:TextField name="forgot-email" label="Email" style="font-size: 22px; margin-bottom: 20px; background-color: rgba(255,255,255,0.06); border-radius: 12px; padding: 6px 12px; border-width: 1px; border-color: rgba(255,255,255,0.15); color: white;" />
+                <ui:Button name="forgot-confirm-btn" text="GỬI YÊU CẦU" class="btn btn-secondary" style="width: 100%; font-size: 28px; height: 70px; border-radius: 18px;" />
+                <ui:Button name="forgot-back-btn" text="QUAY LẠI" class="btn btn-cancel" style="width: 100%; font-size: 22px; height: 50px; border-radius: 14px; margin-top: 10px;" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

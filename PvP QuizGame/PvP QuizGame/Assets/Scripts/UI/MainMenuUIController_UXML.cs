@@ -41,6 +41,9 @@ public class MainMenuUIController_UXML : MonoBehaviour
     private Label _moneyLabel;
     private Label _levelTag;
     private Label _searchingLabel;
+    // G-12: XP Bar
+    private VisualElement _xpFill;
+    private Label _xpLabel;
 
     // Settings popup instance
     private VisualElement _settingsPopup;
@@ -79,6 +82,9 @@ public class MainMenuUIController_UXML : MonoBehaviour
         _avatarElement = root.Q<VisualElement>("avatar");
         _levelTag = root.Q<Label>("level-tag");
         _searchingLabel = root.Q<Label>("searching-label");
+        // G-12: XP Bar
+        _xpFill = root.Q<VisualElement>("xp-fill");
+        _xpLabel = root.Q<Label>("xp-label");
 
         ShowHomePanel();
         RefreshPlayerStatsUI();
@@ -91,6 +97,7 @@ public class MainMenuUIController_UXML : MonoBehaviour
         // Firebase Matchmaking events
         FirebaseManager.OnMatchFound        += OnMatchFoundFromFirebase;
         FirebaseManager.OnMatchmakingError  += OnMatchmakingError;
+        FirebaseManager.OnMatchmakingTimeout += OnMatchmakingTimeout; // UX-06
     }
 
     private void OnDisable()
@@ -104,6 +111,7 @@ public class MainMenuUIController_UXML : MonoBehaviour
         LocalizationManager.OnLanguageChanged -= LocalizeUI;
         FirebaseManager.OnMatchFound        -= OnMatchFoundFromFirebase;
         FirebaseManager.OnMatchmakingError  -= OnMatchmakingError;
+        FirebaseManager.OnMatchmakingTimeout -= OnMatchmakingTimeout; // UX-06
     }
 
     private void LocalizeUI()
@@ -128,11 +136,21 @@ public class MainMenuUIController_UXML : MonoBehaviour
         if (_moneyLabel != null) _moneyLabel.text = $"${data.money:N0}";
         if (_nameLabel != null) _nameLabel.text = data.playerName;
         
-        // Cập nhật Avatar ở màn hình chính
-        if (_avatarElement != null && avatarSprites != null && data.avatarIndex < avatarSprites.Length)
+        // Avatar: dùng Initial Letter thay vì sprite tạm
+        if (_avatarElement != null)
         {
-            _avatarElement.style.backgroundImage = new StyleBackground(avatarSprites[data.avatarIndex]);
-            _avatarElement.style.backgroundColor = Color.clear;
+            AvatarHelper.SetAvatar(_avatarElement, data.playerName);
+        }
+
+        // G-12: XP progress bar
+        if (_xpFill != null)
+        {
+            float expPercent = (float)data.currentExp / Mathf.Max(1, data.GetExpToNextLevel());
+            _xpFill.style.width = Length.Percent(Mathf.Clamp(expPercent * 100f, 0f, 100f));
+        }
+        if (_xpLabel != null)
+        {
+            _xpLabel.text = $"{data.currentExp} / {data.GetExpToNextLevel()}";
         }
 
         Debug.Log($"<color=white>[MainMenu] Updated: {data.playerName} | L{data.level} | ${data.money}</color>");
@@ -153,14 +171,28 @@ public class MainMenuUIController_UXML : MonoBehaviour
         var fm = FirebaseManager.Instance;
         if (fm == null) return;
 
+        // FEAT-02: Kiểm tra Guest — hiển dialog cảnh báo thay vì log error
+        if (!fm.IsAuthenticated)
+        {
+            var L = LocalizationManager.Instance;
+            string msg = L != null
+                ? L.GetText("menu_login_required", "Bạn cần đăng nhập để tìm trận online.")
+                : "Bạn cần đăng nhập để tìm trận online.";
+            ShowInfoToast(msg, 3f);
+            return;
+        }
+
         // BẮT BUỘC Tắt offline mode khi bấm tìm trận thật
         fm.isOfflineMode = false;
 
-        // Online — gọi Firebase Matchmaking thật
-        if (!fm.IsConnected || !fm.IsAuthenticated)
+        // Kiểm tra kết nối Firebase
+        if (!fm.IsConnected)
         {
-            Debug.LogError("[MainMenu] Firebase chưa sẵn sàng — không thể tìm trận.");
-            if (_searchingLabel != null) _searchingLabel.text = "Lỗi kết nối máy chủ.";
+            var L = LocalizationManager.Instance;
+            string errMsg = L != null
+                ? L.GetText("menu_error_connection", "Lỗi kết nối máy chủ.")
+                : "Lỗi kết nối máy chủ.";
+            if (_searchingLabel != null) _searchingLabel.text = errMsg;
             return;
         }
 
@@ -205,7 +237,12 @@ public class MainMenuUIController_UXML : MonoBehaviour
     private void OnMatchmakingError(string error)
     {
         Debug.LogError($"[MainMenu] Matchmaking error: {error}");
-        if (_searchingLabel != null) _searchingLabel.text = $"Lỗi: {error}";
+        var L = LocalizationManager.Instance;
+        if (_searchingLabel != null)
+        {
+            string fmt = L != null ? L.GetText("menu_error_generic", "Lỗi: {0}") : "Lỗi: {0}";
+            _searchingLabel.text = string.Format(fmt, error);
+        }
         // Sau 2s quay về Home
         StartCoroutine(ReturnToHomeAfter(2f));
     }
@@ -213,6 +250,56 @@ public class MainMenuUIController_UXML : MonoBehaviour
     private IEnumerator ReturnToHomeAfter(float seconds)
     {
         yield return new WaitForSeconds(seconds);
+        ShowHomePanel();
+    }
+
+    /// <summary>Hiển thị toast notification ngắn trên HomeScene (dùng cho cảnh báo guest, lỗi v.v.)</summary>
+    private void ShowInfoToast(string message, float duration = 2.5f)
+    {
+        if (uiDocument == null) return;
+        var root = uiDocument.rootVisualElement;
+
+        var toast = new UnityEngine.UIElements.Label(message);
+        toast.style.position = UnityEngine.UIElements.Position.Absolute;
+        toast.style.bottom = 160;
+        toast.style.left = 0;
+        toast.style.right = 0;
+        toast.style.unityTextAlign = TextAnchor.MiddleCenter;
+        toast.style.fontSize = 28;
+        toast.style.color = Color.white;
+        toast.style.backgroundColor = new Color(0.18f, 0.05f, 0.26f, 0.92f);
+        toast.style.paddingTop = 18;
+        toast.style.paddingBottom = 18;
+        toast.style.paddingLeft = 28;
+        toast.style.paddingRight = 28;
+        toast.style.borderTopLeftRadius = 16;
+        toast.style.borderTopRightRadius = 16;
+        toast.style.borderBottomLeftRadius = 16;
+        toast.style.borderBottomRightRadius = 16;
+        toast.style.marginLeft = UnityEngine.UIElements.StyleKeyword.Auto;
+        toast.style.marginRight = UnityEngine.UIElements.StyleKeyword.Auto;
+        toast.style.maxWidth = new UnityEngine.UIElements.Length(85, UnityEngine.UIElements.LengthUnit.Percent);
+        toast.style.whiteSpace = UnityEngine.UIElements.WhiteSpace.Normal;
+        toast.style.unityFontStyleAndWeight = FontStyle.Bold;
+
+        root.Add(toast);
+        StartCoroutine(RemoveToastAfter(toast, duration));
+    }
+
+    private System.Collections.IEnumerator RemoveToastAfter(UnityEngine.UIElements.VisualElement el, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (el != null && el.parent != null) el.RemoveFromHierarchy();
+    }
+
+    // UX-06: Matchmaking timeout handler
+    private void OnMatchmakingTimeout()
+    {
+        var L = LocalizationManager.Instance;
+        string msg = L != null
+            ? L.GetText("menu_matchmaking_timeout", "Không tìm thấy đối thủ. Thử lại?")
+            : "Không tìm thấy đối thủ. Thử lại?";
+        ShowInfoToast(msg, 4f);
         ShowHomePanel();
     }
 
@@ -345,20 +432,24 @@ public class MainMenuUIController_UXML : MonoBehaviour
         var pdm = PlayerDataManager.Instance;
         var L = LocalizationManager.Instance;
 
+        if (titleLabel != null) titleLabel.text = L.GetText("logout_confirm_title", "ĐĂNG XUẤT");
+        if (confirmBtn != null) confirmBtn.text = L.GetText("logout_confirm_ok", "ĐĂNG XUẤT");
+        if (cancelBtn != null) cancelBtn.text = L.GetText("logout_confirm_cancel", "HỦY");
+
         // Cấu hình tin nhắn cảnh báo
         if (fm != null && fm.IsAuthenticated)
         {
-            // Kiểm tra xem có phải tài khoản Guest không (thường Guest sẽ không có Email)
-            bool isGuest = string.IsNullOrEmpty(fm.LocalUserId) || fm.LocalDisplayName.Contains("Player_"); 
+            // BUG-10 FIX: Dùng IsAnonymous (từ FirebaseManager) thay vì dựa vào tên
+            bool isGuest = fm.IsAnonymous; 
             
             if (isGuest)
             {
-                msgLabel.text = "CANH BAO: Ban dang dung tai khoan KHACH. Dang xuat se lam MAT TOAN BO du lieu choi!";
+                msgLabel.text = L.GetText("logout_confirm_msg_guest", "CẢNH BÁO: Đăng xuất sẽ làm MẤT dữ liệu!");
                 msgLabel.style.color = Color.red;
             }
             else
             {
-                msgLabel.text = "Ban co chac chan muon dang xuat khoi tai khoan nay không?";
+                msgLabel.text = L.GetText("logout_confirm_msg_user", "Bạn có chắc chắn muốn đăng xuất không?");
                 msgLabel.style.color = new Color(0.2f, 0.2f, 0.2f);
             }
         }
@@ -457,11 +548,34 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         if (saveBtn != null)
         {
-            saveBtn.clicked += async () => {
+            saveBtn.clicked += async () =>
+            {
                 string newName = nameInput.value.Trim();
-                if (newName.Length < 3) {
-                    Debug.LogWarning("[Profile] Tên quá ngắn!");
+
+                // FEAT-03: Hiển lỗi trên UI thay vì chỉ log warning
+                if (newName.Length < 3)
+                {
+                    var errLabel = _profilePopup.Q<Label>("profile-name-error");
+                    if (errLabel == null)
+                    {
+                        // Tạo label lỗi nếu chưa có trong UXML
+                        errLabel = new Label();
+                        errLabel.name = "profile-name-error";
+                        errLabel.style.color = new Color(0.87f, 0.12f, 0.12f);
+                        errLabel.style.fontSize = 24;
+                        errLabel.style.marginTop = 8;
+                        nameInput.parent?.Add(errLabel);
+                    }
+                    var L2 = LocalizationManager.Instance;
+                    errLabel.text = L2 != null
+                        ? L2.GetText("profile_name_too_short", "Tên phải từ 3 ký tự trở lên.")
+                        : "Tên phải từ 3 ký tự trở lên.";
                     return;
+                }
+                else
+                {
+                    // Xóa lỗi nếu có
+                    _profilePopup.Q<Label>("profile-name-error")?.RemoveFromHierarchy();
                 }
 
                 data.playerName = newName;
@@ -475,7 +589,8 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 }
 
                 RefreshPlayerStatsUI();
-                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
+                UIAnimator.HidePopupAnim(overlay, popupCard, () =>
+                {
                     _profilePopup.RemoveFromHierarchy();
                 });
             };
@@ -528,6 +643,27 @@ public class MainMenuUIController_UXML : MonoBehaviour
     // nên không cần lọc danh sách ngôn ngữ ở đây nữa.
 
 
+    // UX-08: Android back button
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            // Nếu đang trong matchmaking panel, hủy matchmaking
+            if (_matchmakingPanel != null && _matchmakingPanel.style.display == DisplayStyle.Flex)
+            {
+                OnCancelMatchClicked();
+                return;
+            }
+            // Nếu có popup settings/profile/logout, đóng popup
+            if (_settingsPopup != null && _settingsPopup.parent != null)
+            {
+                CloseSettingsPopup();
+                return;
+            }
+            Application.Quit();
+        }
+    }
+
     private void RefreshSettingsPopupLocalization()
     {
         if (_settingsPopup == null || LocalizationManager.Instance == null || !LocalizationManager.Instance.IsReady) return;
@@ -545,7 +681,7 @@ public class MainMenuUIController_UXML : MonoBehaviour
         if (closeBtn != null) closeBtn.text = L.GetText("settings_close");
 
         var logoutBtn = _settingsPopup.Q<Button>("logout-btn");
-        if (logoutBtn != null) logoutBtn.text = L.GetText("settings_logout", "ĐĂNG XUẤT");
+        if (logoutBtn != null) logoutBtn.text = L.GetText("settings_logout");
     }
 
     private void CloseSettingsPopup()

@@ -1,17 +1,20 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; align-items: center; justify-content: center; padding: 5%;">
-        <!-- Logo Placeholder -->
-        <ui:VisualElement name="logo" style="width: 50%; aspect-ratio: 1; background-color: white; border-radius: 40px; margin-bottom: 10%; justify-content: center; align-items: center;">
-            <ui:Label text="PVP" style="color: #461A42; font-size: 80px; -unity-font-style: bold;" />
+        <!-- G-07: Logo với glow -->
+        <ui:VisualElement name="logo" style="width: 45%; aspect-ratio: 1; max-width: 200px; background-color: rgba(255, 255, 255, 0.10); border-radius: 40px; margin-bottom: 8%; justify-content: center; align-items: center; border-width: 2px; border-color: rgba(255, 255, 255, 0.15);">
+            <ui:Label text="PVP" style="color: white; font-size: 60px; -unity-font-style: bold; letter-spacing: 4px;" />
         </ui:VisualElement>
         
-        <ui:Label name="status-label" text="DANG TAI DU LIEU..." style="color: white; font-size: 48px; margin-bottom: 30px; -unity-font-style: bold;" />
+        <ui:Label name="status-label" text="ĐANG TẢI DỮ LIỆU..." style="color: white; font-size: 40px; margin-bottom: 20px; -unity-font-style: bold; letter-spacing: 2px;" />
         
-        <!-- Loading Bar -->
-        <ui:VisualElement name="loading-bar-container" class="progress-container" style="width: 80%; height: 24px;">
-            <ui:VisualElement name="loading-fill" class="progress-fill" style="width: 0%;" />
+        <!-- Loading Bar — G-09: Gradient -->
+        <ui:VisualElement name="loading-bar-container" class="progress-container" style="width: 80%; height: 20px;">
+            <ui:VisualElement name="loading-fill" class="progress-fill gradient" style="width: 0%;" />
         </ui:VisualElement>
-        <ui:Label name="progress-label" text="0%" style="color: rgba(255, 255, 255, 0.7); font-size: 36px; margin-top: 15px;" />
+        <ui:Label name="progress-label" text="0%" style="color: rgba(255, 255, 255, 0.6); font-size: 28px; margin-top: 12px;" />
+
+        <!-- G-08: Loading tips -->
+        <ui:Label name="tip-label" text="" style="color: rgba(255, 255, 255, 0.35); font-size: 22px; margin-top: 50px; -unity-text-align: middle-center; white-space: normal; max-width: 80%;" />
     </ui:VisualElement>
 </ui:UXML>

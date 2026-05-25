@@ -26,6 +26,14 @@ public class GameController : MonoBehaviour
     public static event Action<int> OnCountdownTick;
     public static event Action OnGameOver;
     public static event Action OnOpponentLeft;  // Được fire khi đối thủ rớt mạng
+    /// <summary>UX-01: Fire sau mỗi câu — thông báo đối thủ đúng hay sai (true = đúng)</summary>
+    public static event Action<bool> OnOpponentAnswerResult;
+    /// <summary>UX-03: Fire sau mỗi câu — tham số (p1Correct, p2Correct, p1Score, p2Score, isLastQuestion)</summary>
+    public static event Action<bool, bool, int, int, bool> OnTurnSummary;
+
+    // BUG-03: Online AFK timeout coroutine
+    private Coroutine _afkTimeoutCoroutine = null;
+    private const float AFK_TIMEOUT_EXTRA = 5f; // Thêm 5s sau QuestionDuration trước khi auto-submit -1 cho P2
 
     [Header("Tham chiếu các Manager")]
     [SerializeField] private QuizManager quizManager;
@@ -40,6 +48,10 @@ public class GameController : MonoBehaviour
     private bool _isOnline = false;
     private bool _opponentLeft = false;
     private int _currentLocalAnswer = -1;
+    // BUG-02: Lưu answer của P2 cho offline mode
+    private int _currentP2Answer = -1;
+    // BUG-01: Flag chống reveal trùng
+    private bool _isRevealing = false;
 
     private void Awake()
     {
@@ -119,10 +131,18 @@ public class GameController : MonoBehaviour
                 break;
             case GameState.Playing:
                 _currentLocalAnswer = -1;
+                _currentP2Answer = -1;
+                _isRevealing = false;
                 timerController.StartTimer();
                 StartCoroutine(StartQuizWithSeed());
                 if (AudioManager.Instance != null) 
                     AudioManager.Instance.PlayBGM(AudioManager.Instance.bgmGame);
+                // BUG-03: Bắt đầu AFK timeout cho online mode
+                if (_isOnline)
+                {
+                    if (_afkTimeoutCoroutine != null) StopCoroutine(_afkTimeoutCoroutine);
+                    _afkTimeoutCoroutine = StartCoroutine(AfkTimeoutRoutine());
+                }
                 break;
             case GameState.GameOver:
                 timerController.StopTimer();
@@ -178,13 +198,29 @@ public class GameController : MonoBehaviour
     private void HandleBothPlayersAnswered(int p1Answer, int p2Answer)
     {
         if (CurrentState != GameState.Playing) return;
+        // BUG-02: Lưu P2 answer để HandleTimerEnd dùng
+        _currentP2Answer = p2Answer;
         StartCoroutine(RevealAndAdvance(p1Answer, p2Answer));
     }
 
     private IEnumerator RevealAndAdvance(int p1Answer, int p2Answer)
     {
+        // BUG-01: Tránh reveal trùng lặp
+        if (_isRevealing) yield break;
+        _isRevealing = true;
+
+        // BUG-01: Dừng timer ngay khi bắt đầu reveal
+        timerController.StopTimer();
+
+        // BUG-03: Hủy AFK timeout
+        if (_afkTimeoutCoroutine != null)
+        {
+            StopCoroutine(_afkTimeoutCoroutine);
+            _afkTimeoutCoroutine = null;
+        }
+
         var question = quizManager.CurrentQuestion;
-        if (question == null) yield break;
+        if (question == null) { _isRevealing = false; yield break; }
 
         int correctIdx = question.correctAnswerIndex;
 
@@ -196,6 +232,10 @@ public class GameController : MonoBehaviour
         if (!_isOnline)
             scoreManager.CheckAnswer(2, p2Answer);
 
+        // UX-01: Thông báo UI đối thủ đúng hay sai
+        bool isOpponentCorrect = (p2Answer == correctIdx);
+        OnOpponentAnswerResult?.Invoke(isOpponentCorrect);
+
         if (InputController_UXML.Instance != null)
             yield return InputController_UXML.Instance.ShowAnswerFeedback(correctIdx);
         else
@@ -203,19 +243,36 @@ public class GameController : MonoBehaviour
 
         if (CurrentState == GameState.Playing)
         {
+            bool isCorrect = (p1Answer == correctIdx);
+            bool hasMore = quizManager.HasMoreQuestions();
+
+            // UX-03: Fire turn summary event before advancing
+            OnTurnSummary?.Invoke(isCorrect, isOpponentCorrect, scoreManager.Player1Score, scoreManager.Player2Score, !hasMore);
+            yield return new WaitForSeconds(1.0f); // Show summary briefly (đã có ~1.5s feedback trước đó)
+
             // Reset đáp án cho câu tiếp theo
             _currentLocalAnswer = -1;
-            
-            if (quizManager.HasMoreQuestions())
+            _currentP2Answer = -1;
+
+            if (hasMore)
             {
                 quizManager.NextQuestion();
                 timerController.StartTimer();
+
+                // BUG-03 FIX: Restart AFK timeout cho câu hỏi tiếp theo
+                if (_isOnline)
+                {
+                    if (_afkTimeoutCoroutine != null) StopCoroutine(_afkTimeoutCoroutine);
+                    _afkTimeoutCoroutine = StartCoroutine(AfkTimeoutRoutine());
+                }
             }
             else
             {
                 ChangeState(GameState.GameOver);
             }
         }
+
+        _isRevealing = false;
     }
 
     /// <summary>
@@ -304,6 +361,9 @@ public class GameController : MonoBehaviour
             OnCountdownTick?.Invoke(i);
             yield return new WaitForSeconds(1f);
         }
+        // UX-04: Fire 0 = "GO!"
+        OnCountdownTick?.Invoke(0);
+        yield return new WaitForSeconds(0.5f);
         ChangeState(GameState.Playing);
     }
 
@@ -313,10 +373,22 @@ public class GameController : MonoBehaviour
         
         Debug.Log("[GameController] Hết giờ! Đang chấm điểm...");
         
-        // Khi hết giờ mới thực hiện chấm điểm và hiện feedback
-        // P2 (đối thủ) trong mode online sẽ được ScoreManager tự cập nhật qua Firebase
-        // Ở đây ta chỉ cần kích hoạt Reveal cho P1
-        StartCoroutine(RevealAndAdvance(_currentLocalAnswer, -1)); // -1 cho p2 vì p2 đã có sync riêng
+        // BUG-02: Dùng _currentP2Answer thay vì hardcode -1 để bot offline không bị tính sai
+        // Online: nếu P2 chưa trả lời, _currentP2Answer vẫn là -1 (mặc định sai)
+        StartCoroutine(RevealAndAdvance(_currentLocalAnswer, _currentP2Answer));
+    }
+
+    // BUG-03: AFK timeout cho online mode — nếu P2 không trả lời sau QuestionDuration + 5s, auto submit -1
+    private IEnumerator AfkTimeoutRoutine()
+    {
+        float timeout = timerController.TotalTime + AFK_TIMEOUT_EXTRA;
+        yield return new WaitForSeconds(timeout);
+        
+        if (CurrentState == GameState.Playing)
+        {
+            Debug.LogWarning("[GameController] P2 (Opponent) không trả lời kịp — auto submit -1.");
+            HandleBothPlayersAnswered(_currentLocalAnswer, -1);
+        }
     }
 
     private void HandleQuestionsExhausted() 

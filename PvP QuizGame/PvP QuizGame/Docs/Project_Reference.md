@@ -1,4 +1,4 @@
-# TÀI LIỆU THAM CHIẾU DỰ ÁN — PvP Quiz Game
+![alt text](image.png)# TÀI LIỆU THAM CHIẾU DỰ ÁN — PvP Quiz Game
 > **Phiên bản:** 1.0 | **Cập nhật:** 30/04/2026  
 > **Mục đích:** Nguồn tham chiếu duy nhất (Single Source of Truth) phục vụ viết báo cáo môn học. Mọi nội dung bám sát source code thực tế và Game_Flow_Documentation.md.  
 > **Lưu ý:** Chức năng Admin Panel đã bị loại bỏ khỏi phiên bản hiện tại.

@@ -31,11 +31,29 @@ public class GameManager : MonoBehaviour
     }
 
     // ==================== CHUYỂN SCENE ====================
-    public void LoadInitScene() => SceneManager.LoadScene("InitScene");
+    public void LoadInitScene()
+    {
+        if (SceneTransition.Instance != null)
+            SceneTransition.Instance.LoadSceneWithFade("InitScene");
+        else
+            SceneManager.LoadScene("InitScene");
+    }
     
-    public void LoadHomeScene() => SceneManager.LoadScene("HomeScene");
+    public void LoadHomeScene()
+    {
+        if (SceneTransition.Instance != null)
+            SceneTransition.Instance.LoadSceneWithFade("HomeScene");
+        else
+            SceneManager.LoadScene("HomeScene");
+    }
     
-    public void LoadGameplayScene() => SceneManager.LoadScene("GameplayScene");
+    public void LoadGameplayScene()
+    {
+        if (SceneTransition.Instance != null)
+            SceneTransition.Instance.LoadSceneWithFade("GameplayScene");
+        else
+            SceneManager.LoadScene("GameplayScene");
+    }
 
     /// <summary>
     /// Chuyển scene bất đồng bộ và trả về tiến trình (0.0 đến 1.0)

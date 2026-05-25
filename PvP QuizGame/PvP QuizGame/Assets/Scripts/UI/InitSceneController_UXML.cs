@@ -29,6 +29,21 @@ public class InitSceneController_UXML : MonoBehaviour
     private VisualElement _loadingFill;
     private Label _statusLabel;
     private Label _progressLabel;
+    // G-08: Loading tips
+    private Label _tipLabel;
+    private static readonly string[] _loadingTips = new string[]
+    {
+        "CPU là viết tắt của Central Processing Unit",
+        "Unity hỗ trợ cả 2D và 3D game development",
+        "Firebase giúp đồng bộ dữ liệu thời gian thực",
+        "Bạn có biết: Pi ≈ 3.14159...",
+        "Sông Nile là sông dài nhất thế giới",
+        "Sao Thủy là hành tinh gần Mặt Trời nhất",
+        "C# là ngôn ngữ chính trong Unity",
+        "HTML là viết tắt của HyperText Markup Language",
+        "Tổng các góc trong tam giác là 180 độ",
+        "Chiến thắng Điện Biên Phủ năm 1954",
+    };
 
     private VisualElement _authPopup;
     private bool _authPopupConfirmed = false;
@@ -43,9 +58,12 @@ public class InitSceneController_UXML : MonoBehaviour
         _loadingFill = root.Q<VisualElement>("loading-fill");
         _statusLabel = root.Q<Label>("status-label");
         _progressLabel = root.Q<Label>("progress-label");
+        // G-08
+        _tipLabel = root.Q<Label>("tip-label");
 
         UpdateProgressUI(0f);
         SetStatus("init_loading", "Đang khởi tạo...");
+        ShowRandomTip();
 
         LocalizationManager.OnLanguageChanged += OnLocalizationReady;
     }
@@ -143,9 +161,6 @@ public class InitSceneController_UXML : MonoBehaviour
     {
         if (authPopupTemplate == null)
         {
-            Debug.LogWarning("[Init] Chưa gán authPopupTemplate — dùng tên mặc định.");
-            PlayerPrefs.SetString("DisplayName", "Player_" + UnityEngine.Random.Range(1000, 9999));
-            PlayerPrefs.Save();
             yield break;
         }
 
@@ -161,6 +176,7 @@ public class InitSceneController_UXML : MonoBehaviour
         var loginContainer = _authPopup.Q<VisualElement>("login-container");
         var regContainer = _authPopup.Q<VisualElement>("register-container");
         var guestContainer = _authPopup.Q<VisualElement>("guest-container");
+        var forgotContainer = _authPopup.Q<VisualElement>("forgot-container");
         var errorLabel = _authPopup.Q<Label>("auth-error");
 
         void ShowContainer(VisualElement container)
@@ -169,9 +185,17 @@ public class InitSceneController_UXML : MonoBehaviour
             loginContainer.style.display = DisplayStyle.None;
             regContainer.style.display = DisplayStyle.None;
             guestContainer.style.display = DisplayStyle.None;
+            if (forgotContainer != null) forgotContainer.style.display = DisplayStyle.None;
+            
             container.style.display = DisplayStyle.Flex;
             if (errorLabel != null) errorLabel.text = "";
         }
+
+        // Đăng ký nhận lỗi từ Firebase
+        System.Action<string> authErrorHandler = (msg) => {
+            if (errorLabel != null) errorLabel.text = msg;
+        };
+        FirebaseManager.OnAuthError += authErrorHandler;
 
         // --- 1. MAIN CHOICE ---
         _authPopup.Q<Button>("goto-login-btn").clicked += () => ShowContainer(loginContainer);
@@ -191,8 +215,38 @@ public class InitSceneController_UXML : MonoBehaviour
             errorLabel.text = "Đang đăng nhập...";
             bool success = await FirebaseManager.Instance.SignInWithEmail(email, pass);
             if (success) _authPopupConfirmed = true;
-            else errorLabel.text = "Đăng nhập thất bại. Kiểm tra lại thông tin.";
+            // Không cần gán text lỗi ở đây vì OnAuthError đã làm
         };
+        var forgotPassBtn = _authPopup.Q<Button>("forgot-pass-btn");
+        if (forgotPassBtn != null) forgotPassBtn.clicked += () => ShowContainer(forgotContainer);
+
+        // --- 5. FORGOT PASSWORD ---
+        var forgotEmailField = _authPopup.Q<TextField>("forgot-email");
+        var forgotConfirmBtn = _authPopup.Q<Button>("forgot-confirm-btn");
+        var forgotBackBtn = _authPopup.Q<Button>("forgot-back-btn");
+
+        if (forgotBackBtn != null) forgotBackBtn.clicked += () => ShowContainer(loginContainer);
+        if (forgotConfirmBtn != null)
+        {
+            forgotConfirmBtn.clicked += async () => {
+                string email = forgotEmailField.value.Trim();
+                if (string.IsNullOrEmpty(email)) {
+                    errorLabel.text = "Vui lòng nhập email."; return;
+                }
+                errorLabel.text = "Đang gửi yêu cầu...";
+                bool success = await FirebaseManager.Instance.SendPasswordResetEmail(email);
+                if (success) {
+                    errorLabel.text = "Email đặt lại mật khẩu đã được gửi!";
+                    errorLabel.style.color = new Color(0.2f, 0.8f, 0.2f); // Màu xanh
+                    // Quay lại login sau 2.5s
+                    await Task.Delay(2500);
+                    if (forgotContainer.style.display == DisplayStyle.Flex) {
+                        ShowContainer(loginContainer);
+                        errorLabel.style.color = new Color(1f, 0.32f, 0.32f); // Trả lại màu đỏ
+                    }
+                }
+            };
+        }
 
         // --- 3. REGISTER ---
         var regName = _authPopup.Q<TextField>("reg-display-name");
@@ -209,10 +263,9 @@ public class InitSceneController_UXML : MonoBehaviour
             errorLabel.text = "Đang đăng ký...";
             bool success = await FirebaseManager.Instance.SignUpWithEmail(email, pass, name);
             if (success) {
-                PlayerPrefs.SetString("DisplayName", name); PlayerPrefs.Save();
                 _authPopupConfirmed = true;
             }
-            else errorLabel.text = "Đăng ký thất bại. Email có thể đã tồn tại.";
+            // Không cần gán text lỗi ở đây vì OnAuthError đã làm
         };
 
         // --- 4. GUEST ---
@@ -225,15 +278,14 @@ public class InitSceneController_UXML : MonoBehaviour
             errorLabel.text = "Đang vào...";
             bool success = await FirebaseManager.Instance.SignInAnonymousAndLoadProfile(name);
             if (success) {
-                PlayerPrefs.SetString("DisplayName", name); PlayerPrefs.Save();
                 _authPopupConfirmed = true;
             }
-            else errorLabel.text = "Không thể kết nối.";
         };
 
         _authPopupConfirmed = false;
         while (!_authPopupConfirmed) yield return null;
 
+        FirebaseManager.OnAuthError -= authErrorHandler;
         _authPopup.RemoveFromHierarchy();
         _authPopup = null;
     }
@@ -254,5 +306,13 @@ public class InitSceneController_UXML : MonoBehaviour
             _loadingFill.style.width = Length.Percent(progress * 100f);
         if (_progressLabel != null)
             _progressLabel.text = $"{Mathf.RoundToInt(progress * 100)}%";
+    }
+
+    // G-08: Hiển thị tip ngẫu nhiên khi loading
+    private void ShowRandomTip()
+    {
+        if (_tipLabel == null) return;
+        string tip = _loadingTips[UnityEngine.Random.Range(0, _loadingTips.Length)];
+        _tipLabel.text = "💡 " + tip;
     }
 }

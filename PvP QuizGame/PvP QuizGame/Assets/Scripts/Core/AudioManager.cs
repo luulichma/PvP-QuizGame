@@ -23,6 +23,10 @@ public class AudioManager : MonoBehaviour
     public AudioClip wrongSound;
     public AudioClip winSound;
     public AudioClip loseSound;
+    public AudioClip countdownTickSound;   // UX-04/07: Tick countdown
+    public AudioClip countdownGoSound;     // UX-07: "GO!" khi match bắt đầu
+    public AudioClip timerUrgentSound;     // UX-07: Tick-tock khi timer <= 5s
+    public AudioClip swooshSound;          // UX-07: Câu mới slide vào
 
     // Trạng thái Bật/Tắt âm thanh
     public bool IsMusicEnabled { get; private set; } = true;

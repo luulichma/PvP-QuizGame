@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 
 /// <summary>
-/// Quản lý bộ đếm ngược thời gian trận đấu (mặc định 180 giây).
+/// Quản lý bộ đếm ngược thời gian mỗi câu hỏi (mặc định 15 giây).
 /// Dùng Coroutine — không block main thread.
 /// Attach vào cùng GameObject với GameController.
 /// </summary>
@@ -21,7 +21,7 @@ public class TimerController : MonoBehaviour
 
     // ==================== INSPECTOR ====================
     [Header("Cài đặt thời gian")]
-    [SerializeField] private float totalTime = 180f;
+    [SerializeField] private float totalTime = 15f; // BUG-06 FIX: Đổi từ 180f -> 15f (mặc định theo Remote Config)
     public float TotalTime => totalTime;
 
     // ==================== TRẠNG THÁI ====================
@@ -92,11 +92,10 @@ public class TimerController : MonoBehaviour
     }
 
     // ==================== TIỆN ÍCH ====================
-    /// <summary>Trả về thời gian còn lại dạng mm:ss</summary>
+    /// <summary>Trả về thời gian còn lại dạng ss (vì timer luôn < 60s)</summary>
     public string GetFormattedTime()
     {
-        int minutes = Mathf.FloorToInt(RemainingTime / 60f);
         int seconds = Mathf.FloorToInt(RemainingTime % 60f);
-        return $"{minutes:00}:{seconds:00}";
+        return $"{seconds}"; // BUG-06 FIX: Chỉ hiển thị giây, không cần mm:ss
     }
 }

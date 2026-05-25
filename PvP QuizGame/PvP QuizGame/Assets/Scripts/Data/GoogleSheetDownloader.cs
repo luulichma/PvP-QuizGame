@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -66,11 +67,10 @@ public class GoogleSheetDownloader : MonoBehaviour
         {
             try
             {
-                // Cắt theo dấu phẩy. Nếu câu hỏi có dấu phẩy thì xài Regex, nhưng bài này ta dùng ký tự đặc biệt như dấu | hoặc cố gắng tránh dấu phẩy, 
-                // hoặc dùng parse CSV nâng cao sau. Tạm thời Split(",") chuẩn mức cơ bản.
-                string[] columns = lines[i].Split(',');
-
-                if (columns.Length >= 6)
+                // BUG-14 FIX: Dùng regex CSV parser thay vì Split(',') — xử lý quoted fields (có dấu phẩy trong nội dung)
+                string[] columns = ParseCSVLine(lines[i]);
+                
+                if (columns.Length >= 7)
                 {
                     QuestionData newQObj = ScriptableObject.CreateInstance<QuestionData>();
                     
@@ -106,5 +106,22 @@ public class GoogleSheetDownloader : MonoBehaviour
         // Nạp vào thẳng Database
         // CHÚ Ý: Vì ta thay thế data trong Runtime, nó sẽ biến mất khi tắt Game (tránh file rác)
         quizDatabase.questions = updatedQuestions.ToArray();
+    }
+
+    /// <summary>
+    /// BUG-14 FIX: Regex-based CSV line parser — xử lý quoted fields chứa dấu phẩy.
+    /// </summary>
+    private string[] ParseCSVLine(string line)
+    {
+        var result = new List<string>();
+        var regex = new Regex(@"(?:""(?<quoted>[^""]*(?:""""[^""]*)*)""|(?<unquoted>[^,]*))(?:,|$)");
+        foreach (Match m in regex.Matches(line))
+        {
+            string val = m.Groups["quoted"].Success
+                ? m.Groups["quoted"].Value.Replace("\"\"", "\"")
+                : m.Groups["unquoted"].Value;
+            result.Add(val);
+        }
+        return result.ToArray();
     }
 }
