@@ -18,9 +18,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
     [SerializeField] private VisualTreeAsset logoutPopupTemplate;
     [SerializeField] private VisualTreeAsset profilePopupTemplate;
 
-    [Header("Avatar Settings")]
-    [SerializeField] private Sprite[] avatarSprites;
-
     // Panels
     private VisualElement _homePanel;
     private VisualElement _matchmakingPanel;
@@ -418,15 +415,15 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         uiDocument.rootVisualElement.Add(popup);
 
-        // ANIMATION
+        // ANIMATION — tên khớp với LogoutConfirmPopup.uxml
         var overlay = popup.Q<VisualElement>("overlay") ?? popup.Children().First();
-        var popupCard = popup.Q<VisualElement>("popup") ?? overlay.Children().First();
+        var popupCard = popup.Q<VisualElement>("popup-container") ?? overlay.Children().First();
         UIAnimator.ShowPopupAnim(overlay, popupCard);
 
         var titleLabel = popup.Q<Label>("logout-title");
-        var msgLabel = popup.Q<Label>("logout-msg");
-        var confirmBtn = popup.Q<Button>("confirm-logout-btn");
-        var cancelBtn = popup.Q<Button>("cancel-logout-btn");
+        var msgLabel = popup.Q<Label>("message-label");
+        var confirmBtn = popup.Q<Button>("logout-yes-btn");
+        var cancelBtn = popup.Q<Button>("logout-no-btn");
 
         var fm = FirebaseManager.Instance;
         var pdm = PlayerDataManager.Instance;
@@ -437,11 +434,11 @@ public class MainMenuUIController_UXML : MonoBehaviour
         if (cancelBtn != null) cancelBtn.text = L.GetText("logout_confirm_cancel", "HỦY");
 
         // Cấu hình tin nhắn cảnh báo
-        if (fm != null && fm.IsAuthenticated)
+        if (fm != null && fm.IsAuthenticated && msgLabel != null)
         {
             // BUG-10 FIX: Dùng IsAnonymous (từ FirebaseManager) thay vì dựa vào tên
-            bool isGuest = fm.IsAnonymous; 
-            
+            bool isGuest = fm.IsAnonymous;
+
             if (isGuest)
             {
                 msgLabel.text = L.GetText("logout_confirm_msg_guest", "CẢNH BÁO: Đăng xuất sẽ làm MẤT dữ liệu!");
@@ -477,7 +474,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
     }
 
     // ==================== PROFILE ====================
-    private int _selectedAvatarIndex = 0;
     private VisualElement _profilePopup;
 
     private void OnOpenProfileClicked()
@@ -491,14 +487,14 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         uiDocument.rootVisualElement.Add(_profilePopup);
 
-        // ANIMATION
-        var overlay = _profilePopup.Q<VisualElement>("overlay") ?? _profilePopup.Children().First();
-        var popupCard = _profilePopup.Q<VisualElement>("popup") ?? overlay.Children().First();
+        // ANIMATION — tên khớp với ProfilePopup.uxml
+        var overlay = _profilePopup.Q<VisualElement>("profile-overlay") ?? _profilePopup.Children().First();
+        var popupCard = _profilePopup.Q<VisualElement>("profile-container") ?? overlay.Children().First();
         UIAnimator.ShowPopupAnim(overlay, popupCard);
 
-        var nameInput = _profilePopup.Q<TextField>("name-input");
-        var saveBtn = _profilePopup.Q<Button>("save-profile-btn");
-        var closeBtn = _profilePopup.Q<Button>("close-profile-btn");
+        var nameInput = _profilePopup.Q<TextField>("profile-name-field");
+        var saveBtn = _profilePopup.Q<Button>("profile-save-btn");
+        var closeBtn = _profilePopup.Q<Button>("profile-close-btn");
 
         // Localization cho Profile Popup
         if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
@@ -517,33 +513,20 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
         var data = PlayerDataManager.Instance.Data;
         if (nameInput != null) nameInput.value = data.playerName;
-        _selectedAvatarIndex = data.avatarIndex;
 
-        // Setup Avatar Grid
-        for (int i = 0; i < 8; i++)
+        // Hiển thị avatar bằng AvatarHelper (initial letter) — nhất quán với GameplayUI
+        var profileAvatar = _profilePopup.Q<VisualElement>("profile-avatar");
+        if (profileAvatar != null)
+            AvatarHelper.SetAvatar(profileAvatar, data.playerName);
+
+        // Cập nhật avatar preview khi user đổi tên
+        if (nameInput != null)
         {
-            int index = i;
-            var avatarBtn = _profilePopup.Q<Button>($"avatar-{index}");
-            if (avatarBtn != null)
-            {
-                if (avatarSprites != null && index < avatarSprites.Length)
-                {
-                    avatarBtn.style.backgroundImage = new StyleBackground(avatarSprites[index]);
-                    avatarBtn.style.backgroundColor = Color.clear;
-                }
-                
-                // Highlight nếu đang chọn
-                UpdateAvatarSelectionUI(avatarBtn, index == _selectedAvatarIndex);
-
-                avatarBtn.clicked += () => {
-                    _selectedAvatarIndex = index;
-                    // Refresh UI highlight
-                    for (int j = 0; j < 8; j++) {
-                        var b = _profilePopup.Q<Button>($"avatar-{j}");
-                        UpdateAvatarSelectionUI(b, j == _selectedAvatarIndex);
-                    }
-                };
-            }
+            nameInput.RegisterValueChangedCallback(evt => {
+                string preview = string.IsNullOrWhiteSpace(evt.newValue) ? "?" : evt.newValue.Trim();
+                if (profileAvatar != null)
+                    AvatarHelper.SetAvatar(profileAvatar, preview);
+            });
         }
 
         if (saveBtn != null)
@@ -579,7 +562,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 }
 
                 data.playerName = newName;
-                data.avatarIndex = _selectedAvatarIndex;
                 PlayerDataManager.Instance.SaveData();
 
                 // Sync Firebase
@@ -601,23 +583,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 _profilePopup.RemoveFromHierarchy();
             });
         };
-    }
-
-    private void UpdateAvatarSelectionUI(Button btn, bool isSelected)
-    {
-        if (btn == null) return;
-        Color color = isSelected ? new Color(0f, 0.9f, 1f) : Color.clear;
-        float width = isSelected ? 8 : 4;
-
-        btn.style.borderTopColor = color;
-        btn.style.borderBottomColor = color;
-        btn.style.borderLeftColor = color;
-        btn.style.borderRightColor = color;
-
-        btn.style.borderTopWidth = width;
-        btn.style.borderBottomWidth = width;
-        btn.style.borderLeftWidth = width;
-        btn.style.borderRightWidth = width;
     }
 
     // ======== Legacy helpers (giữ lại để tương thích nếu nơi khác gọi) ========
