@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+    <ui:VisualElement name="overlay" class="overlay">
+        <ui:VisualElement name="popup" class="card-glow" style="width: 95%; max-width: 800px; padding: 40px; height: 80%; align-self: center; background-color: rgba(13, 2, 33, 0.95);">
+            <!-- Header -->
+            <ui:VisualElement style="flex-direction: row; justify-content: center; align-items: center; margin-bottom: 20px;">
+                <ui:Label text="&#127942;" style="font-size: 50px; margin-right: 14px;" />
+                <ui:Label name="leaderboard-title" text="BANG XEP HANG" style="font-size: 50px; -unity-font-style: bold; color: #FFD700; letter-spacing: 2px;" />
+            </ui:VisualElement>
+
+            <!-- Loading Indicator -->
+            <ui:Label name="loading-label" text="Dang tai du lieu..." style="font-size: 30px; color: white; -unity-text-align: middle-center; flex-grow: 1;" />
+
+            <!-- List Container -->
+            <ui:ScrollView name="leaderboard-scroll" style="flex-grow: 1; display: none; margin-bottom: 20px;">
+                <!-- Items will be injected here via C# -->
+            </ui:ScrollView>
+
+            <ui:Button name="close-btn" text="DONG" class="btn btn-secondary" style="margin-top: auto; width: 100%; height: 80px; font-size: 36px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

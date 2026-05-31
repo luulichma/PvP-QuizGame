@@ -289,15 +289,9 @@ MonoBehaviour:
   settingsPopupTemplate: {fileID: 9197481963319205126, guid: 9a2a54381a34def46a5238cfdb3d7b87, type: 3}
   logoutPopupTemplate: {fileID: 9197481963319205126, guid: 2ed0898c67e442946af46e6646ddc98d, type: 3}
   profilePopupTemplate: {fileID: 9197481963319205126, guid: 88ba6d934a11c9345affe24ac368e0d8, type: 3}
-  avatarSprites:
-  - {fileID: -6157779062412324289, guid: 440d736cd8a815340addd3de00b9557f, type: 3}
-  - {fileID: 6213475660554524326, guid: cc9b3f70228adcf4798b75366894af86, type: 3}
-  - {fileID: -8393109254841117577, guid: ae29820422694804fbf769e95658165a, type: 3}
-  - {fileID: 3853515669415099730, guid: a7712cecd7fdc79498004a0a50949d9f, type: 3}
-  - {fileID: -3885142629450129882, guid: 977a9da7738c1d542aa4965c95e06c64, type: 3}
-  - {fileID: -1724822148711148119, guid: 131fc1d9fbf89074bb5dd244bb743f98, type: 3}
-  - {fileID: 6861894420282137670, guid: 3d6e55e4bc0e31148a8019ea0851921c, type: 3}
-  - {fileID: 9101278813714116849, guid: e7e56594d2fbc2a48a89d408eb5893b7, type: 3}
+  leaderboardPopupTemplate: {fileID: 9197481963319205126, guid: bccb004dd9c777043a52a9d8e4596db7, type: 3}
+  leaderboardEntryTemplate: {fileID: 9197481963319205126, guid: 3fe29a29c6741854b983eb9436d34471, type: 3}
+  achievementEntryTemplate: {fileID: 9197481963319205126, guid: d713e3f2b7dee284aa39e025b196f13f, type: 3}
 --- !u!114 &1251390085
 MonoBehaviour:
   m_ObjectHideFlags: 0

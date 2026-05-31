@@ -32,10 +32,16 @@ public class ScoreManager : MonoBehaviour
     private const int DRAW_MONEY = 40;
     private const int LOSE_MONEY = 10;
 
+    private const int WIN_RANK_POINTS = 30;
+    private const int DRAW_RANK_POINTS = 10;
+    private const int LOSE_RANK_POINTS = -10;
+
     public int LastRewardMoney { get; private set; }
     public int LastRewardExp { get; private set; }
+    public int LastRewardRankPoints { get; private set; }
 
     private WinResult? _forcedWinnerResult = null;
+    private bool _didAnswerWrongThisMatch = false;
 
     private void Awake()
     {
@@ -60,16 +66,45 @@ public class ScoreManager : MonoBehaviour
         var result = GetWinner();
         int expAwarded = 0;
         int moneyAwarded = 0;
+        int rankPointsAwarded = 0;
 
         if (result == WinResult.Player1Wins)
         {
             expAwarded = WIN_XP;
             moneyAwarded = WIN_MONEY;
+            rankPointsAwarded = WIN_RANK_POINTS;
+            
+            // Achievement tracking
+            bool isOffline = FirebaseManager.Instance != null && FirebaseManager.Instance.isOfflineMode;
+            if (isOffline)
+            {
+                PlayerDataManager.Instance.Data.botWins++;
+            }
+            else
+            {
+                PlayerDataManager.Instance.Data.currentWinStreak++;
+                if (PlayerDataManager.Instance.Data.currentWinStreak > PlayerDataManager.Instance.Data.highestWinStreak)
+                {
+                    PlayerDataManager.Instance.Data.highestWinStreak = PlayerDataManager.Instance.Data.currentWinStreak;
+                }
+            }
+            
+            if (!_didAnswerWrongThisMatch)
+            {
+                // Note: To simplify, we track perfect wins regardless of offline/online
+                // Thêm field perfectWins vào PlayerData nếu chưa có
+                // (Tôi sẽ tạo AchievementManager để check)
+                if (AchievementManager.Instance != null)
+                {
+                    AchievementManager.Instance.RecordPerfectWin();
+                }
+            }
         }
         else if (result == WinResult.Draw)
         {
             expAwarded = DRAW_XP;
             moneyAwarded = DRAW_MONEY;
+            rankPointsAwarded = DRAW_RANK_POINTS;
         }
         else
         {
@@ -78,22 +113,48 @@ public class ScoreManager : MonoBehaviour
             {
                 expAwarded = 0;
                 moneyAwarded = 0;
+                rankPointsAwarded = -20; // Phạt nặng hơn
             }
             else
             {
                 expAwarded = LOSE_XP;
                 moneyAwarded = LOSE_MONEY;
+                rankPointsAwarded = LOSE_RANK_POINTS;
+            }
+            
+            // Reset chuỗi thắng nếu không phải thắng (kể cả Draw) trong mode Online
+            bool isOffline = FirebaseManager.Instance != null && FirebaseManager.Instance.isOfflineMode;
+            if (!isOffline)
+            {
+                PlayerDataManager.Instance.Data.currentWinStreak = 0;
             }
         }
 
+        // Áp dụng Hệ số thưởng (Multiplier) dựa trên Level
+        int playerLevel = PlayerDataManager.Instance.Data.level;
+        float multiplier = 1.0f + (playerLevel * 0.1f);
+
+        // Chỉ nhân lên cho phần thưởng dương (không nhân phần trừ điểm)
+        if (expAwarded > 0) expAwarded = Mathf.RoundToInt(expAwarded * multiplier);
+        if (moneyAwarded > 0) moneyAwarded = Mathf.RoundToInt(moneyAwarded * multiplier);
+        if (rankPointsAwarded > 0) rankPointsAwarded = Mathf.RoundToInt(rankPointsAwarded * multiplier);
+
         LastRewardExp = expAwarded;
         LastRewardMoney = moneyAwarded;
+        LastRewardRankPoints = rankPointsAwarded;
 
         PlayerDataManager.Instance.Data.AddExp(expAwarded);
         PlayerDataManager.Instance.Data.AddMoney(moneyAwarded);
+        PlayerDataManager.Instance.Data.AddRankPoints(rankPointsAwarded);
         PlayerDataManager.Instance.SaveData();
 
-        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: +{expAwarded} XP và +{moneyAwarded}$ tiền thưởng!</color>");
+        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: +{expAwarded} XP, +{moneyAwarded}$ tiền, {rankPointsAwarded} Điểm Xếp Hạng! (Hệ số: {multiplier}x)</color>");
+        
+        // Gọi AchievementManager để check sau khi stats đã cập nhật
+        if (AchievementManager.Instance != null)
+        {
+            AchievementManager.Instance.CheckAchievements();
+        }
     }
 
     public void SetForcedWinner(WinResult result)
@@ -106,6 +167,7 @@ public class ScoreManager : MonoBehaviour
         Player1Score = 0;
         Player2Score = 0;
         _forcedWinnerResult = null;
+        _didAnswerWrongThisMatch = false;
         CurrentStreak = 0;
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }
@@ -139,6 +201,7 @@ public class ScoreManager : MonoBehaviour
             {
                 CurrentStreak = 0;
                 OnStreakChanged?.Invoke(0);
+                _didAnswerWrongThisMatch = true;
             }
         }
 

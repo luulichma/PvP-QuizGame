@@ -1,0 +1,43 @@
+{
+  "rules": {
+    "users": {
+      // Bất kỳ ai cũng có thể đọc thông tin public của user khác (như tên, điểm, level) để phục vụ Leaderboard
+      ".read": "auth != null",
+      "$uid": {
+        // User chỉ có thể ghi vào dữ liệu CỦA CHÍNH MÌNH
+        ".write": "$uid === auth.uid",
+        // Validation cơ bản (nâng cao hơn thì cần Cloud Functions)
+        "currentExp": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "money": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "rankPoints": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "level": {
+          ".validate": "newData.isNumber() && newData.val() >= 1"
+        }
+      }
+    },
+    "matchmakingQueue": {
+      // User chỉ có thể đọc/ghi Node của chính họ trong queue
+      "$tier": {
+        "$uid": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid"
+        }
+      }
+    },
+    "rooms": {
+      // Mọi người đều có thể đọc để Join/Find room
+      ".read": "auth != null",
+      "$roomId": {
+        // Chỉ cho phép tạo room nếu mình đang gửi dữ liệu hợp lệ (phải có mình trong danh sách players)
+        // Hoặc cho phép cập nhật room nếu mình đã nằm trong phòng đó
+        ".write": "auth != null && (!data.exists() || data.child('players').child(auth.uid).exists())"
+      }
+    }
+  }
+}

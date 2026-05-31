@@ -59,6 +59,8 @@ public class FirebaseManager : MonoBehaviour
     // ==================== INTERNAL HANDLERS (để unsubscribe đúng) ====================
     private EventHandler<ValueChangedEventArgs> _matchmakingHandler;
     private DatabaseReference _matchmakingRef;
+    // FIX-CANCEL: Flag tránh race condition khi OnMatchFound fire sau khi đã cancel
+    private bool _isMatchmakingCancelled = false;
 
     // ==================== LIFECYCLE ====================
     private void Awake()
@@ -293,7 +295,24 @@ public class FirebaseManager : MonoBehaviour
                 if (snapshot.Child("level").Value != null) pd.level = int.Parse(snapshot.Child("level").Value.ToString());
                 if (snapshot.Child("currentExp").Value != null) pd.currentExp = int.Parse(snapshot.Child("currentExp").Value.ToString());
                 if (snapshot.Child("money").Value != null) pd.money = int.Parse(snapshot.Child("money").Value.ToString());
+                if (snapshot.Child("rankPoints").Value != null) pd.rankPoints = int.Parse(snapshot.Child("rankPoints").Value.ToString());
                 if (snapshot.Child("avatarIndex").Value != null) pd.avatarIndex = int.Parse(snapshot.Child("avatarIndex").Value.ToString());
+                
+                // Achievements Sync
+                if (snapshot.Child("botWins").Value != null) pd.botWins = int.Parse(snapshot.Child("botWins").Value.ToString());
+                if (snapshot.Child("totalMoneyEarned").Value != null) pd.totalMoneyEarned = int.Parse(snapshot.Child("totalMoneyEarned").Value.ToString());
+                if (snapshot.Child("currentWinStreak").Value != null) pd.currentWinStreak = int.Parse(snapshot.Child("currentWinStreak").Value.ToString());
+                if (snapshot.Child("highestWinStreak").Value != null) pd.highestWinStreak = int.Parse(snapshot.Child("highestWinStreak").Value.ToString());
+                
+                pd.unlockedAchievements.Clear();
+                if (snapshot.Child("unlockedAchievements").Value != null)
+                {
+                    string rawList = snapshot.Child("unlockedAchievements").Value.ToString();
+                    if (!string.IsNullOrEmpty(rawList))
+                    {
+                        pd.unlockedAchievements = new System.Collections.Generic.List<string>(rawList.Split(','));
+                    }
+                }
             }
 
             Debug.Log($"[FirebaseManager] Loaded cloud profile: {LocalDisplayName}");
@@ -355,7 +374,14 @@ public class FirebaseManager : MonoBehaviour
             { "level",       pd.level },
             { "currentExp",  pd.currentExp },
             { "money",       pd.money },
+            { "rankPoints",  pd.rankPoints },
             { "avatarIndex", pd.avatarIndex },
+            { "botWins",     pd.botWins },
+            { "totalMoneyEarned", pd.totalMoneyEarned },
+            { "currentWinStreak", pd.currentWinStreak },
+            { "highestWinStreak", pd.highestWinStreak },
+            { "unlockedAchievements", string.Join(",", pd.unlockedAchievements) },
+            { "isGuest", IsAnonymous },
             { "lastSeen",    ServerValue.Timestamp }
         };
 
@@ -474,6 +500,14 @@ public class FirebaseManager : MonoBehaviour
             if (t.IsFaulted)
             {
                 OnMatchmakingError?.Invoke("Không tạo được room.");
+                return;
+            }
+
+            // FIX-CANCEL: Nếu đã cancel thì bỏ qua, xóa room vừa tạo luôn
+            if (_isMatchmakingCancelled)
+            {
+                Debug.Log("[FirebaseManager] Matchmaking đã bị cancel sau khi tạo room — xóa room và bỏ qua.");
+                _root.Child("rooms").Child(roomId).RemoveValueAsync();
                 return;
             }
 
@@ -626,6 +660,8 @@ public class FirebaseManager : MonoBehaviour
             OnMatchmakingError?.Invoke("Chưa đăng nhập Firebase.");
             return;
         }
+        // FIX-CANCEL: Reset flag khi bắt đầu tìm trận mới
+        _isMatchmakingCancelled = false;
         // UX-06: Bắt đầu timeout
         if (_matchmakingTimeoutCoroutine != null) StopCoroutine(_matchmakingTimeoutCoroutine);
         _matchmakingTimeoutCoroutine = StartCoroutine(MatchmakingTimeoutRoutine());
@@ -648,6 +684,9 @@ public class FirebaseManager : MonoBehaviour
     {
         if (!IsConnected || !IsAuthenticated) return;
 
+        // FIX-CANCEL: Đánh dấu đã cancel để block OnMatchFound nếu fire muộn
+        _isMatchmakingCancelled = true;
+
         // UX-06: Hủy timeout
         if (_matchmakingTimeoutCoroutine != null)
         {
@@ -661,6 +700,10 @@ public class FirebaseManager : MonoBehaviour
             _matchmakingHandler = null;
         }
         
+        // FIX-CANCEL: Xoá pending opponent để tránh CreateRoom sau khi cancel
+        _pendingOpponentUid = null;
+        _pendingOpponentName = null;
+
         string queuePath = GetCurrentQueuePath();
         _root.Child(queuePath).Child(LocalUserId).RemoveValueAsync();
         Debug.Log("[FirebaseManager] Đã huỷ matchmaking.");
@@ -670,6 +713,14 @@ public class FirebaseManager : MonoBehaviour
     {
         _root.Child("rooms").Child(roomId).GetValueAsync().ContinueWithOnMainThread(t => {
             if (t.IsFaulted) { OnMatchmakingError?.Invoke("Không đọc được room."); return; }
+
+            // FIX-CANCEL: Nếu đã cancel trong lúc đọc room → bỏ qua
+            if (_isMatchmakingCancelled)
+            {
+                Debug.Log("[FirebaseManager] Matchmaking đã bị cancel trong lúc JoinExistingRoom — bỏ qua.");
+                return;
+            }
+
             var snap = t.Result;
 
             CurrentRoomId = roomId;

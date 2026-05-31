@@ -28,8 +28,17 @@ public class PlayerDataManager : MonoBehaviour
         PlayerPrefs.SetInt("PlayerLevel", playerData.level);
         PlayerPrefs.SetInt("PlayerExp", playerData.currentExp);
         PlayerPrefs.SetInt("PlayerMoney", playerData.money);
+        PlayerPrefs.SetInt("PlayerRankPoints", playerData.rankPoints);
         PlayerPrefs.SetInt("PlayerAvatar", playerData.avatarIndex);
         PlayerPrefs.SetString("PlayerName", playerData.playerName);
+        
+        // Achievements
+        PlayerPrefs.SetInt("PlayerBotWins", playerData.botWins);
+        PlayerPrefs.SetInt("PlayerTotalMoney", playerData.totalMoneyEarned);
+        PlayerPrefs.SetInt("PlayerWinStreak", playerData.currentWinStreak);
+        PlayerPrefs.SetInt("PlayerHighestStreak", playerData.highestWinStreak);
+        PlayerPrefs.SetString("PlayerUnlockedAchievements", string.Join(",", playerData.unlockedAchievements));
+
         PlayerPrefs.Save();
         
         Debug.Log("[PlayerDataManager] Đã lưu dữ liệu người chơi.");
@@ -49,8 +58,22 @@ public class PlayerDataManager : MonoBehaviour
         playerData.level = PlayerPrefs.GetInt("PlayerLevel", 1);
         playerData.currentExp = PlayerPrefs.GetInt("PlayerExp", 0);
         playerData.money = PlayerPrefs.GetInt("PlayerMoney", 0);
+        playerData.rankPoints = PlayerPrefs.GetInt("PlayerRankPoints", 0);
         playerData.avatarIndex = PlayerPrefs.GetInt("PlayerAvatar", 0);
         playerData.playerName = PlayerPrefs.GetString("PlayerName", "Player_" + Random.Range(1000, 9999));
+        
+        // Achievements
+        playerData.botWins = PlayerPrefs.GetInt("PlayerBotWins", 0);
+        playerData.totalMoneyEarned = PlayerPrefs.GetInt("PlayerTotalMoney", 0);
+        playerData.currentWinStreak = PlayerPrefs.GetInt("PlayerWinStreak", 0);
+        playerData.highestWinStreak = PlayerPrefs.GetInt("PlayerHighestStreak", 0);
+        
+        string rawAch = PlayerPrefs.GetString("PlayerUnlockedAchievements", "");
+        playerData.unlockedAchievements.Clear();
+        if (!string.IsNullOrEmpty(rawAch))
+        {
+            playerData.unlockedAchievements = new System.Collections.Generic.List<string>(rawAch.Split(','));
+        }
         
         Debug.Log($"[PlayerDataManager] Đã tải dữ liệu: {playerData.playerName} - Level {playerData.level}");
     }
@@ -64,8 +87,16 @@ public class PlayerDataManager : MonoBehaviour
         PlayerPrefs.DeleteKey("PlayerLevel");
         PlayerPrefs.DeleteKey("PlayerExp");
         PlayerPrefs.DeleteKey("PlayerMoney");
+        PlayerPrefs.DeleteKey("PlayerRankPoints");
         PlayerPrefs.DeleteKey("PlayerAvatar");
         PlayerPrefs.DeleteKey("PlayerName");
+        
+        PlayerPrefs.DeleteKey("PlayerBotWins");
+        PlayerPrefs.DeleteKey("PlayerTotalMoney");
+        PlayerPrefs.DeleteKey("PlayerWinStreak");
+        PlayerPrefs.DeleteKey("PlayerHighestStreak");
+        PlayerPrefs.DeleteKey("PlayerUnlockedAchievements");
+        
         PlayerPrefs.Save();
         
         // Reset local SO values
@@ -74,6 +105,7 @@ public class PlayerDataManager : MonoBehaviour
             playerData.level = 1;
             playerData.currentExp = 0;
             playerData.money = 0;
+            playerData.rankPoints = 0;
             playerData.avatarIndex = 0;
             playerData.playerName = "Player_" + Random.Range(1000, 9999);
         }

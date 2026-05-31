@@ -1,171 +1,691 @@
 /* ==========================================================
    GlobalStyles.uss — PvP QuizGame
-   Cập nhật: 25/05/2026
+   Cập nhật: 27/05/2026
+   PHONG CÁCH: Modern Glassmorphism
    CHỈ sử dụng CSS properties được Unity UI Toolkit hỗ trợ.
    ========================================================== */
 
-/* G-01: Background — Unity USS không hỗ trợ linear-gradient() */
+/* ==================== BIẾN MÀU SẮC ==================== */
+/* (USS không hỗ trợ CSS custom properties nhưng ta comment lại palette ở đây)
+   --bg-deep:          #0d0221
+   --bg-surface:       #1a0a2e
+   --glass-bg:         rgba(255, 255, 255, 0.06)
+   --glass-border:     rgba(255, 255, 255, 0.12)
+   --glass-bg-hover:   rgba(255, 255, 255, 0.10)
+   --accent-gold:      #FFD166
+   --accent-cyan:      #00E5FF
+   --accent-purple:    #B388FF
+   --accent-green:     #00E676
+   --accent-red:       #FF5252
+   --text-primary:     #FFFFFF
+   --text-secondary:   rgba(255, 255, 255, 0.55)
+   --text-muted:       rgba(255, 255, 255, 0.30)
+*/
+
+/* ==================== BACKGROUND ==================== */
 .bg-gradient {
-    background-color: #1a0a2e;
+    background-color: #0d0221;
 }
 
-/* Base Card Style — G-02: Glassmorphism + G-03: Shadow */
+/* ==================== GLASS CARD — Glassmorphism Base ==================== */
 .card {
-    background-color: rgba(255, 255, 255, 0.10);
-    border-radius: 32px;
-    padding: 40px;
-    margin-bottom: 20px;
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.20);
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 28px;
+    padding: 36px;
+    margin-bottom: 16px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Button Base Styles — G-03: Shadow */
+.card-elevated {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 36px;
+    margin-bottom: 16px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.card-glow {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 28px;
+    padding: 36px;
+    margin-bottom: 16px;
+    border-width: 2px;
+    border-color: rgba(179, 136, 255, 0.35);
+}
+
+/* ==================== BUTTONS ==================== */
 .btn {
-    padding: 20px 40px;
-    border-radius: 20px;
+    padding: 18px 36px;
+    border-radius: 18px;
     color: #ffffff;
     -unity-font-style: bold;
-    font-size: 42px;
+    font-size: 48px;
     -unity-text-align: middle-center;
-    margin: 10px;
+    margin: 8px;
     cursor: initial;
     white-space: normal;
     border-left-width: 0;
     border-right-width: 0;
     border-top-width: 0;
-    border-bottom-width: 8px;
+    border-bottom-width: 6px;
+    transition-property: scale, translate, background-color, opacity;
+    transition-duration: 0.15s, 0.1s, 0.2s, 0.2s;
+    transition-timing-function: ease-out-back, ease, ease, ease;
 }
 
 .btn:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.12);
+    scale: 1.03 1.03;
 }
 
 .btn:active {
-    translate: 0 6px;
+    translate: 0 4px;
     border-bottom-width: 2px;
+    scale: 0.97 0.97;
 }
 
-/* Button Variants */
+/* Button Variants — more saturated, deeper shadows */
 .btn-primary {
-    background-color: #31B811;
-    border-bottom-color: #1D7A08;
+    background-color: #00C853;
+    border-bottom-color: #009624;
 }
-.btn-primary:hover { background-color: #38D413; }
+.btn-primary:hover { background-color: #00E676; }
 
 .btn-secondary {
-    background-color: #197BF0;
-    border-bottom-color: #0E52A3;
+    background-color: #2979FF;
+    border-bottom-color: #1565C0;
 }
-.btn-secondary:hover { background-color: #2E8AFF; }
+.btn-secondary:hover { background-color: #448AFF; }
 
 .btn-danger {
-    background-color: #F72548;
-    border-bottom-color: #B0152F;
+    background-color: #FF1744;
+    border-bottom-color: #C62828;
 }
-.btn-danger:hover { background-color: #FF3B5C; }
+.btn-danger:hover { background-color: #FF5252; }
 
 .btn-cancel {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.06);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
 }
-.btn-cancel:hover { background-color: rgba(255, 255, 255, 0.15); }
+.btn-cancel:hover { background-color: rgba(255, 255, 255, 0.12); }
 
-/* Answer Buttons (Pastel Vibrant) */
-.btn-ans-red {
-    background-color: #E21B3C;
-    border-bottom-color: #A30D25;
+/* Accent Glow Button — dùng cho "TÌM TRẬN" */
+.btn-glow {
+    background-color: #00C853;
+    border-bottom-color: #009624;
+    border-width: 0;
+    border-bottom-width: 6px;
+    border-top-width: 2px;
+    border-top-color: rgba(0, 230, 118, 0.4);
 }
-.btn-ans-red:hover { background-color: #FA2A4E; }
+.btn-glow:hover {
+    background-color: #00E676;
+    scale: 1.05 1.05;
+}
+
+/* ==================== ANSWER BUTTONS — Vibrant + Glass ==================== */
+.btn-ans-red {
+    background-color: rgba(229, 57, 53, 0.85);
+    border-bottom-color: #B71C1C;
+    border-width: 0;
+    border-bottom-width: 6px;
+    border-left-width: 4px;
+    border-left-color: rgba(255, 82, 82, 0.5);
+}
+.btn-ans-red:hover { background-color: rgba(255, 82, 82, 0.9); scale: 1.02 1.02; }
 
 .btn-ans-blue {
-    background-color: #1368CE;
-    border-bottom-color: #0A458F;
+    background-color: rgba(30, 136, 229, 0.85);
+    border-bottom-color: #0D47A1;
+    border-width: 0;
+    border-bottom-width: 6px;
+    border-left-width: 4px;
+    border-left-color: rgba(68, 138, 255, 0.5);
 }
-.btn-ans-blue:hover { background-color: #207BE8; }
+.btn-ans-blue:hover { background-color: rgba(68, 138, 255, 0.9); scale: 1.02 1.02; }
 
 .btn-ans-yellow {
-    background-color: #D89E00;
-    border-bottom-color: #9C7200;
+    background-color: rgba(255, 179, 0, 0.85);
+    border-bottom-color: #E65100;
+    border-width: 0;
+    border-bottom-width: 6px;
+    border-left-width: 4px;
+    border-left-color: rgba(255, 214, 0, 0.5);
 }
-.btn-ans-yellow:hover { background-color: #F0B100; }
+.btn-ans-yellow:hover { background-color: rgba(255, 214, 0, 0.9); scale: 1.02 1.02; }
 
 .btn-ans-green {
-    background-color: #26890C;
-    border-bottom-color: #165E04;
+    background-color: rgba(46, 125, 50, 0.85);
+    border-bottom-color: #1B5E20;
+    border-width: 0;
+    border-bottom-width: 6px;
+    border-left-width: 4px;
+    border-left-color: rgba(0, 230, 118, 0.5);
 }
-.btn-ans-green:hover { background-color: #31AD11; }
+.btn-ans-green:hover { background-color: rgba(0, 200, 83, 0.9); scale: 1.02 1.02; }
 
-/* Header Info */
+/* Answer button — Selected state (đang chờ) */
+.btn-ans-selected {
+    border-left-width: 6px;
+    border-left-color: #FFD166;
+    border-right-width: 6px;
+    border-right-color: #FFD166;
+}
+
+/* Answer button — Correct */
+.btn-ans-correct {
+    background-color: rgba(0, 200, 83, 0.95) !important;
+    border-width: 3px;
+    border-color: #00E676;
+}
+
+/* Answer button — Wrong */
+.btn-ans-wrong {
+    background-color: rgba(255, 23, 68, 0.95) !important;
+    border-width: 3px;
+    border-color: #FF5252;
+}
+
+/* ==================== HEADER TAG ==================== */
 .header-tag {
-    background-color: #FFD166;
-    color: #461A42;
-    padding: 6px 16px;
-    border-radius: 16px;
-    font-size: 30px;
+    background-color: rgba(255, 209, 102, 0.2);
+    color: #FFD166;
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-size: 34px;
     -unity-font-style: bold;
+    border-width: 1px;
+    border-color: rgba(255, 209, 102, 0.3);
 }
 
-/* Progress Bar — G-04 */
+/* ==================== PROGRESS BAR ==================== */
 .progress-container {
-    background-color: rgba(0, 0, 0, 0.4);
-    height: 20px;
-    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.08);
+    height: 18px;
+    border-radius: 9px;
     overflow: hidden;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 .progress-fill {
     background-color: #FFD166;
     height: 100%;
-    border-radius: 10px;
+    border-radius: 9px;
+    transition-property: width;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out;
 }
 
-/* G-09: Progress bar — dùng solid color thay gradient (USS không hỗ trợ linear-gradient) */
 .progress-fill.gradient {
-    background-color: #197BF0;
+    background-color: #448AFF;
 }
 
-/* Popup Overlay — G-19 */
+/* ==================== POPUP OVERLAY ==================== */
 .overlay {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.65);
     align-items: center;
     justify-content: center;
     -unity-background-scale-mode: stretch-to-fill;
 }
 
-/* Spinner cho matchmaking — G-14 (dùng border-top-color animation trong code) */
+/* ==================== SPINNER — Matchmaking ==================== */
 .spinner {
     width: 80px;
     height: 80px;
-    border-width: 8px;
-    border-color: rgba(255, 255, 255, 0.2);
-    border-top-color: #FFD166;
+    border-width: 6px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: #00E5FF;
+    border-right-color: #B388FF;
     border-radius: 50%;
     margin-bottom: 30px;
 }
 
-/* Timer Ring — G-16 */
+/* ==================== TIMER RING ==================== */
 .timer-ring {
-    width: 120px;
-    height: 120px;
-    border-radius: 60px;
-    border-width: 8px;
-    border-color: rgba(255, 255, 255, 0.3);
+    width: 110px;
+    height: 110px;
+    border-radius: 55px;
+    border-width: 5px;
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.3);
+    align-items: center;
+    justify-content: center;
 }
 
-/* XP Bar */
-.xp-bar-container {
+.timer-ring-active {
+    border-color: #00E5FF;
+}
+
+.timer-ring-urgent {
+    border-color: #FF5252;
+}
+
+/* ==================== TEXTFIELD ==================== */
+.unity-text-field__label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+.unity-text-field__input {
     background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 14px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    padding: 10px 14px;
+    transition-property: border-color, background-color;
+    transition-duration: 0.2s;
+}
+
+.unity-text-field__input:focus {
+    border-color: #B388FF;
+    background-color: rgba(0, 0, 0, 0.45);
+    border-width: 2px;
+}
+
+.unity-text-element {
+    color: #FFFFFF;
+}
+
+.unity-text-field__input > .unity-text-element--placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* ==================== XP BAR ==================== */
+.xp-bar-container {
+    background-color: rgba(255, 255, 255, 0.08);
     height: 8px;
     border-radius: 4px;
     overflow: hidden;
     margin-top: 4px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
 }
+
 .xp-bar-fill {
-    background-color: #8E44AD;
+    background-color: #B388FF;
     height: 100%;
     border-radius: 4px;
+    transition-property: width;
+    transition-duration: 0.6s;
+    transition-timing-function: ease-out;
 }
+
+/* ==================== PLAYER INFO CARD (HUD) ==================== */
+.player-card {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 10px 20px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.player-card-leading {
+    border-left-width: 3px;
+    border-left-color: #00E676;
+}
+
+/* ==================== AVATAR ==================== */
+.avatar-ring {
+    border-radius: 50%;
+    border-width: 3px;
+    border-color: rgba(255, 255, 255, 0.25);
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition-property: border-color;
+    transition-duration: 0.3s;
+}
+
+.avatar-ring-gold {
+    border-color: #FFD166;
+}
+
+.avatar-ring-cyan {
+    border-color: #00E5FF;
+}
+
+/* ==================== QUESTION CARD ==================== */
+.question-card {
+    width: 100%;
+    max-width: 900px;
+    min-height: 200px;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.07);
+    border-radius: 24px;
+    padding: 28px;
+    border-width: 1px;
+    border-color: rgba(179, 136, 255, 0.25);
+}
+
+/* ==================== RESULT POPUP ==================== */
+.result-card {
+    width: 90%;
+    max-width: 480px;
+    align-items: center;
+    background-color: rgba(13, 2, 33, 0.92);
+    border-width: 1px;
+    border-color: rgba(179, 136, 255, 0.3);
+    border-radius: 28px;
+    padding: 36px 28px;
+}
+
+/* ==================== TOAST ==================== */
+.toast {
+    position: absolute;
+    bottom: 200px;
+    left: 0;
+    right: 0;
+    -unity-text-align: middle-center;
+    font-size: 36px;
+    color: white;
+    background-color: rgba(13, 2, 33, 0.88);
+    padding: 16px 28px;
+    border-radius: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 80%;
+    white-space: normal;
+    -unity-font-style: bold;
+    border-width: 1px;
+    border-color: rgba(179, 136, 255, 0.2);
+}
+
+/* ==================== STREAK BADGE ==================== */
+.streak-badge {
+    position: absolute;
+    top: -20px;
+    right: -10px;
+    background-color: rgba(255, 209, 102, 0.9);
+    color: #0d0221;
+    font-size: 26px;
+    -unity-font-style: bold;
+    padding: 4px 12px;
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ==================== COUNTDOWN OVERLAY ==================== */
+.countdown-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(13, 2, 33, 0.85);
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-number {
+    font-size: 240px;
+    color: white;
+    -unity-font-style: bold;
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgba(179, 136, 255, 0.6);
+}
+
+.countdown-go {
+    font-size: 180px;
+    color: #00E676;
+    -unity-font-style: bold;
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgba(0, 230, 118, 0.4);
+}
+
+/* ==================== TURN SUMMARY ==================== */
+.turn-summary-card {
+    background-color: rgba(13, 2, 33, 0.95);
+    border-radius: 24px;
+    padding: 28px 44px;
+    align-items: center;
+    min-width: 380px;
+    border-width: 1px;
+    border-color: rgba(179, 136, 255, 0.25);
+}
+
+/* ==================== SCORE FLY TEXT ==================== */
+.score-fly {
+    position: absolute;
+    font-size: 43px;
+    color: #00E676;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== PARTICLE CONTAINER ==================== */
+.particle-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 16px;
+    border-radius: 2px;
+}
+
+/* ==================== GLOW RING (animated timer) ==================== */
+.glow-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    border-width: 5px;
+    border-color: #00E5FF;
+    background-color: rgba(0, 229, 255, 0.08);
+    align-items: center;
+    justify-content: center;
+}
+
+.glow-ring-danger {
+    border-color: #FF5252;
+    background-color: rgba(255, 82, 82, 0.08);
+}
+
+/* ==================== TOGGLE STYLING ==================== */
+.unity-toggle__input {
+    border-radius: 14px;
+}
+
+.unity-toggle__checkmark {
+    border-radius: 10px;
+}
+
+/* ==================== DROPDOWN STYLING ==================== */
+.unity-base-dropdown__item {
+    background-color: rgba(13, 2, 33, 0.95);
+    color: white;
+}
+
+.unity-base-dropdown__item:hover {
+    background-color: rgba(179, 136, 255, 0.2);
+}
+
+/* ==================== DIVIDER ==================== */
+.divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.08);
+    margin-top: 16px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+/* ==================== REWARD CONTAINER ==================== */
+.reward-container {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 30px;
+    background-color: rgba(255, 209, 102, 0.08);
+    border-radius: 16px;
+    padding: 12px 24px;
+    border-width: 1px;
+    border-color: rgba(255, 209, 102, 0.15);
+}
+
+/* ==================== HERO TITLE ==================== */
+.hero-title {
+    font-size: 82px;
+    color: white;
+    -unity-font-style: bold;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(179, 136, 255, 0.5);
+    letter-spacing: 3px;
+}
+
+.hero-subtitle {
+    font-size: 31px;
+    color: rgba(179, 136, 255, 0.6);
+    letter-spacing: 6px;
+    margin-top: 8px;
+}
+
+/* ==================== ICON BUTTON ==================== */
+.icon-btn {
+    width: 90px;
+    height: 90px;
+    padding: 0;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+    justify-content: center;
+    align-items: center;
+    font-size: 53px;
+    color: rgba(255, 255, 255, 0.7);
+    transition-property: background-color, scale;
+    transition-duration: 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    scale: 1.08 1.08;
+}
+
+.icon-btn:active {
+    scale: 0.94 0.94;
+}
+
+/* ==================== SETTINGS ROW ==================== */
+.settings-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 8px 0;
+}
+
+/* ==================== GLASS SEPARATOR ==================== */
+.glass-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.06);
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+/* ==================== VERSION LABEL ==================== */
+.version-label {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.2);
+    align-self: center;
+    margin-top: 8px;
+}
+
+
+/* ==================== BOTTOM NAVIGATION ==================== */
+.bottom-nav {
+    flex-direction: row;
+    height: 120px;
+    background-color: rgba(13, 2, 33, 0.95);
+    border-top-width: 2px;
+    border-top-color: rgba(179, 136, 255, 0.3);
+    align-items: center;
+    justify-content: space-around;
+    margin: 0 20px 20px 20px; border-radius: 30px;
+}
+
+.nav-tab {
+    flex-grow: 1;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-tab-icon {
+    font-size: 55px;
+    color: rgba(255, 255, 255, 0.5);
+    transition-property: color, scale;
+    transition-duration: 0.2s;
+}
+
+.nav-tab-label {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.5);
+    -unity-font-style: bold;
+    margin-top: 4px;
+    transition-property: color;
+    transition-duration: 0.2s;
+}
+
+.nav-tab:hover .nav-tab-icon { color: rgba(255, 255, 255, 0.8); scale: 1.1 1.1; }
+.nav-tab:hover .nav-tab-label { color: rgba(255, 255, 255, 0.8); }
+
+.nav-tab-active .nav-tab-icon { color: #00E5FF; scale: 1.15 1.15; }
+.nav-tab-active .nav-tab-label { color: #00E5FF; }
+
+/* ==================== SUB-TABS (Leaderboard Header) ==================== */
+.sub-tabs-container {
+    flex-direction: row;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 6px;
+    margin-bottom: 24px;
+}
+
+.sub-tab-btn {
+    flex-grow: 1;
+    background-color: transparent;
+    border-width: 0;
+    border-radius: 16px;
+    padding: 16px 0;
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgba(255, 255, 255, 0.5);
+    transition-property: background-color, color;
+    transition-duration: 0.2s;
+}
+
+.sub-tab-btn:hover { background-color: rgba(255, 255, 255, 0.1); color: white; }
+
+.sub-tab-active { background-color: rgba(179, 136, 255, 0.3); color: white; }
+
+

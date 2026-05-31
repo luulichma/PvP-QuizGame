@@ -1,20 +1,23 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; align-items: center; justify-content: center; padding: 5%;">
-        <!-- G-07: Logo với glow -->
-        <ui:VisualElement name="logo" style="width: 45%; aspect-ratio: 1; max-width: 200px; background-color: rgba(255, 255, 255, 0.10); border-radius: 40px; margin-bottom: 8%; justify-content: center; align-items: center; border-width: 2px; border-color: rgba(255, 255, 255, 0.15);">
-            <ui:Label text="PVP" style="color: white; font-size: 60px; -unity-font-style: bold; letter-spacing: 4px;" />
+        <!-- Logo — Glass card with glow border -->
+        <ui:VisualElement name="logo" style="width: 45%; aspect-ratio: 1; max-width: 200px; background-color: rgba(179, 136, 255, 0.08); border-radius: 40px; margin-bottom: 8%; justify-content: center; align-items: center; border-width: 2px; border-color: rgba(179, 136, 255, 0.3);">
+            <ui:Label text="PVP" style="color: white; font-size: 60px; -unity-font-style: bold; letter-spacing: 4px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(179, 136, 255, 0.4);" />
         </ui:VisualElement>
-        
-        <ui:Label name="status-label" text="ĐANG TẢI DỮ LIỆU..." style="color: white; font-size: 40px; margin-bottom: 20px; -unity-font-style: bold; letter-spacing: 2px;" />
-        
-        <!-- Loading Bar — G-09: Gradient -->
-        <ui:VisualElement name="loading-bar-container" class="progress-container" style="width: 80%; height: 20px;">
+
+        <ui:Label name="status-label" text="DANG TAI DU LIEU..." style="color: white; font-size: 36px; margin-bottom: 20px; -unity-font-style: bold; letter-spacing: 2px;" />
+
+        <!-- Loading Bar -->
+        <ui:VisualElement name="loading-bar-container" class="progress-container" style="width: 75%; height: 18px;">
             <ui:VisualElement name="loading-fill" class="progress-fill gradient" style="width: 0%;" />
         </ui:VisualElement>
-        <ui:Label name="progress-label" text="0%" style="color: rgba(255, 255, 255, 0.6); font-size: 28px; margin-top: 12px;" />
+        <ui:Label name="progress-label" text="0%" style="color: rgba(255, 255, 255, 0.45); font-size: 26px; margin-top: 10px;" />
 
-        <!-- G-08: Loading tips -->
-        <ui:Label name="tip-label" text="" style="color: rgba(255, 255, 255, 0.35); font-size: 22px; margin-top: 50px; -unity-text-align: middle-center; white-space: normal; max-width: 80%;" />
+        <!-- Loading tips -->
+        <ui:Label name="tip-label" text="" style="color: rgba(255, 255, 255, 0.75); font-size: 36px; -unity-font-style: bold; margin-top: 50px; -unity-text-align: middle-center; white-space: normal; max-width: 80%;" />
+
+        <!-- Ambient Particle Layer (floating background particles) -->
+        <ui:VisualElement name="init-particle-layer" class="particle-container" picking-mode="Ignore" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;" />
     </ui:VisualElement>
 </ui:UXML>

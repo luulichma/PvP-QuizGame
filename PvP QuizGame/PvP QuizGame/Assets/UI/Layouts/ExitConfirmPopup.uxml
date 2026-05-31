@@ -1,13 +1,18 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="overlay" class="overlay" style="z-index: 100;">
-        <ui:VisualElement name="popup" class="card" style="width: 85%; max-width: 600px; padding: 60px; align-items: center; background-color: rgba(15, 10, 30, 0.85); border-width: 2px; border-color: rgba(255, 255, 255, 0.15); border-radius: 32px;">
-            <ui:Label name="confirm-title" text="BỎ CUỘC?" style="font-size: 54px; -unity-font-style: bold; color: white; margin-bottom: 30px; letter-spacing: 1px;" />
-            <ui:Label name="confirm-msg" text="Nếu thoát bây giờ, bạn sẽ bị xử THUA ngay lập tức. Bạn có chắc chắn không?" style="font-size: 30px; color: rgba(255,255,255,0.7); -unity-text-align: middle-center; white-space: normal; margin-bottom: 50px;" />
+        <ui:VisualElement name="popup" class="card-glow" style="width: 90%; max-width: 650px; padding: 60px; align-items: center; background-color: rgba(13, 2, 33, 0.92);">
+            <!-- Warning Icon -->
+            <ui:VisualElement style="width: 100px; height: 100px; border-radius: 50px; background-color: rgba(255, 23, 68, 0.12); border-width: 3px; border-color: rgba(255, 23, 68, 0.25); justify-content: center; align-items: center; margin-bottom: 24px;">
+                <ui:Label text="!" style="font-size: 60px; color: #FF5252; -unity-font-style: bold;" />
+            </ui:VisualElement>
+
+            <ui:Label name="confirm-title" text="BO CUOC?" style="font-size: 56px; -unity-font-style: bold; color: white; margin-bottom: 24px; letter-spacing: 2px;" />
+            <ui:Label name="confirm-msg" text="Neu thoat bay gio, ban se bi xu THUA ngay lap tuc." style="font-size: 32px; color: rgba(255,255,255,0.6); -unity-text-align: middle-center; white-space: normal; margin-bottom: 50px;" />
 
             <ui:VisualElement name="button-row" style="flex-direction: column; width: 100%;">
-                <ui:Button name="confirm-btn" text="XÁC NHẬN THOÁT" class="btn btn-danger" style="height: 100px; font-size: 36px; margin-bottom: 20px; border-radius: 18px;" />
-                <ui:Button name="cancel-btn" text="HỦY" class="btn btn-cancel" style="height: 90px; font-size: 32px; border-radius: 16px;" />
+                <ui:Button name="confirm-btn" text="XAC NHAN THOAT" class="btn btn-danger" style="height: 100px; font-size: 40px; margin-bottom: 20px; border-radius: 24px;" />
+                <ui:Button name="cancel-btn" text="HUY" class="btn btn-cancel" style="height: 86px; font-size: 34px; border-radius: 20px;" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

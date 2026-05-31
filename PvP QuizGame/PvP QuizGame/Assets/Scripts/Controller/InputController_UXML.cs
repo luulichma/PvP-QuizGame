@@ -7,6 +7,7 @@ using DG.Tweening;
 
 /// <summary>
 /// Xử lý input của Player 1 sử dụng UI Toolkit.
+/// NÂNG CẤP: Ripple effect, Screen Shake, Haptic Feedback, cải tiến visual feedback.
 /// </summary>
 public class InputController_UXML : MonoBehaviour
 {
@@ -18,17 +19,23 @@ public class InputController_UXML : MonoBehaviour
     [SerializeField] private UIDocument uiDocument;
 
     private List<Button> _answerButtons = new List<Button>();
-
-    // Lưu lại lambda để có thể unsubscribe đúng cách (tránh memory leak)
     private Dictionary<Button, Action> _buttonHandlers = new Dictionary<Button, Action>();
-
-    // Lưu text gốc của từng nút để khôi phục sau khi hiện "ĐANG ĐỢI..."
     private string[] _originalAnswerTexts = new string[4];
 
-    // Màu sắc phản hồi (Vì USS không hỗ trợ Color dễ dàng qua code, ta dùng StyleColor)
-    private readonly Color _correctColor = new Color(0, 0.9f, 0.46f); // var(--color-accent-green)
-    private readonly Color _wrongColor = new Color(1f, 0.32f, 0.32f);   // var(--color-accent-red)
-    private readonly Color _defaultColor = new Color(0, 0.9f, 1f, 0.15f); // rgba(255,255,255,0.15)
+    // Màu sắc phản hồi — Modern Glassmorphism palette
+    private readonly Color _correctColor = new Color(0f, 0.9f, 0.46f);
+    private readonly Color _wrongColor = new Color(1f, 0.2f, 0.27f);
+    private readonly Color _selectedColor = new Color(1f, 0.84f, 0.28f, 0.8f); // Gold
+    private readonly Color _defaultColor = new Color(0, 0.9f, 1f, 0.15f);
+
+    // Original button colors
+    private static readonly Color[] AnswerBaseColors = new Color[]
+    {
+        new Color(0.90f, 0.22f, 0.20f, 0.85f), // Red
+        new Color(0.12f, 0.53f, 0.90f, 0.85f), // Blue
+        new Color(1f, 0.70f, 0f, 0.85f),        // Yellow
+        new Color(0.18f, 0.49f, 0.20f, 0.85f),  // Green
+    };
 
     private bool _inputLocked = false;
     private int _localPlayerId = 1;
@@ -43,18 +50,14 @@ public class InputController_UXML : MonoBehaviour
     private void OnEnable()
     {
         if (uiDocument == null) uiDocument = GetComponent<UIDocument>();
-
-        // Fallback: Nếu không thấy trên cùng GameObject, tìm trong toàn scene
         if (uiDocument == null) uiDocument = UnityEngine.Object.FindAnyObjectByType<UIDocument>();
 
         if (uiDocument == null)
         {
-            Debug.LogError("[InputController_UXML] Không tìm thấy UIDocument trong scene! Các nút bấm sẽ không hoạt động.");
+            Debug.LogError("[InputController_UXML] Không tìm thấy UIDocument!");
             return;
         }
 
-        // FIX: Có thể UIDocument chưa build xong rootVisualElement khi OnEnable chạy.
-        // Thử query luôn, nếu không thấy thì retry vài frame sau.
         QueryButtons();
         if (_answerButtons.Count < 4)
             StartCoroutine(RetryQueryButtonsRoutine());
@@ -63,9 +66,6 @@ public class InputController_UXML : MonoBehaviour
         QuizManager.OnQuestionChanged     += HandleQuestionChanged;
     }
 
-    /// <summary>
-    /// Retry query trong 30 frame (~0.5s) đề phòng UIDocument build chậm.
-    /// </summary>
     private IEnumerator RetryQueryButtonsRoutine()
     {
         for (int frame = 0; frame < 30; frame++)
@@ -76,11 +76,7 @@ public class InputController_UXML : MonoBehaviour
         }
 
         if (_answerButtons.Count < 4)
-        {
-            Debug.LogError($"[InputController_UXML] Sau 30 frame vẫn KHÔNG tìm thấy đủ nút ans-0..ans-3 (chỉ thấy {_answerButtons.Count}). " +
-                           "Kiểm tra: (1) UIDocument có gán đúng GameplayLayout.uxml, (2) Tên nút trong UXML đúng là ans-0/1/2/3, " +
-                           "(3) InputController_UXML và UIDocument có cùng GameObject hoặc gán SerializeField đúng.");
-        }
+            Debug.LogError($"[InputController_UXML] Chỉ tìm thấy {_answerButtons.Count}/4 nút.");
     }
 
     private void OnDisable()
@@ -88,7 +84,6 @@ public class InputController_UXML : MonoBehaviour
         GameController.OnGameStateChanged -= HandleGameStateChanged;
         QuizManager.OnQuestionChanged     -= HandleQuestionChanged;
 
-        // FIX: Unsubscribe từng lambda đã lưu trong _buttonHandlers
         foreach (var kv in _buttonHandlers)
         {
             if (kv.Key != null) kv.Key.clicked -= kv.Value;
@@ -101,8 +96,6 @@ public class InputController_UXML : MonoBehaviour
         if (_inputLocked || GameController.Instance == null) return;
         if (GameController.Instance.CurrentState != GameState.Playing) return;
 
-        // Keyboard Fallback (Legacy Input). Nếu project dùng InputSystem mới,
-        // cần đặt Project Settings > Player > Active Input Handling = "Both"
         if (Input.GetKeyDown(KeyCode.Alpha1)) HandleAnswerClicked(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) HandleAnswerClicked(1);
         if (Input.GetKeyDown(KeyCode.Alpha3)) HandleAnswerClicked(2);
@@ -116,16 +109,25 @@ public class InputController_UXML : MonoBehaviour
         _myLastAnswer = answerIndex;
         SetButtonsInteractable(false);
 
-        // HIỆU ỨNG PHẢN HỒI NGAY LẬP TỨC: Đổi màu nút thành Vàng để báo hiệu "Đang chờ đối thủ"
-        SetButtonColor(answerIndex, Color.yellow);
+        // HAPTIC: light tap khi chọn đáp án
+        HapticFeedback.Light();
 
-        // FIX: Localize text "ĐANG ĐỢI..." thay vì hardcode
+        // RIPPLE EFFECT trên nút đã chọn
+        if (answerIndex >= 0 && answerIndex < _answerButtons.Count)
+        {
+            if (UIParticleEffect.Instance != null)
+                UIParticleEffect.Instance.SpawnRipple(_answerButtons[answerIndex], _selectedColor);
+        }
+
+        // Visual: highlight nút đã chọn với border glow vàng
+        SetButtonSelected(answerIndex);
+
+        // Text "ĐANG ĐỢI..."
         if (answerIndex >= 0 && answerIndex < _answerButtons.Count && _answerButtons[answerIndex] != null)
         {
             string waitText = "...";
             if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
                 waitText = LocalizationManager.Instance.GetText("msg_waiting");
-
             _answerButtons[answerIndex].text = waitText;
         }
 
@@ -138,56 +140,111 @@ public class InputController_UXML : MonoBehaviour
         else
             LocalMatchProvider.Instance?.SubmitAnswerP1(answerIndex);
 
-        // Ghi nhận vào GameController để đợi hết giờ mới chấm
         if (GameController.Instance != null)
             GameController.Instance.SetLocalAnswer(answerIndex);
+    }
+
+    private void SetButtonSelected(int index)
+    {
+        if (index < 0 || index >= _answerButtons.Count) return;
+        var btn = _answerButtons[index];
+        if (btn == null) return;
+
+        // Glow border animation
+        btn.style.borderLeftColor = _selectedColor;
+        btn.style.borderRightColor = _selectedColor;
+        btn.style.borderLeftWidth = 4;
+        btn.style.borderRightWidth = 4;
+
+        // Subtle scale
+        UIAnimator.DOScale(btn, new Vector2(1.03f, 1.03f), 0.15f).SetEase(Ease.OutBack);
     }
 
     public IEnumerator ShowAnswerFeedback(int correctAnswerIndex)
     {
         bool isCorrect = (_myLastAnswer == correctAnswerIndex);
 
-        // Khôi phục text gốc của nút mình đã chọn (đang hiển thị "ĐANG ĐỢI...")
+        // Restore text gốc
         if (_myLastAnswer >= 0 && _myLastAnswer < _answerButtons.Count)
         {
             if (_originalAnswerTexts[_myLastAnswer] != null && _answerButtons[_myLastAnswer] != null)
                 _answerButtons[_myLastAnswer].text = _originalAnswerTexts[_myLastAnswer];
         }
 
-        if (_myLastAnswer >= 0)
+        if (_myLastAnswer >= 0 && _myLastAnswer < _answerButtons.Count)
         {
-            SetButtonColor(_myLastAnswer, isCorrect ? _correctColor : _wrongColor);
-            if (!isCorrect)
+            if (isCorrect)
             {
-                UIAnimator.DOShakePosition(_answerButtons[_myLastAnswer], 0.5f);
+                // CORRECT: Pulse glow xanh + haptic
+                UIAnimator.DOCorrectFeedback(_answerButtons[_myLastAnswer]);
+                HapticFeedback.Light();
             }
             else
             {
-                _answerButtons[_myLastAnswer].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(new Vector2(1.1f, 1.1f)));
+                // WRONG: Shake + flash đỏ + screen shake + haptic
+                UIAnimator.DOWrongFeedback(_answerButtons[_myLastAnswer]);
+                HapticFeedback.Medium();
+
+                // SCREEN SHAKE: rung toàn bộ root
+                if (uiDocument != null)
+                {
+                    var root = uiDocument.rootVisualElement;
+                    if (root != null)
+                        UIAnimator.DOScreenShake(root, 0.35f, 8f);
+                }
             }
         }
 
-        if (!isCorrect && correctAnswerIndex >= 0)
+        // Highlight đáp án đúng nếu user chọn sai
+        if (!isCorrect && correctAnswerIndex >= 0 && correctAnswerIndex < _answerButtons.Count)
         {
-            SetButtonColor(correctAnswerIndex, _correctColor);
-            _answerButtons[correctAnswerIndex].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(new Vector2(1.1f, 1.1f)));
+            UIAnimator.DOCorrectFeedback(_answerButtons[correctAnswerIndex]);
         }
 
-        // G-18: Score fly text khi đúng
+        // Score fly text khi đúng
         if (isCorrect && _myLastAnswer >= 0 && _myLastAnswer < _answerButtons.Count)
         {
             ShowScoreFlyText(_answerButtons[_myLastAnswer].parent ?? _answerButtons[_myLastAnswer], "+10");
+
+            // Sparkle nhỏ trên nút đúng
+            if (UIParticleEffect.Instance != null)
+            {
+                var particleLayer = uiDocument?.rootVisualElement?.Q<VisualElement>("particle-layer");
+                if (particleLayer != null)
+                    UIParticleEffect.Instance.SpawnSparkle(particleLayer, 50f, 75f, 8);
+            }
         }
 
         OnAnswerSubmitted?.Invoke(_localPlayerId, _myLastAnswer, isCorrect);
 
         yield return new WaitForSeconds(1.5f);
 
+        // Reset tất cả nút về trạng thái gốc
         for (int i = 0; i < _answerButtons.Count; i++)
         {
-            SetButtonColor(i, _defaultColor);
-            _answerButtons[i].style.scale = new StyleScale(new UnityEngine.UIElements.Scale(Vector2.one));
+            if (_answerButtons[i] == null) continue;
+
+            _answerButtons[i].style.backgroundColor = (i < AnswerBaseColors.Length) ? AnswerBaseColors[i] : _defaultColor;
+            _answerButtons[i].style.scale = new StyleScale(new Scale(Vector2.one));
+
+            // Reset border glow
+            _answerButtons[i].style.borderLeftWidth = 4;
+            _answerButtons[i].style.borderRightWidth = 0;
+            _answerButtons[i].style.borderLeftColor = GetAnswerGlowColor(i);
+            _answerButtons[i].style.borderRightColor = Color.clear;
         }
+    }
+
+    private Color GetAnswerGlowColor(int index)
+    {
+        return index switch
+        {
+            0 => new Color(1f, 0.32f, 0.32f, 0.5f),
+            1 => new Color(0.27f, 0.54f, 1f, 0.5f),
+            2 => new Color(1f, 0.84f, 0f, 0.5f),
+            3 => new Color(0f, 0.90f, 0.46f, 0.5f),
+            _ => Color.clear
+        };
     }
 
     private void SetButtonsInteractable(bool on)
@@ -203,9 +260,7 @@ public class InputController_UXML : MonoBehaviour
         if (index < 0 || index >= _answerButtons.Count) return;
         var btn = _answerButtons[index];
         if (btn != null)
-        {
             btn.style.backgroundColor = new StyleColor(color);
-        }
     }
 
     private void HandleGameStateChanged(GameState state)
@@ -220,67 +275,57 @@ public class InputController_UXML : MonoBehaviour
     {
         if (question == null) return;
 
-        // BỔ SUNG: Nếu danh sách nút bị trống hoặc chưa đủ 4, query lại
         if (_answerButtons == null || _answerButtons.Count < 4)
-        {
             QueryButtons();
-        }
 
         if (_answerButtons.Count == 0)
         {
-            Debug.LogWarning($"[InputController_UXML] HandleQuestionChanged nhưng _answerButtons rỗng! " +
-                             $"Question key = {question.questionText}");
+            Debug.LogWarning($"[InputController_UXML] HandleQuestionChanged nhưng _answerButtons rỗng!");
             return;
         }
 
         Debug.Log($"[InputController_UXML] Cập nhật {_answerButtons.Count} nút cho câu '{question.questionText}'");
 
-        // Cập nhật nội dung cho từng nút
         for (int i = 0; i < _answerButtons.Count; i++)
         {
             if (i < question.answers.Length)
             {
-                // LOCALIZATION: Dịch text từ mã Key (Ví dụ: a_it_001_1)
                 string ansKey = question.answers[i];
                 string ansText = LocalizationManager.Instance != null
                                  ? LocalizationManager.Instance.GetText(ansKey)
                                  : ansKey;
 
                 _answerButtons[i].text = ansText;
-                _originalAnswerTexts[i] = ansText; // Lưu để khôi phục sau "ĐANG ĐỢI..."
+                _originalAnswerTexts[i] = ansText;
                 _answerButtons[i].style.display = DisplayStyle.Flex;
+
+                // Restore base color
+                _answerButtons[i].style.backgroundColor = (i < AnswerBaseColors.Length) ? AnswerBaseColors[i] : _defaultColor;
+                _answerButtons[i].style.borderLeftWidth = 4;
+                _answerButtons[i].style.borderRightWidth = 0;
+                _answerButtons[i].style.borderLeftColor = GetAnswerGlowColor(i);
+                _answerButtons[i].style.borderRightColor = Color.clear;
             }
             else
             {
-                // Ẩn các nút thừa nếu câu hỏi có ít hơn 4 đáp án
                 _answerButtons[i].style.display = DisplayStyle.None;
             }
-            SetButtonColor(i, _defaultColor);
         }
 
         _inputLocked = false;
         _myLastAnswer = -1;
         SetButtonsInteractable(true);
 
-        // ANIMATION: Hiển thị hiệu ứng lượn sóng cho 4 đáp án
+        // CASCADE ANIMATION
         UIAnimator.AnimateAnswersEntry(_answerButtons);
     }
 
     private void QueryButtons()
     {
-        if (uiDocument == null)
-        {
-            Debug.LogWarning("[InputController_UXML] QueryButtons: uiDocument == null");
-            return;
-        }
+        if (uiDocument == null) return;
         var root = uiDocument.rootVisualElement;
-        if (root == null)
-        {
-            Debug.LogWarning("[InputController_UXML] QueryButtons: rootVisualElement == null (UIDocument chưa build xong?)");
-            return;
-        }
+        if (root == null) return;
 
-        // Cleanup handlers cũ trước khi query lại
         foreach (var kv in _buttonHandlers)
         {
             if (kv.Key != null) kv.Key.clicked -= kv.Value;
@@ -301,43 +346,36 @@ public class InputController_UXML : MonoBehaviour
             }
         }
 
-        // Reset cache text
         for (int i = 0; i < _originalAnswerTexts.Length; i++)
             _originalAnswerTexts[i] = null;
 
         if (_answerButtons.Count > 0)
-            Debug.Log($"[InputController_UXML] QueryButtons OK — tìm thấy {_answerButtons.Count}/4 nút.");
+            Debug.Log($"[InputController_UXML] QueryButtons OK — {_answerButtons.Count}/4 nút.");
     }
 
     public void SetPlayerId(int id) => _localPlayerId = id;
 
-    // G-18: Score fly text — "+10" bay lên từ nút đáp án
+    // Score fly text — "+10" bay lên
     private void ShowScoreFlyText(VisualElement parent, string text)
     {
         if (parent == null || uiDocument == null) return;
 
         var flyLabel = new Label(text);
-        flyLabel.style.position = Position.Absolute;
+        flyLabel.AddToClassList("score-fly");
         flyLabel.style.top = -30;
         flyLabel.style.left = Length.Percent(50);
-        flyLabel.style.fontSize = 36;
-        flyLabel.style.color = new Color(0f, 0.9f, 0.46f);
-        flyLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-        flyLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
         flyLabel.style.opacity = 1f;
         flyLabel.style.translate = new StyleTranslate(new Translate(new Length(0), new Length(0)));
+        flyLabel.pickingMode = PickingMode.Ignore;
 
         parent.Add(flyLabel);
 
-        // Animate: fly up + fade out
-        System.Action removeAction = () => {
-            if (flyLabel != null && flyLabel.parent != null)
-                flyLabel.RemoveFromHierarchy();
-        };
-
-        var seq = DG.Tweening.DOTween.Sequence();
-        seq.Join(flyLabel.DOFade(0f, 0.8f));
-        seq.Join(UIAnimator.DOTranslate(flyLabel, new Vector2(0, -60), 0.8f).SetEase(DG.Tweening.Ease.OutCubic));
-        seq.OnComplete(() => removeAction());
+        var seq = DOTween.Sequence();
+        seq.Join(flyLabel.DOFade(0f, 0.9f).SetDelay(0.1f));
+        seq.Join(UIAnimator.DOTranslate(flyLabel, new Vector2(0, -70), 0.9f).SetEase(Ease.OutCubic));
+        seq.Join(UIAnimator.DOScale(flyLabel, new Vector2(1.3f, 1.3f), 0.3f).SetEase(Ease.OutBack));
+        seq.OnComplete(() => {
+            if (flyLabel?.parent != null) flyLabel.RemoveFromHierarchy();
+        });
     }
 }

@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+    <ui:VisualElement name="overlay" class="overlay">
+        <ui:VisualElement name="popup" class="card-glow" style="width: 95%; max-width: 600px; padding: 40px; height: auto; align-self: center; background-color: rgba(13, 2, 33, 0.96);">
+            <!-- Header -->
+            <ui:VisualElement style="flex-direction: row; justify-content: center; align-items: center; margin-bottom: 30px;">
+                <ui:Label text="&#9881;" style="font-size: 40px; color: #B388FF; margin-right: 12px;" />
+                <ui:Label name="settings-title" text="CAI DAT" style="font-size: 40px; -unity-font-style: bold; color: white; letter-spacing: 2px;" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="settings-list">
+                <!-- Music -->
+                <ui:VisualElement class="settings-row">
+                    <ui:Label name="music-label" text="Am thanh" style="font-size: 30px; color: rgba(255, 255, 255, 0.85);" />
+                    <ui:Toggle name="music-toggle" value="true" style="scale: 1.4;" />
+                </ui:VisualElement>
+                <ui:VisualElement class="glass-separator" />
+
+                <!-- SFX -->
+                <ui:VisualElement class="settings-row">
+                    <ui:Label name="sfx-label" text="Hieu ung" style="font-size: 30px; color: rgba(255, 255, 255, 0.85);" />
+                    <ui:Toggle name="sfx-toggle" value="true" style="scale: 1.4;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="glass-separator" style="margin-top: 20px; margin-bottom: 24px;" />
+
+            <!-- Buttons -->
+            <ui:Button name="quit-game-btn" text="THOAT GAME" class="btn btn-danger" style="width: 100%; height: 70px; font-size: 30px; margin-bottom: 12px; border-radius: 20px;" />
+            <ui:Button name="cancel-btn" text="HUY" class="btn btn-cancel" style="width: 100%; height: 70px; font-size: 30px; border-radius: 20px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -248,7 +248,7 @@ public class GameController : MonoBehaviour
 
             // UX-03: Fire turn summary event before advancing
             OnTurnSummary?.Invoke(isCorrect, isOpponentCorrect, scoreManager.Player1Score, scoreManager.Player2Score, !hasMore);
-            yield return new WaitForSeconds(1.0f); // Show summary briefly (đã có ~1.5s feedback trước đó)
+            yield return new WaitForSeconds(3.0f); // Chờ đủ lâu để người chơi nhìn turn summary popup
 
             // Reset đáp án cho câu tiếp theo
             _currentLocalAnswer = -1;

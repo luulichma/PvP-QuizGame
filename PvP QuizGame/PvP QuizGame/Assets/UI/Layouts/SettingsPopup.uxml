@@ -1,28 +1,39 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement name="overlay" class="overlay">
-        <ui:VisualElement name="popup" class="card" style="width: 90%; max-width: 600px; padding: 50px; height: auto; align-self: center;">
-            <ui:Label name="settings-title" text="CÀI ĐẶT" style="font-size: 48px; -unity-font-style: bold; align-self: center; margin-bottom: 40px; color: #461A42;" />
+        <ui:VisualElement name="popup" class="card-glow" style="width: 95%; max-width: 700px; padding: 50px; height: auto; align-self: center; background-color: rgba(13, 2, 33, 0.92);">
+            <!-- Header -->
+            <ui:VisualElement style="flex-direction: row; justify-content: center; align-items: center; margin-bottom: 40px;">
+                <ui:Label text="&#9881;" style="font-size: 44px; color: #B388FF; margin-right: 14px;" />
+                <ui:Label name="settings-title" text="CAI DAT" style="font-size: 50px; -unity-font-style: bold; color: white; letter-spacing: 2px;" />
+            </ui:VisualElement>
 
             <ui:VisualElement name="settings-list">
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <ui:Label name="music-label" text="Âm thanh" style="font-size: 36px; color: #212121;" />
-                    <ui:Toggle name="music-toggle" value="true" style="scale: 1.5;" />
+                <!-- Music -->
+                <ui:VisualElement class="settings-row">
+                    <ui:Label name="music-label" text="Am thanh" style="font-size: 36px; color: rgba(255, 255, 255, 0.85);" />
+                    <ui:Toggle name="music-toggle" value="true" style="scale: 1.6;" />
                 </ui:VisualElement>
+                <ui:VisualElement class="glass-separator" />
 
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <ui:Label name="sfx-label" text="Hiệu ứng" style="font-size: 36px; color: #212121;" />
-                    <ui:Toggle name="sfx-toggle" value="true" style="scale: 1.5;" />
+                <!-- SFX -->
+                <ui:VisualElement class="settings-row">
+                    <ui:Label name="sfx-label" text="Hieu ung" style="font-size: 36px; color: rgba(255, 255, 255, 0.85);" />
+                    <ui:Toggle name="sfx-toggle" value="true" style="scale: 1.6;" />
                 </ui:VisualElement>
+                <ui:VisualElement class="glass-separator" />
 
-                <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <ui:Label name="language-label" text="Ngôn ngữ" style="font-size: 36px; color: #212121;" />
-                    <ui:DropdownField name="language-dropdown" style="width: 250px; font-size: 28px;" />
+                <!-- Language -->
+                <ui:VisualElement class="settings-row">
+                    <ui:Label name="language-label" text="Ngon ngu" style="font-size: 36px; color: rgba(255, 255, 255, 0.85);" />
+                    <ui:DropdownField name="language-dropdown" style="width: 280px; font-size: 30px;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:Button name="logout-btn" text="ĐĂNG XUẤT" class="btn" style="margin-top: 40px; width: 100%; height: 70px; font-size: 28px; background-color: rgba(0,0,0,0.2); border-width: 0; color: #E21B3C;" />
-            <ui:Button name="close-btn" text="ĐÓNG" class="btn btn-danger" style="margin-top: 20px; width: 100%; height: 80px; font-size: 36px;" />
+            <ui:VisualElement class="glass-separator" style="margin-top: 24px; margin-bottom: 24px;" />
+
+            <ui:Button name="logout-btn" text="DANG XUAT" class="btn" style="width: 100%; height: 76px; font-size: 30px; background-color: rgba(255, 23, 68, 0.1); border-width: 1px; border-color: rgba(255, 23, 68, 0.2); border-bottom-width: 1px; color: #FF5252;" />
+            <ui:Button name="close-btn" text="DONG" class="btn btn-secondary" style="margin-top: 16px; width: 100%; height: 86px; font-size: 36px;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

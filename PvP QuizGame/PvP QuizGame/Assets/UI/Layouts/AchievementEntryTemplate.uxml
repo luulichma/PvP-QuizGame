@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+    <ui:VisualElement class="glass-panel" style="flex-direction: row; align-items: center; padding: 20px; margin-bottom: 15px; border-radius: 20px; background-color: rgba(255, 255, 255, 0.08);">
+        <!-- Icon/Badge -->
+        <ui:VisualElement name="achievement-icon" style="width: 100px; height: 100px; margin-right: 25px; align-items: center; justify-content: center; background-color: rgba(255, 209, 102, 0.15); border-radius: 25px; border-width: 2px; border-color: rgba(255, 209, 102, 0.5);">
+            <ui:Label text="&#127941;" style="font-size: 60px;" />
+        </ui:VisualElement>
+
+        <!-- Content -->
+        <ui:VisualElement style="flex-grow: 1; justify-content: center;">
+            <ui:Label name="achievement-title" text="Ten Thanh Tuu" style="font-size: 36px; -unity-font-style: bold; color: white; margin-bottom: 4px;" />
+            <ui:Label name="achievement-desc" text="Mo ta dieu kien de hoan thanh thanh tuu nay." style="font-size: 24px; color: rgba(255,255,255,0.6); white-space: normal;" />
+            
+            <!-- Progress Bar (Optional) -->
+            <ui:VisualElement style="flex-direction: row; align-items: center; margin-top: 10px;">
+                <ui:VisualElement class="progress-container" style="flex-grow: 1; height: 12px; margin-right: 15px;">
+                    <ui:VisualElement name="achievement-progress-fill" class="progress-fill" style="width: 50%;" />
+                </ui:VisualElement>
+                <ui:Label name="achievement-progress-text" text="5/10" style="font-size: 20px; color: rgba(255,255,255,0.7); width: 60px; -unity-text-align: middle-right;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Reward/Status -->
+        <ui:VisualElement style="align-items: center; justify-content: center; width: 140px; margin-left: 20px;">
+            <ui:Label name="reward-amount" text="500$" style="font-size: 32px; -unity-font-style: bold; color: #FFD166; margin-bottom: 8px;" />
+            <ui:Button name="claim-btn" text="NHAN" class="btn btn-primary" style="width: 120px; height: 50px; font-size: 22px; padding: 0; margin: 0; border-radius: 12px;" />
+            <ui:Label name="completed-tag" text="DA NHAN" style="font-size: 20px; -unity-font-style: bold; color: #00E676; display: none;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

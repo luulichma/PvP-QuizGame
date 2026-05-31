@@ -65,6 +65,13 @@ public class InitSceneController_UXML : MonoBehaviour
         SetStatus("init_loading", "Đang khởi tạo...");
         ShowRandomTip();
 
+        // Spawn ambient particles
+        var particleLayer = root.Q<VisualElement>("init-particle-layer");
+        if (particleLayer != null && UIParticleEffect.Instance != null)
+        {
+            UIParticleEffect.Instance.SpawnAmbientParticles(particleLayer, 20);
+        }
+
         LocalizationManager.OnLanguageChanged += OnLocalizationReady;
     }
 
@@ -171,6 +178,8 @@ public class InitSceneController_UXML : MonoBehaviour
 
         uiDocument.rootVisualElement.Add(_authPopup);
 
+        LocalizeAuthPopup();
+
         // Containers
         var mainContainer = _authPopup.Q<VisualElement>("main-choice-container");
         var loginContainer = _authPopup.Q<VisualElement>("login-container");
@@ -210,9 +219,9 @@ public class InitSceneController_UXML : MonoBehaviour
             string email = loginEmail.value.Trim();
             string pass = loginPass.value;
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(pass)) {
-                errorLabel.text = "Vui lòng nhập đầy đủ email và mật khẩu."; return;
+                errorLabel.text = LocalizationManager.Instance?.GetText("auth_err_empty", "Vui lòng nhập đầy đủ email và mật khẩu.") ?? "Vui lòng nhập đầy đủ email và mật khẩu."; return;
             }
-            errorLabel.text = "Đang đăng nhập...";
+            errorLabel.text = LocalizationManager.Instance?.GetText("auth_status_logging_in", "Đang đăng nhập...") ?? "Đang đăng nhập...";
             bool success = await FirebaseManager.Instance.SignInWithEmail(email, pass);
             if (success) _authPopupConfirmed = true;
             // Không cần gán text lỗi ở đây vì OnAuthError đã làm
@@ -231,12 +240,12 @@ public class InitSceneController_UXML : MonoBehaviour
             forgotConfirmBtn.clicked += async () => {
                 string email = forgotEmailField.value.Trim();
                 if (string.IsNullOrEmpty(email)) {
-                    errorLabel.text = "Vui lòng nhập email."; return;
+                    errorLabel.text = LocalizationManager.Instance?.GetText("auth_err_email_empty", "Vui lòng nhập email.") ?? "Vui lòng nhập email."; return;
                 }
-                errorLabel.text = "Đang gửi yêu cầu...";
+                errorLabel.text = LocalizationManager.Instance?.GetText("auth_status_sending", "Đang gửi yêu cầu...") ?? "Đang gửi yêu cầu...";
                 bool success = await FirebaseManager.Instance.SendPasswordResetEmail(email);
                 if (success) {
-                    errorLabel.text = "Email đặt lại mật khẩu đã được gửi!";
+                    errorLabel.text = LocalizationManager.Instance?.GetText("auth_status_email_sent", "Email đặt lại mật khẩu đã được gửi!") ?? "Email đặt lại mật khẩu đã được gửi!";
                     errorLabel.style.color = new Color(0.2f, 0.8f, 0.2f); // Màu xanh
                     // Quay lại login sau 2.5s
                     await Task.Delay(2500);
@@ -258,9 +267,9 @@ public class InitSceneController_UXML : MonoBehaviour
             string email = regEmail.value.Trim();
             string pass = regPass.value;
             if (name.Length < 2 || string.IsNullOrEmpty(email) || pass.Length < 6) {
-                errorLabel.text = "Tên > 2 ký tự, Email hợp lệ, Mật khẩu > 6 ký tự."; return;
+                errorLabel.text = LocalizationManager.Instance?.GetText("auth_err_reg_invalid", "Tên > 2 ký tự, Email hợp lệ, Mật khẩu > 6 ký tự.") ?? "Tên > 2 ký tự, Email hợp lệ, Mật khẩu > 6 ký tự."; return;
             }
-            errorLabel.text = "Đang đăng ký...";
+            errorLabel.text = LocalizationManager.Instance?.GetText("auth_status_registering", "Đang đăng ký...") ?? "Đang đăng ký...";
             bool success = await FirebaseManager.Instance.SignUpWithEmail(email, pass, name);
             if (success) {
                 _authPopupConfirmed = true;
@@ -274,8 +283,8 @@ public class InitSceneController_UXML : MonoBehaviour
         _authPopup.Q<Button>("guest-back-btn").clicked += () => ShowContainer(mainContainer);
         _authPopup.Q<Button>("guest-confirm-btn").clicked += async () => {
             string name = guestName.value.Trim();
-            if (name.Length < 2) { errorLabel.text = "Tên quá ngắn."; return; }
-            errorLabel.text = "Đang vào...";
+            if (name.Length < 2) { errorLabel.text = LocalizationManager.Instance?.GetText("auth_err_name_short", "Tên quá ngắn.") ?? "Tên quá ngắn."; return; }
+            errorLabel.text = LocalizationManager.Instance?.GetText("auth_status_entering", "Đang vào...") ?? "Đang vào...";
             bool success = await FirebaseManager.Instance.SignInAnonymousAndLoadProfile(name);
             if (success) {
                 _authPopupConfirmed = true;
@@ -286,11 +295,74 @@ public class InitSceneController_UXML : MonoBehaviour
         while (!_authPopupConfirmed) yield return null;
 
         FirebaseManager.OnAuthError -= authErrorHandler;
-        _authPopup.RemoveFromHierarchy();
+        uiDocument.rootVisualElement.Remove(_authPopup);
         _authPopup = null;
     }
 
-    // ==================== UI HELPERS ====================
+    private void LocalizeAuthPopup()
+    {
+        if (_authPopup == null || LocalizationManager.Instance == null || !LocalizationManager.Instance.IsReady) return;
+        var L = LocalizationManager.Instance;
+
+        // Tiêu đề popup (dùng chung cho cả AuthPopup)
+        var title = _authPopup.Q<Label>("popup-title");
+        if (title != null) title.text = L.GetText("auth_title", "CHỌN CÁCH ĐĂNG NHẬP");
+
+        // Main Choice
+        var gotoLoginBtn = _authPopup.Q<Button>("goto-login-btn");
+        var gotoRegBtn = _authPopup.Q<Button>("goto-register-btn");
+        var gotoGuestBtn = _authPopup.Q<Button>("goto-guest-btn");
+        if (gotoLoginBtn != null) gotoLoginBtn.text = L.GetText("auth_btn_goto_login", "ĐĂNG NHẬP BẰNG EMAIL");
+        if (gotoRegBtn != null) gotoRegBtn.text = L.GetText("auth_btn_goto_register", "TẠO TÀI KHOẢN");
+        if (gotoGuestBtn != null) gotoGuestBtn.text = L.GetText("auth_btn_goto_guest", "CHƠI VỚI TƯ CÁCH KHÁCH");
+
+        // Login
+        var loginEmail = _authPopup.Q<TextField>("login-email");
+        var loginPass = _authPopup.Q<TextField>("login-password");
+        var loginConfirm = _authPopup.Q<Button>("login-confirm-btn");
+        var forgotPassBtn = _authPopup.Q<Button>("forgot-pass-btn");
+        var loginBack = _authPopup.Q<Button>("login-back-btn");
+        if (loginEmail != null) loginEmail.label = L.GetText("auth_lbl_email", "Email");
+        if (loginPass != null) loginPass.label = L.GetText("auth_lbl_password", "Mật khẩu");
+        if (loginConfirm != null) loginConfirm.text = L.GetText("auth_btn_login", "ĐĂNG NHẬP");
+        if (forgotPassBtn != null) forgotPassBtn.text = L.GetText("auth_btn_forgot_password", "Quên mật khẩu?");
+        if (loginBack != null) loginBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+
+        // Register
+        var regName = _authPopup.Q<TextField>("reg-display-name");
+        var regEmail = _authPopup.Q<TextField>("reg-email");
+        var regPass = _authPopup.Q<TextField>("reg-password");
+        var regConfirm = _authPopup.Q<Button>("reg-confirm-btn");
+        var regBack = _authPopup.Q<Button>("reg-back-btn");
+        if (regName != null) regName.label = L.GetText("auth_lbl_display_name", "Tên hiển thị");
+        if (regEmail != null) regEmail.label = L.GetText("auth_lbl_email", "Email");
+        if (regPass != null) regPass.label = L.GetText("auth_lbl_password", "Mật khẩu");
+        if (regConfirm != null) regConfirm.text = L.GetText("auth_btn_register", "ĐĂNG KÝ");
+        if (regBack != null) regBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+
+        // Guest
+        var guestName = _authPopup.Q<TextField>("guest-name-field");
+        var guestConfirm = _authPopup.Q<Button>("guest-confirm-btn");
+        var guestBack = _authPopup.Q<Button>("guest-back-btn");
+        // Label trên textField của Guest: "Nhap ten cua ban:"
+        var guestPrompt = _authPopup.Q<VisualElement>("guest-container")?.Q<Label>(); 
+        if (guestPrompt != null) guestPrompt.text = L.GetText("auth_lbl_guest_prompt", "Nhập tên của bạn:");
+        // guestName không dùng label property
+        if (guestConfirm != null) guestConfirm.text = L.GetText("auth_btn_guest_play", "CHƠI THỬ");
+        if (guestBack != null) guestBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+
+        // Forgot Password
+        var forgotEmail = _authPopup.Q<TextField>("forgot-email");
+        var forgotConfirm = _authPopup.Q<Button>("forgot-confirm-btn");
+        var forgotBack = _authPopup.Q<Button>("forgot-back-btn");
+        var forgotPrompt = _authPopup.Q<VisualElement>("forgot-container")?.Q<Label>();
+        if (forgotPrompt != null) forgotPrompt.text = L.GetText("auth_lbl_forgot_prompt", "Nhập email để đặt lại mật khẩu:");
+        if (forgotEmail != null) forgotEmail.label = L.GetText("auth_lbl_email", "Email");
+        if (forgotConfirm != null) forgotConfirm.text = L.GetText("auth_btn_send_request", "GỬI YÊU CẦU");
+        if (forgotBack != null) forgotBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+    }
+
+    // ==================== HELPER ====================
     private void SetStatus(string key, string fallback)
     {
         if (_statusLabel == null) return;
