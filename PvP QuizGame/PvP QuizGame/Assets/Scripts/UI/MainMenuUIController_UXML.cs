@@ -17,6 +17,8 @@ public class MainMenuUIController_UXML : MonoBehaviour
     [SerializeField] private VisualTreeAsset settingsPopupTemplate;
     [SerializeField] private VisualTreeAsset logoutPopupTemplate;
     [SerializeField] private VisualTreeAsset profilePopupTemplate;
+    [Header("Auth Popup Template")]
+    [SerializeField] private VisualTreeAsset authPopupTemplate;
     [Header("Leaderboard & Achievements Templates")]
     [SerializeField] private VisualTreeAsset leaderboardPopupTemplate;
     [SerializeField] private VisualTreeAsset leaderboardEntryTemplate;
@@ -478,114 +480,261 @@ public class MainMenuUIController_UXML : MonoBehaviour
         ShowHomePanel();
     }
 
+    /// <summary>
+    /// Hiển thị AuthPopup inline ngay trên HomeScene thay vì redirect về InitScene.
+    /// Guest có thể đăng nhập/đăng ký ngay tại đây, hoặc bấm Hủy để quay lại chơi tiếp.
+    /// Sau khi auth thành công → refresh UI, không cần chuyển scene.
+    /// </summary>
+    private VisualElement _inlineAuthPopup;
+
     private void ShowGuestLoginPopup()
     {
         if (uiDocument == null) return;
         var root = uiDocument.rootVisualElement;
 
-        var overlay = new VisualElement();
-        overlay.style.position = Position.Absolute;
-        overlay.style.top = 0; overlay.style.bottom = 0;
-        overlay.style.left = 0; overlay.style.right = 0;
-        overlay.style.backgroundColor = new Color(0, 0, 0, 0.8f);
-        overlay.style.alignItems = Align.Center;
-        overlay.style.justifyContent = Justify.Center;
+        // Nếu đã mở rồi thì bỏ qua
+        if (_inlineAuthPopup != null && _inlineAuthPopup.parent != null) return;
 
-        var popupCard = new VisualElement();
-        popupCard.style.backgroundColor = new Color(0.18f, 0.05f, 0.26f, 1f);
-        popupCard.style.paddingTop = 40; popupCard.style.paddingBottom = 40;
-        popupCard.style.paddingLeft = 50; popupCard.style.paddingRight = 50;
-        popupCard.style.borderTopLeftRadius = 24; popupCard.style.borderTopRightRadius = 24;
-        popupCard.style.borderBottomLeftRadius = 24; popupCard.style.borderBottomRightRadius = 24;
-        popupCard.style.width = Length.Percent(80);
-        popupCard.style.maxWidth = 600;
-        popupCard.style.alignItems = Align.Center;
+        // Ưu tiên dùng authPopupTemplate (cùng UXML như InitScene)
+        if (authPopupTemplate != null)
+        {
+            _inlineAuthPopup = authPopupTemplate.Instantiate();
+        }
+        else
+        {
+            // Fallback: load từ Resources
+            var asset = Resources.Load<VisualTreeAsset>("UI/AuthPopup");
+            if (asset == null)
+            {
+                Debug.LogError("[MainMenu] Không tìm thấy AuthPopup template!");
+                return;
+            }
+            _inlineAuthPopup = asset.Instantiate();
+        }
 
-        // Dấu x to đỏ ở trên bên phải
-        var closeBtn = new Button();
-        closeBtn.text = "X";
-        closeBtn.style.position = Position.Absolute;
-        closeBtn.style.top = -20;
-        closeBtn.style.right = -20;
-        closeBtn.style.backgroundColor = new Color(0.87f, 0.12f, 0.12f, 1f); // Red
-        closeBtn.style.color = Color.white;
-        closeBtn.style.fontSize = 28;
-        closeBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
-        closeBtn.style.width = 50;
-        closeBtn.style.height = 50;
-        closeBtn.style.borderTopLeftRadius = 25; closeBtn.style.borderTopRightRadius = 25;
-        closeBtn.style.borderBottomLeftRadius = 25; closeBtn.style.borderBottomRightRadius = 25;
-        closeBtn.clicked += () => {
-            UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                if (root.Contains(overlay)) root.Remove(overlay);
+        _inlineAuthPopup.style.position = Position.Absolute;
+        _inlineAuthPopup.style.top = 0; _inlineAuthPopup.style.bottom = 0;
+        _inlineAuthPopup.style.left = 0; _inlineAuthPopup.style.right = 0;
+        root.Add(_inlineAuthPopup);
+
+        // Animation
+        var overlay = _inlineAuthPopup.Q<VisualElement>("overlay") ?? _inlineAuthPopup.Children().First();
+        var popupCard = _inlineAuthPopup.Q<VisualElement>("popup-container") ?? overlay.Children().First();
+        UIAnimator.ShowPopupAnim(overlay, popupCard);
+
+        // Localize
+        LocalizeInlineAuthPopup();
+
+        // Containers
+        var mainContainer = _inlineAuthPopup.Q<VisualElement>("main-choice-container");
+        var loginContainer = _inlineAuthPopup.Q<VisualElement>("login-container");
+        var regContainer = _inlineAuthPopup.Q<VisualElement>("register-container");
+        var guestContainer = _inlineAuthPopup.Q<VisualElement>("guest-container");
+        var forgotContainer = _inlineAuthPopup.Q<VisualElement>("forgot-container");
+        var errorLabel = _inlineAuthPopup.Q<Label>("auth-error");
+
+        // ẨN nút "Chơi khách" vì user đã là guest rồi
+        var gotoGuestBtn = _inlineAuthPopup.Q<Button>("goto-guest-btn");
+        if (gotoGuestBtn != null) gotoGuestBtn.style.display = DisplayStyle.None;
+
+        void ShowContainer(VisualElement container)
+        {
+            if (mainContainer != null) mainContainer.style.display = DisplayStyle.None;
+            if (loginContainer != null) loginContainer.style.display = DisplayStyle.None;
+            if (regContainer != null) regContainer.style.display = DisplayStyle.None;
+            if (guestContainer != null) guestContainer.style.display = DisplayStyle.None;
+            if (forgotContainer != null) forgotContainer.style.display = DisplayStyle.None;
+            container.style.display = DisplayStyle.Flex;
+            if (errorLabel != null) errorLabel.text = "";
+        }
+
+        // Đăng ký lắng nghe lỗi auth
+        System.Action<string> authErrorHandler = (msg) =>
+        {
+            if (errorLabel != null) errorLabel.text = msg;
+        };
+        FirebaseManager.OnAuthError += authErrorHandler;
+
+        // Cleanup helper — đóng popup + gỡ listener
+        System.Action closePopup = () =>
+        {
+            FirebaseManager.OnAuthError -= authErrorHandler;
+            UIAnimator.HidePopupAnim(overlay, popupCard, () =>
+            {
+                if (_inlineAuthPopup != null && _inlineAuthPopup.parent != null)
+                    _inlineAuthPopup.RemoveFromHierarchy();
+                _inlineAuthPopup = null;
             });
         };
 
-        var titleLabel = new Label();
-        var L = LocalizationManager.Instance;
-        titleLabel.text = L != null ? L.GetText("menu_rank_guest_blocked_title", "YÊU CẦU ĐĂNG NHẬP") : "YÊU CẦU ĐĂNG NHẬP";
-        titleLabel.style.fontSize = 32;
-        titleLabel.style.color = Color.white;
-        titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-        titleLabel.style.marginBottom = 20;
-
-        var msgLabel = new Label();
-        msgLabel.text = L != null ? L.GetText("menu_rank_guest_blocked", "Vui lòng đăng nhập hoặc đăng ký để mở khóa Bảng Xếp Hạng!") : "Vui lòng đăng nhập hoặc đăng ký để mở khóa Bảng Xếp Hạng!";
-        msgLabel.style.fontSize = 24;
-        msgLabel.style.color = new Color(0.9f, 0.9f, 0.9f, 1f);
-        msgLabel.style.whiteSpace = WhiteSpace.Normal;
-        msgLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        msgLabel.style.marginBottom = 40;
-
-        var buttonsContainer = new VisualElement();
-        buttonsContainer.style.flexDirection = FlexDirection.Row;
-        buttonsContainer.style.justifyContent = Justify.SpaceBetween;
-        buttonsContainer.style.width = Length.Percent(100);
-
-        System.Action goToAuth = () => {
-            var fm = FirebaseManager.Instance;
-            if (fm != null) fm.SignOut();
-            var pdm = PlayerDataManager.Instance;
-            if (pdm != null) pdm.ClearData();
-            UnityEngine.SceneManagement.SceneManager.LoadScene("InitScene");
+        // Callback khi auth thành công — refresh UI + đóng popup
+        System.Action onAuthSuccess = () =>
+        {
+            FirebaseManager.OnAuthError -= authErrorHandler;
+            // Refresh player data UI
+            RefreshPlayerStatsUI();
+            // Đóng popup
+            UIAnimator.HidePopupAnim(overlay, popupCard, () =>
+            {
+                if (_inlineAuthPopup != null && _inlineAuthPopup.parent != null)
+                    _inlineAuthPopup.RemoveFromHierarchy();
+                _inlineAuthPopup = null;
+            });
+            // Mở leaderboard ngay
+            SwitchBottomTab(2);
         };
 
-        var loginBtn = new Button();
-        loginBtn.text = "ĐĂNG NHẬP";
-        loginBtn.style.fontSize = 22;
-        loginBtn.style.color = Color.white;
-        loginBtn.style.backgroundColor = new Color(0.2f, 0.6f, 0.2f, 1f);
-        loginBtn.style.paddingTop = 15; loginBtn.style.paddingBottom = 15;
-        loginBtn.style.flexGrow = 1;
-        loginBtn.style.marginRight = 10;
-        loginBtn.style.borderTopLeftRadius = 15; loginBtn.style.borderTopRightRadius = 15;
-        loginBtn.style.borderBottomLeftRadius = 15; loginBtn.style.borderBottomRightRadius = 15;
-        loginBtn.clicked += goToAuth;
+        // --- MAIN CHOICE ---
+        _inlineAuthPopup.Q<Button>("goto-login-btn").clicked += () => ShowContainer(loginContainer);
+        _inlineAuthPopup.Q<Button>("goto-register-btn").clicked += () => ShowContainer(regContainer);
 
-        var registerBtn = new Button();
-        registerBtn.text = "ĐĂNG KÝ";
-        registerBtn.style.fontSize = 22;
-        registerBtn.style.color = Color.white;
-        registerBtn.style.backgroundColor = new Color(0.1f, 0.4f, 0.8f, 1f); // Blue
-        registerBtn.style.paddingTop = 15; registerBtn.style.paddingBottom = 15;
-        registerBtn.style.flexGrow = 1;
-        registerBtn.style.marginLeft = 10;
-        registerBtn.style.borderTopLeftRadius = 15; registerBtn.style.borderTopRightRadius = 15;
-        registerBtn.style.borderBottomLeftRadius = 15; registerBtn.style.borderBottomRightRadius = 15;
-        registerBtn.clicked += goToAuth;
+        // --- Thêm nút HỦY (quay lại HomeScene, vẫn là guest) ---
+        // Đổi tiêu đề popup
+        var titleLabel = _inlineAuthPopup.Q<Label>("popup-title");
+        if (titleLabel != null)
+        {
+            var L = LocalizationManager.Instance;
+            titleLabel.text = L != null
+                ? L.GetText("menu_rank_guest_blocked_title", "YÊU CẦU ĐĂNG NHẬP")
+                : "YÊU CẦU ĐĂNG NHẬP";
+        }
 
-        buttonsContainer.Add(loginBtn);
-        buttonsContainer.Add(registerBtn);
+        // Thêm nút HỦY vào main-choice-container (bên dưới cùng)
+        var cancelBtn = new Button();
+        var Loc = LocalizationManager.Instance;
+        cancelBtn.text = Loc != null ? Loc.GetText("menu_cancel", "HỦY") : "HỦY";
+        cancelBtn.AddToClassList("btn");
+        cancelBtn.AddToClassList("btn-danger");
+        cancelBtn.style.width = Length.Percent(100);
+        cancelBtn.style.fontSize = 32;
+        cancelBtn.style.height = 86;
+        cancelBtn.style.borderTopLeftRadius = 22; cancelBtn.style.borderTopRightRadius = 22;
+        cancelBtn.style.borderBottomLeftRadius = 22; cancelBtn.style.borderBottomRightRadius = 22;
+        cancelBtn.style.marginTop = 16;
+        cancelBtn.clicked += closePopup;
+        mainContainer?.Add(cancelBtn);
 
-        popupCard.Add(closeBtn);
-        popupCard.Add(titleLabel);
-        popupCard.Add(msgLabel);
-        popupCard.Add(buttonsContainer);
+        // --- LOGIN ---
+        var loginEmail = _inlineAuthPopup.Q<TextField>("login-email");
+        var loginPass = _inlineAuthPopup.Q<TextField>("login-password");
+        _inlineAuthPopup.Q<Button>("login-back-btn").clicked += () => ShowContainer(mainContainer);
+        _inlineAuthPopup.Q<Button>("login-confirm-btn").clicked += async () =>
+        {
+            string email = loginEmail.value.Trim();
+            string pass = loginPass.value;
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(pass))
+            {
+                errorLabel.text = Loc?.GetText("auth_err_empty", "Vui lòng nhập đầy đủ email và mật khẩu.") ?? "Vui lòng nhập đầy đủ email và mật khẩu.";
+                return;
+            }
+            errorLabel.text = Loc?.GetText("auth_status_logging_in", "Đang đăng nhập...") ?? "Đang đăng nhập...";
 
-        overlay.Add(popupCard);
-        root.Add(overlay);
+            // Link anonymous → email (nâng cấp tài khoản khách → tài khoản thật)
+            bool success = await FirebaseManager.Instance.SignInWithEmail(email, pass);
+            if (success) onAuthSuccess();
+        };
 
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
+        // --- FORGOT PASSWORD ---
+        var forgotPassBtn = _inlineAuthPopup.Q<Button>("forgot-pass-btn");
+        if (forgotPassBtn != null) forgotPassBtn.clicked += () => ShowContainer(forgotContainer);
+
+        var forgotEmailField = _inlineAuthPopup.Q<TextField>("forgot-email");
+        var forgotConfirmBtn = _inlineAuthPopup.Q<Button>("forgot-confirm-btn");
+        var forgotBackBtn = _inlineAuthPopup.Q<Button>("forgot-back-btn");
+        if (forgotBackBtn != null) forgotBackBtn.clicked += () => ShowContainer(loginContainer);
+        if (forgotConfirmBtn != null)
+        {
+            forgotConfirmBtn.clicked += async () =>
+            {
+                string email = forgotEmailField.value.Trim();
+                if (string.IsNullOrEmpty(email))
+                {
+                    errorLabel.text = Loc?.GetText("auth_err_email_empty", "Vui lòng nhập email.") ?? "Vui lòng nhập email.";
+                    return;
+                }
+                errorLabel.text = Loc?.GetText("auth_status_sending", "Đang gửi yêu cầu...") ?? "Đang gửi yêu cầu...";
+                bool success = await FirebaseManager.Instance.SendPasswordResetEmail(email);
+                if (success)
+                {
+                    errorLabel.text = Loc?.GetText("auth_status_email_sent", "Email đặt lại mật khẩu đã được gửi!") ?? "Email đặt lại mật khẩu đã được gửi!";
+                    errorLabel.style.color = new Color(0.2f, 0.8f, 0.2f);
+                    await System.Threading.Tasks.Task.Delay(2500);
+                    if (forgotContainer != null && forgotContainer.style.display == DisplayStyle.Flex)
+                    {
+                        ShowContainer(loginContainer);
+                        errorLabel.style.color = new Color(1f, 0.32f, 0.32f);
+                    }
+                }
+            };
+        }
+
+        // --- REGISTER ---
+        var regName = _inlineAuthPopup.Q<TextField>("reg-display-name");
+        var regEmail = _inlineAuthPopup.Q<TextField>("reg-email");
+        var regPass = _inlineAuthPopup.Q<TextField>("reg-password");
+        _inlineAuthPopup.Q<Button>("reg-back-btn").clicked += () => ShowContainer(mainContainer);
+        _inlineAuthPopup.Q<Button>("reg-confirm-btn").clicked += async () =>
+        {
+            string name = regName.value.Trim();
+            string email = regEmail.value.Trim();
+            string pass = regPass.value;
+            if (name.Length < 2 || string.IsNullOrEmpty(email) || pass.Length < 6)
+            {
+                errorLabel.text = Loc?.GetText("auth_err_reg_invalid", "Tên > 2 ký tự, Email hợp lệ, Mật khẩu > 6 ký tự.") ?? "Tên > 2 ký tự, Email hợp lệ, Mật khẩu > 6 ký tự.";
+                return;
+            }
+            errorLabel.text = Loc?.GetText("auth_status_registering", "Đang đăng ký...") ?? "Đang đăng ký...";
+            bool success = await FirebaseManager.Instance.SignUpWithEmail(email, pass, name);
+            if (success) onAuthSuccess();
+        };
+    }
+
+    /// <summary>
+    /// Localize inline AuthPopup (reuse logic từ InitScene).
+    /// </summary>
+    private void LocalizeInlineAuthPopup()
+    {
+        if (_inlineAuthPopup == null || LocalizationManager.Instance == null || !LocalizationManager.Instance.IsReady) return;
+        var L = LocalizationManager.Instance;
+
+        var title = _inlineAuthPopup.Q<Label>("popup-title");
+        if (title != null) title.text = L.GetText("menu_rank_guest_blocked_title", "YÊU CẦU ĐĂNG NHẬP");
+
+        var gotoLoginBtn = _inlineAuthPopup.Q<Button>("goto-login-btn");
+        var gotoRegBtn = _inlineAuthPopup.Q<Button>("goto-register-btn");
+        if (gotoLoginBtn != null) gotoLoginBtn.text = L.GetText("auth_btn_goto_login", "ĐĂNG NHẬP BẰNG EMAIL");
+        if (gotoRegBtn != null) gotoRegBtn.text = L.GetText("auth_btn_goto_register", "TẠO TÀI KHOẢN");
+
+        var loginEmail = _inlineAuthPopup.Q<TextField>("login-email");
+        var loginPass = _inlineAuthPopup.Q<TextField>("login-password");
+        var loginConfirm = _inlineAuthPopup.Q<Button>("login-confirm-btn");
+        var forgotPassBtn = _inlineAuthPopup.Q<Button>("forgot-pass-btn");
+        var loginBack = _inlineAuthPopup.Q<Button>("login-back-btn");
+        if (loginEmail != null) loginEmail.label = L.GetText("auth_lbl_email", "Email");
+        if (loginPass != null) loginPass.label = L.GetText("auth_lbl_password", "Mật khẩu");
+        if (loginConfirm != null) loginConfirm.text = L.GetText("auth_btn_login", "ĐĂNG NHẬP");
+        if (forgotPassBtn != null) forgotPassBtn.text = L.GetText("auth_btn_forgot_password", "Quên mật khẩu?");
+        if (loginBack != null) loginBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+
+        var regName = _inlineAuthPopup.Q<TextField>("reg-display-name");
+        var regEmail = _inlineAuthPopup.Q<TextField>("reg-email");
+        var regPass = _inlineAuthPopup.Q<TextField>("reg-password");
+        var regConfirm = _inlineAuthPopup.Q<Button>("reg-confirm-btn");
+        var regBack = _inlineAuthPopup.Q<Button>("reg-back-btn");
+        if (regName != null) regName.label = L.GetText("auth_lbl_display_name", "Tên hiển thị");
+        if (regEmail != null) regEmail.label = L.GetText("auth_lbl_email", "Email");
+        if (regPass != null) regPass.label = L.GetText("auth_lbl_password", "Mật khẩu");
+        if (regConfirm != null) regConfirm.text = L.GetText("auth_btn_register", "ĐĂNG KÝ");
+        if (regBack != null) regBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+
+        var forgotPrompt = _inlineAuthPopup.Q<VisualElement>("forgot-container")?.Q<Label>();
+        var forgotEmail = _inlineAuthPopup.Q<TextField>("forgot-email");
+        var forgotConfirm = _inlineAuthPopup.Q<Button>("forgot-confirm-btn");
+        var forgotBack = _inlineAuthPopup.Q<Button>("forgot-back-btn");
+        if (forgotPrompt != null) forgotPrompt.text = L.GetText("auth_lbl_forgot_prompt", "Nhập email để đặt lại mật khẩu:");
+        if (forgotEmail != null) forgotEmail.label = L.GetText("auth_lbl_email", "Email");
+        if (forgotConfirm != null) forgotConfirm.text = L.GetText("auth_btn_send_request", "GỬI YÊU CẦU");
+        if (forgotBack != null) forgotBack.text = L.GetText("menu_cancel", "QUAY LẠI");
     }
 
     private void OnCancelMatchClicked()
@@ -981,14 +1130,14 @@ public class MainMenuUIController_UXML : MonoBehaviour
         _achievementsScroll.Clear();
 
         if (AchievementManager.Instance == null) return;
-        
+
         var pd = PlayerDataManager.Instance?.Data;
         if (pd == null) return;
 
         foreach (var ach in AchievementManager.Instance.achievements)
         {
             var entry = achievementEntryTemplate.Instantiate();
-            
+
             var title = entry.Q<Label>("achievement-title");
             if (title != null) title.text = ach.name;
 
@@ -1000,7 +1149,7 @@ public class MainMenuUIController_UXML : MonoBehaviour
             if (iconLabel != null) iconLabel.text = ach.iconString;
 
             var reward = entry.Q<Label>("reward-amount");
-            if (reward != null) 
+            if (reward != null)
             {
                 string suffix = ach.rewardType == RewardType.Money ? "$" : " RP";
                 reward.text = ach.rewardAmount + suffix;
@@ -1010,19 +1159,15 @@ public class MainMenuUIController_UXML : MonoBehaviour
             var progressText = entry.Q<Label>("achievement-progress-text");
             var claimBtn = entry.Q<Button>("claim-btn");
             var completedTag = entry.Q<Label>("completed-tag");
-            
-            // Bug fix: Ensure unlockedAchievements is not null to prevent ArgumentNullException
+
             if (pd.unlockedAchievements == null)
-            {
                 pd.unlockedAchievements = new System.Collections.Generic.List<string>();
-            }
 
             bool isUnlocked = pd.unlockedAchievements.Contains(ach.id);
             int currentProg = AchievementManager.Instance.GetCurrentProgress(ach.id);
-            
+
             if (progressText != null)
             {
-                // Đối với thành tựu perfect 1 trận, nếu chưa hoàn thành thì hiển thị 0/1, hoàn thành thì 1/1
                 int displayProg = Mathf.Min(currentProg, ach.targetValue);
                 progressText.text = $"{displayProg}/{ach.targetValue}";
             }
@@ -1040,25 +1185,18 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 {
                     completedTag.style.display = DisplayStyle.Flex;
                     if (LocalizationManager.Instance != null)
-                    {
                         completedTag.text = LocalizationManager.Instance.GetText("ach_btn_claimed", "ĐÃ NHẬN");
-                    }
                 }
-                entry.Q<VisualElement>(className: "glass-panel").style.backgroundColor = new Color(0, 0.9f, 0.46f, 0.15f); // Xanh nhạt
+                entry.Q<VisualElement>(className: "glass-panel").style.backgroundColor = new Color(0, 0.9f, 0.46f, 0.15f);
             }
             else
             {
                 if (claimBtn != null)
                 {
-                    // Logic nhận phần thưởng tự động, nên claim btn có thể disabled hoặc ghi "CHƯA ĐẠT"
                     if (LocalizationManager.Instance != null)
-                    {
                         claimBtn.text = LocalizationManager.Instance.GetText("ach_btn_not_reached", "CHƯA ĐẠT");
-                    }
                     else
-                    {
                         claimBtn.text = "CHƯA ĐẠT";
-                    }
                     claimBtn.SetEnabled(false);
                     claimBtn.style.backgroundColor = new Color(1f, 1f, 1f, 0.1f);
                 }
@@ -1088,10 +1226,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
         };
     }
 
-    // Note: Cấu trúc SwitchLanguage mới đã hỗ trợ tải trực tiếp từ Sheet 
-    // nên không cần lọc danh sách ngôn ngữ ở đây nữa.
-
-
     // UX-08: Android back button
     private void Update()
     {
@@ -1101,6 +1235,13 @@ public class MainMenuUIController_UXML : MonoBehaviour
             if (_matchmakingPanel != null && _matchmakingPanel.style.display == DisplayStyle.Flex)
             {
                 OnCancelMatchClicked();
+                return;
+            }
+            // Nếu có inline auth popup, đóng nó
+            if (_inlineAuthPopup != null && _inlineAuthPopup.parent != null)
+            {
+                _inlineAuthPopup.RemoveFromHierarchy();
+                _inlineAuthPopup = null;
                 return;
             }
             // Nếu có popup settings/profile/logout, đóng popup
@@ -1148,17 +1289,12 @@ public class MainMenuUIController_UXML : MonoBehaviour
 
     // ==================== ENTRY ANIMATIONS ====================
 
-    /// <summary>
-    /// Animate Home screen entry: header slide, hero bounce, buttons cascade.
-    /// </summary>
     private void AnimateHomeEntry(VisualElement root)
     {
-        // Header slide from left
         var header = root.Q<VisualElement>("header");
         if (header != null)
             UIAnimator.DOSlideFromLeft(header, 0.5f, 80f);
 
-        // Hero title bounce in
         var hero = root.Q<VisualElement>("hero");
         if (hero != null)
         {
@@ -1170,7 +1306,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 .Join(hero.DOScale(UnityEngine.Vector2.one, 0.5f).SetEase(Ease.OutBack));
         }
 
-        // Buttons cascade animation
         var buttons = new[] { _findMatchBtn, _practiceBtn };
         for (int i = 0; i < buttons.Length; i++)
         {
@@ -1185,14 +1320,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 .SetDelay(delay)
                 .Append(btn.DOFade(1f, 0.25f))
                 .Join(btn.DOTranslate(UnityEngine.Vector2.zero, 0.35f).SetEase(Ease.OutBack));
-        }
-
-        // Version label fade in
-        var versionLabel = root.Q<Label>("version-label");
-        if (versionLabel != null)
-        {
-            versionLabel.style.opacity = 0f;
-            versionLabel.DOFade(0.3f, 0.8f).SetDelay(0.6f);
         }
     }
 }
