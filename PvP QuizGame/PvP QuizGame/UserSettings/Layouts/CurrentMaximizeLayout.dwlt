@@ -200,8 +200,8 @@ MonoBehaviour:
     y: 0
     width: 240.8
     height: 667.2
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 201, y: 226}
+  m_MaxSize: {x: 4001, y: 4026}
   m_ActualView: {fileID: 6}
   m_Panes:
   - {fileID: 6}
@@ -248,7 +248,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 3afaffff
+      m_ExpandedIDs: 74dfffff5ce3ffff00fbffffbcb90000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -318,8 +318,8 @@ MonoBehaviour:
     y: 0
     width: 267.2
     height: 667.2
-  m_MinSize: {x: 50, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 52, y: 76}
+  m_MaxSize: {x: 4002, y: 4026}
   m_ActualView: {fileID: 9}
   m_Panes:
   - {fileID: 9}
@@ -1025,8 +1025,8 @@ MonoBehaviour:
     y: 0
     width: 542.4
     height: 667.2
-  m_MinSize: {x: 50, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 52, y: 76}
+  m_MaxSize: {x: 4002, y: 4026}
   m_ActualView: {fileID: 2}
   m_Panes:
   - {fileID: 2}
@@ -1106,7 +1106,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts/Core
+    - Assets/UI/Layouts
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1116,16 +1116,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 96
   m_LastFolders:
-  - Assets/Scripts/Core
+  - Assets/UI/Layouts
   m_LastFoldersGridSize: 96
   m_LastProjectPath: F:\TaiLieu_Nam 3 Ky 2\TTCS\PvP-QuizGame\PvP QuizGame\PvP QuizGame
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 348.40002}
-    m_SelectedIDs: 9ab70000
-    m_LastClickedID: 47002
-    m_ExpandedIDs: 0000000092b5000094b5000096b5000098b500009ab5000000ca9a3bffffff7f
+    scrollPos: {x: 0, y: 543}
+    m_SelectedIDs: 68b70000
+    m_LastClickedID: 46952
+    m_ExpandedIDs: 000000004ab500004cb500004eb5000050b5000052b5000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1154,7 +1154,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 0000000092b5000094b5000096b5000098b500009ab50000
+    m_ExpandedIDs: 000000004ab500004cb500004eb5000050b5000052b50000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1182,7 +1182,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000583502004e080200e4220200c4240100c624010098ef0200086c0100547801005e9001005276010000780100d2770100a877010072110100aa390200f20c0200ac390200e60e0100f00c0200f40c0200ba450100fa5401000eb10000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1341,7 +1341,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 79}
     m_SelectedIDs: 58b70000
     m_LastClickedID: 46936
-    m_ExpandedIDs: 0000000092b5000094b5000096b5000098b500009ab50000
+    m_ExpandedIDs: 000000004ab500004cb500004eb5000050b5000052b50000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1370,7 +1370,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 0000000092b5000094b5000096b5000098b500009ab50000
+    m_ExpandedIDs: 000000004ab500004cb500004eb5000050b5000052b50000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 

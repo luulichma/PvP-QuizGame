@@ -65,13 +65,6 @@ public class InitSceneController_UXML : MonoBehaviour
         SetStatus("init_loading", "Đang khởi tạo...");
         ShowRandomTip();
 
-        // Spawn ambient particles
-        var particleLayer = root.Q<VisualElement>("init-particle-layer");
-        if (particleLayer != null && UIParticleEffect.Instance != null)
-        {
-            UIParticleEffect.Instance.SpawnAmbientParticles(particleLayer, 60); // Dense bubbles
-        }
-
         LocalizationManager.OnLanguageChanged += OnLocalizationReady;
     }
 
@@ -82,7 +75,31 @@ public class InitSceneController_UXML : MonoBehaviour
 
     private void Start()
     {
+        // Spawn ambient particles — phải gọi ở Start vì UIParticleEffect.AutoInit
+        // chạy qua [RuntimeInitializeOnLoadMethod(AfterSceneLoad)] nên Instance
+        // chưa có tại thời điểm OnEnable.
+        StartCoroutine(SpawnBubblesWhenReady());
         StartCoroutine(InitializationRoutine());
+    }
+
+    private IEnumerator SpawnBubblesWhenReady()
+    {
+        // Đợi tối đa vài frame cho UIParticleEffect singleton sẵn sàng
+        int maxWait = 10;
+        while (UIParticleEffect.Instance == null && maxWait-- > 0)
+            yield return null;
+
+        if (uiDocument == null) yield break;
+        var particleLayer = uiDocument.rootVisualElement.Q<VisualElement>("init-particle-layer");
+        if (particleLayer != null && UIParticleEffect.Instance != null)
+        {
+            UIParticleEffect.Instance.SpawnAmbientParticles(particleLayer, 60); // Dense bubbles
+            Debug.Log("[Init] Ambient bubbles spawned successfully.");
+        }
+        else
+        {
+            Debug.LogWarning($"[Init] Không thể spawn bubbles — particleLayer: {particleLayer != null}, UIParticleEffect: {UIParticleEffect.Instance != null}");
+        }
     }
 
     private void OnLocalizationReady() => SetStatus("init_loading", "Đang khởi tạo hệ thống...");
@@ -131,14 +148,29 @@ public class InitSceneController_UXML : MonoBehaviour
 
             UpdateProgressUI(0.6f);
 
-            // Nếu chưa authenticated (không có persisted session), hiện Popup để user chọn
-            if (!fm.IsAuthenticated)
+            // Kiểm tra xem có cần hiện Auth Popup không.
+            // Firebase SDK lưu auth session riêng (không phải PlayerPrefs).
+            // Khi user đăng xuất → ClearData() xóa PlayerPrefs nhưng nếu
+            // SignOut() chưa kịp clear SDK session, hoặc khi xóa PlayerPrefs
+            // thủ công → Firebase vẫn "authenticated" nhưng local data trống.
+            bool needsAuth = !fm.IsAuthenticated;
+            
+            // Kiểm tra thêm: nếu Firebase nói đã auth nhưng local data trống/mặc định
+            // → đây là session cũ không hợp lệ, cần re-auth
+            if (!needsAuth && !HasValidLocalSession())
+            {
+                Debug.LogWarning("[Init] Firebase có session nhưng local data trống — cần đăng nhập lại.");
+                fm.SignOut(); // Xóa session Firebase cũ không hợp lệ
+                needsAuth = true;
+            }
+
+            if (needsAuth)
             {
                 yield return StartCoroutine(ShowAuthPopupRoutine());
             }
             else
             {
-                // Nếu đã có session, chỉ cần load profile
+                // Nếu đã có session hợp lệ, chỉ cần load profile
                 SetStatus("init_signing_in", "Đang đồng bộ dữ liệu...");
                 Task<bool> loadTask = fm.SyncProfile(); 
                 while (!loadTask.IsCompleted) yield return null;
@@ -386,5 +418,16 @@ public class InitSceneController_UXML : MonoBehaviour
         if (_tipLabel == null) return;
         string tip = _loadingTips[UnityEngine.Random.Range(0, _loadingTips.Length)];
         _tipLabel.text = "💡 " + tip;
+    }
+
+    /// <summary>
+    /// Kiểm tra xem có dữ liệu local hợp lệ (PlayerPrefs) hay không.
+    /// Firebase SDK lưu auth token riêng biệt với PlayerPrefs, nên có thể xảy ra
+    /// trường hợp Firebase nói "đã authenticated" nhưng local data đã bị xóa.
+    /// </summary>
+    private bool HasValidLocalSession()
+    {
+        // Nếu PlayerPrefs có "PlayerName" → đã chơi trước đó, session hợp lệ
+        return PlayerPrefs.HasKey("PlayerName");
     }
 }
