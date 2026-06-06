@@ -526,6 +526,7 @@ MonoBehaviour:
   uiDocument: {fileID: 1680522305}
   resultPopupTemplate: {fileID: 9197481963319205126, guid: 0559d91921f5dac4f839fbd2afb0b46d, type: 3}
   exitPopupTemplate: {fileID: 9197481963319205126, guid: e997ab7e3fb3d7f4c9449ee1aee5f6fb, type: 3}
+  settingsPopupTemplate: {fileID: 9197481963319205126, guid: 3a24c02968b26d643933781237354b46, type: 3}
 --- !u!114 &1680522305
 MonoBehaviour:
   m_ObjectHideFlags: 0

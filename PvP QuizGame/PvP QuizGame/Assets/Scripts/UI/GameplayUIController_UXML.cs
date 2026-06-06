@@ -28,8 +28,9 @@ public class GameplayUIController_UXML : MonoBehaviour
     private Label _questionText;
     private Label _questionCounter;
     private Label _timerText;
-    private VisualElement _timerFill;
     private VisualElement _timerContainer;
+    private TimerArcElement _timerArc;
+    private Coroutine _timerRotateCoroutine;
     private VisualElement _p1Avatar;
     private VisualElement _p2Avatar;
     private VisualElement _p1Info;
@@ -80,9 +81,18 @@ public class GameplayUIController_UXML : MonoBehaviour
         _p2Label      = root.Q<Label>("p2-label");
         _questionText = root.Q<Label>("question-text");
         _questionCounter = root.Q<Label>("question-counter");
-        _timerText = root.Q<Label>("timer-text");
-        _timerFill = root.Q<VisualElement>("timer-ring-fill");
+        _timerText      = root.Q<Label>("timer-text");
         _timerContainer = root.Q<VisualElement>("timer-container");
+
+        // Khởi tạo TimerArcElement và chèn vào sau timer-ring-bg
+        if (_timerContainer != null)
+        {
+            _timerArc = new TimerArcElement { StrokeWidth = 8f };
+            _timerArc.ArcColor = new Color(0f, 0.898f, 1f);
+            // Insert ở index 1 (sau timer-ring-bg, trước timer-text)
+            _timerContainer.Insert(1, _timerArc);
+            _timerRotateCoroutine = StartCoroutine(RotateTimerSlowly());
+        }
         _p1Avatar = root.Q<VisualElement>("p1-avatar");
         _p2Avatar = root.Q<VisualElement>("p2-avatar");
         _p1Info = root.Q<VisualElement>("p1-info");
@@ -127,6 +137,12 @@ public class GameplayUIController_UXML : MonoBehaviour
 
         LocalizationManager.OnLanguageChanged -= LocalizeHUD;
 
+        if (_timerRotateCoroutine != null)
+        {
+            StopCoroutine(_timerRotateCoroutine);
+            _timerRotateCoroutine = null;
+        }
+
         if (uiDocument != null)
         {
             var root = uiDocument.rootVisualElement;
@@ -144,6 +160,25 @@ public class GameplayUIController_UXML : MonoBehaviour
         if (_p1Info != null) UIAnimator.DOSlideFromLeft(_p1Info, 0.5f, 80f);
         if (_p2Info != null) UIAnimator.DOSlideFromRight(_p2Info, 0.5f, 80f);
         if (_timerContainer != null) UIAnimator.DOBounceIn(_timerContainer, 0.6f);
+    }
+
+    /// <summary>Xoay chậm timer container 18°/giây. Bù ngược timer-text để chữ số không bị nghiêng.</summary>
+    private System.Collections.IEnumerator RotateTimerSlowly()
+    {
+        float angle = 0f;
+        while (true)
+        {
+            angle += 18f * Time.deltaTime;
+            if (angle >= 360f) angle -= 360f;
+
+            if (_timerContainer != null)
+                _timerContainer.style.rotate = new StyleRotate(new Rotate(angle));
+            // Bù ngược để timerText luôn đứng thẳng
+            if (_timerText != null)
+                _timerText.style.rotate = new StyleRotate(new Rotate(-angle));
+
+            yield return null;
+        }
     }
 
     private void HandleGameStateChanged(GameState state)
@@ -245,14 +280,12 @@ public class GameplayUIController_UXML : MonoBehaviour
 
         // Reset timer urgent state
         _timerIsUrgent = false;
-        if (_timerFill != null)
+        if (_timerArc != null)
         {
-            var cyanColor = new Color(0f, 0.90f, 1f);
-            _timerFill.style.borderTopColor = cyanColor;
-            _timerFill.style.borderBottomColor = cyanColor;
-            _timerFill.style.borderLeftColor = cyanColor;
-            _timerFill.style.borderRightColor = cyanColor;
+            _timerArc.FillAmount = 1f;
+            _timerArc.ArcColor  = new Color(0f, 0.898f, 1f);
         }
+        if (_timerText != null) _timerText.style.color = Color.white;
 
         // Swoosh sound
         if (AudioManager.Instance != null)
@@ -311,42 +344,48 @@ public class GameplayUIController_UXML : MonoBehaviour
 
     private void HandleTimerTick(float remaining)
     {
+        // Cập nhật số đếm
         if (_timerText != null)
         {
             _timerText.text = TimerController.Instance != null
                 ? TimerController.Instance.GetFormattedTime()
-                : $"{Mathf.CeilToInt(remaining)}s";
+                : $"{Mathf.CeilToInt(remaining)}";
         }
 
-        // Animated timer ring
+        // Cập nhật arc fill
+        if (_timerArc != null && TimerController.Instance != null)
+        {
+            float fill = remaining / TimerController.Instance.TotalTime;
+            _timerArc.FillAmount = fill;
+            
+            // Hiệu ứng "vắt kiệt năng lượng": viền mỏng dần
+            _timerArc.StrokeWidth = Mathf.Lerp(1.5f, 14f, fill);
+
+            // Blend màu cyan → đỏ trong 5 giây cuối
+            if (remaining <= 5f)
+            {
+                float t = remaining / 5f; // 1 → 0
+                _timerArc.ArcColor = Color.Lerp(
+                    new Color(1f, 0.32f, 0.32f),
+                    new Color(0f, 0.898f, 1f), t);
+            }
+            else
+            {
+                _timerArc.ArcColor = new Color(0f, 0.898f, 1f);
+            }
+        }
+
+        // Urgent state — màu chữ
         if (remaining <= 5f && !_timerIsUrgent)
         {
             _timerIsUrgent = true;
-            _timerText.style.color = new Color(1f, 0.32f, 0.32f);
-            if (_timerFill != null)
-            {
-                var redColor = new Color(1f, 0.32f, 0.32f);
-                _timerFill.style.borderTopColor = redColor;
-                _timerFill.style.borderBottomColor = redColor;
-                _timerFill.style.borderLeftColor = redColor;
-                _timerFill.style.borderRightColor = redColor;
-            }
-            // Pulse glow trên timer container
-            if (_timerContainer != null)
-                UIAnimator.DOPulseGlow(_timerContainer, new Color(1f, 0.32f, 0.32f, 0.6f), 0.5f, 10);
+            if (_timerText != null) _timerText.style.color = new Color(1f, 0.32f, 0.32f);
+            // Bỏ hiệu ứng scale DOPulseGlow để vòng tròn giữ nguyên kích thước
         }
-        else if (remaining > 5f)
+        else if (remaining > 5f && _timerIsUrgent)
         {
             _timerIsUrgent = false;
             if (_timerText != null) _timerText.style.color = Color.white;
-            if (_timerFill != null)
-            {
-                var cyanColor2 = new Color(0f, 0.90f, 1f);
-                _timerFill.style.borderTopColor = cyanColor2;
-                _timerFill.style.borderBottomColor = cyanColor2;
-                _timerFill.style.borderLeftColor = cyanColor2;
-                _timerFill.style.borderRightColor = cyanColor2;
-            }
         }
 
         // Urgent tick sound + haptic
@@ -355,12 +394,6 @@ public class GameplayUIController_UXML : MonoBehaviour
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX(AudioManager.Instance.timerUrgentSound);
             HapticFeedback.CountdownTick();
-        }
-
-        if (_timerFill != null && TimerController.Instance != null)
-        {
-            float percent = (remaining / TimerController.Instance.TotalTime) * 100f;
-            _timerFill.style.width = Length.Percent(percent);
         }
     }
 

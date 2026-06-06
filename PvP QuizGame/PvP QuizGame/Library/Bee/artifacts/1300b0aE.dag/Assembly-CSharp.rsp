@@ -488,6 +488,7 @@
 "Assets/Scripts/UI/MainMenuUIController_Old.cs"
 "Assets/Scripts/UI/MainMenuUIController_UXML.cs"
 "Assets/Scripts/UI/SpinnerHelper.cs"
+"Assets/Scripts/UI/TimerArcElement.cs"
 "Assets/Scripts/UI/UIAnimator.cs"
 "Assets/Scripts/UI/UIParticleEffect.cs"
 "Assets/TextMesh Pro/Examples & Extras/Scripts/Benchmark01.cs"
