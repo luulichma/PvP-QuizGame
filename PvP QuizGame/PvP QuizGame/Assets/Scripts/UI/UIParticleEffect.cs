@@ -319,12 +319,24 @@ public class UIParticleEffect : MonoBehaviour
 
     private IEnumerator AmbientRoutine(VisualElement container, int count)
     {
+        // Palette bong bóng phát sáng — nhiều màu neon sinh động
+        Color[] bubbleColors = new Color[]
+        {
+            new Color(0.3f, 0.85f, 1f),    // Cyan neon
+            new Color(0.6f, 0.4f, 1f),     // Tím lavender
+            new Color(0.2f, 1f, 0.7f),     // Xanh mint
+            new Color(1f, 0.5f, 0.8f),     // Hồng pastel
+            new Color(0.9f, 0.8f, 0.3f),   // Vàng ấm
+            new Color(0.4f, 0.6f, 1f),     // Xanh dương sáng
+        };
+
         for (int i = 0; i < count; i++)
         {
             var p = new VisualElement();
             p.style.position = Position.Absolute;
 
-            float size = Random.Range(4f, 10f);
+            // === KÍCH THƯỚC TO RÕ RÀNG ===
+            float size = Random.Range(14f, 30f);
             p.style.width = size;
             p.style.height = size;
             p.style.borderTopLeftRadius = size / 2f;
@@ -332,11 +344,26 @@ public class UIParticleEffect : MonoBehaviour
             p.style.borderBottomLeftRadius = size / 2f;
             p.style.borderBottomRightRadius = size / 2f;
 
-            float alpha = Random.Range(0.05f, 0.15f);
-            p.style.backgroundColor = new Color(0.7f, 0.53f, 1f, alpha);
+            // === MÀU SẮC PHÁT SÁNG MẠNH ===
+            Color baseColor = bubbleColors[Random.Range(0, bubbleColors.Length)];
+            float alpha = Random.Range(0.35f, 0.7f);
+            p.style.backgroundColor = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
 
-            float startX = Random.Range(0f, 100f);
-            float startY = Random.Range(0f, 100f);
+            // === GLOW BORDER DÀY & SÁNG ===
+            float glowAlpha = Mathf.Min(alpha * 2f, 1f);
+            Color glowColor = new Color(baseColor.r * 1.2f, baseColor.g * 1.1f, baseColor.b * 1.2f, glowAlpha);
+            p.style.borderTopWidth = 3;
+            p.style.borderBottomWidth = 3;
+            p.style.borderLeftWidth = 3;
+            p.style.borderRightWidth = 3;
+            p.style.borderTopColor = glowColor;
+            p.style.borderBottomColor = glowColor;
+            p.style.borderLeftColor = glowColor;
+            p.style.borderRightColor = glowColor;
+
+            // === BẮT ĐẦU TỪ DƯỚI ĐÁY → BAY LÊN ===
+            float startX = Random.Range(2f, 98f);
+            float startY = Random.Range(85f, 115f); // Bắt đầu từ dưới đáy (hoặc ngoài màn hình)
             p.style.left = Length.Percent(startX);
             p.style.top = Length.Percent(startY);
             p.style.opacity = 0f;
@@ -344,24 +371,37 @@ public class UIParticleEffect : MonoBehaviour
 
             container.Add(p);
 
-            // Animate: float up slowly + pulse opacity
-            float duration = Random.Range(6f, 12f);
-            float delay = Random.Range(0f, 4f);
-            float endY = startY - Random.Range(15f, 40f);
+            // === ANIMATION: Bay lên nhanh, rõ ràng ===
+            float duration = Random.Range(2.5f, 5.5f);       // Bay nhanh
+            float delay = Random.Range(0f, 2.5f);             // Spawn lệch nhau liên tục
+            float endY = Random.Range(-20f, 15f);              // Bay hết lên trên (ra khỏi màn hình)
+            float driftX = Random.Range(-8f, 8f);              // Lắc ngang nhẹ cho tự nhiên
 
             float currentY = startY;
+            float currentX = startX;
+
+            // Bay lên (trục Y)
             DOTween.To(
                 () => currentY,
                 y => { if (p.parent != null) { currentY = y; p.style.top = Length.Percent(y); } },
                 endY,
                 duration
-            ).SetDelay(delay).SetEase(Ease.Linear).SetLoops(-1, LoopType.Restart);
+            ).SetDelay(delay).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Restart);
 
-            // Pulse opacity
+            // Lắc ngang nhẹ (trục X) — tạo cảm giác bong bóng trôi tự nhiên
+            DOTween.To(
+                () => currentX,
+                x => { if (p.parent != null) { currentX = x; p.style.left = Length.Percent(x); } },
+                startX + driftX,
+                duration * 0.5f
+            ).SetDelay(delay).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
+
+            // Pulse opacity: hiện dần → giữ sáng → mờ đi khi gần đỉnh
             DOTween.Sequence()
                 .SetDelay(delay)
-                .Append(UIAnimator.DOFade(p, alpha * 4f, duration * 0.3f))
-                .Append(UIAnimator.DOFade(p, 0f, duration * 0.3f))
+                .Append(UIAnimator.DOFade(p, Mathf.Min(alpha * 5f, 1f), duration * 0.2f))  // Hiện nhanh
+                .AppendInterval(duration * 0.5f)                                             // Giữ sáng lâu
+                .Append(UIAnimator.DOFade(p, 0f, duration * 0.3f))                           // Mờ dần
                 .SetLoops(-1, LoopType.Restart);
         }
 

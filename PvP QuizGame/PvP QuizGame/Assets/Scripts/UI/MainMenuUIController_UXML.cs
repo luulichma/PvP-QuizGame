@@ -147,9 +147,8 @@ public class MainMenuUIController_UXML : MonoBehaviour
         ShowHomePanel();
         RefreshPlayerStatsUI();
 
-        // Ambient floating particles trên Home screen
-        if (_particleLayer != null && UIParticleEffect.Instance != null)
-            UIParticleEffect.Instance.SpawnAmbientParticles(_particleLayer, 35);
+        // Swap: Orbs and background color breathing on Home screen
+        StartBackgroundAnimation();
 
         // Entry animation: hero bounce in + buttons cascade
         AnimateHomeEntry(root);
@@ -1321,5 +1320,38 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 .Append(btn.DOFade(1f, 0.25f))
                 .Join(btn.DOTranslate(UnityEngine.Vector2.zero, 0.35f).SetEase(Ease.OutBack));
         }
+    }
+
+    // ==================== BACKGROUND ANIMATION ====================
+    private void StartBackgroundAnimation()
+    {
+        if (uiDocument == null || uiDocument.rootVisualElement == null) return;
+        var root = uiDocument.rootVisualElement;
+
+        var orb1 = root.Q<VisualElement>("glow-orb-1");
+        var orb2 = root.Q<VisualElement>("glow-orb-2");
+        var orb3 = root.Q<VisualElement>("glow-orb-3");
+
+        float t = 0f;
+        root.schedule.Execute(() =>
+        {
+            t += Time.deltaTime;
+
+            // 1. Color Breathing (chuyển đổi Hue mượt mà)
+            // Màu gốc: #0d0221 (khoảng h=0.72, s=0.94, v=0.13)
+            float h = Mathf.Lerp(0.70f, 0.85f, (Mathf.Sin(t * 0.3f) + 1f) / 2f);
+            root.style.backgroundColor = Color.HSVToRGB(h, 0.9f, 0.15f);
+
+            // 2. Orb Floating Animation (di chuyển vô hạn)
+            if (orb1 != null)
+                orb1.style.translate = new Translate(Mathf.Sin(t * 0.5f) * 150f, Mathf.Cos(t * 0.4f) * 120f, 0);
+            
+            if (orb2 != null)
+                orb2.style.translate = new Translate(Mathf.Cos(t * 0.35f) * -180f, Mathf.Sin(t * 0.45f) * 160f, 0);
+                
+            if (orb3 != null)
+                orb3.style.translate = new Translate(Mathf.Sin(t * 0.6f) * 140f, Mathf.Cos(t * 0.55f) * -140f, 0);
+
+        }).Every(16); // Chạy liên tục mỗi 16ms (tương đương ~60FPS)
     }
 }

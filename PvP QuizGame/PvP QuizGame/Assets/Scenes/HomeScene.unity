@@ -289,6 +289,7 @@ MonoBehaviour:
   settingsPopupTemplate: {fileID: 9197481963319205126, guid: 9a2a54381a34def46a5238cfdb3d7b87, type: 3}
   logoutPopupTemplate: {fileID: 9197481963319205126, guid: 2ed0898c67e442946af46e6646ddc98d, type: 3}
   profilePopupTemplate: {fileID: 9197481963319205126, guid: 88ba6d934a11c9345affe24ac368e0d8, type: 3}
+  authPopupTemplate: {fileID: 9197481963319205126, guid: 1f93733630d426e4fb6aaeba506a9cb3, type: 3}
   leaderboardPopupTemplate: {fileID: 9197481963319205126, guid: bccb004dd9c777043a52a9d8e4596db7, type: 3}
   leaderboardEntryTemplate: {fileID: 9197481963319205126, guid: 3fe29a29c6741854b983eb9436d34471, type: 3}
   achievementEntryTemplate: {fileID: 9197481963319205126, guid: d713e3f2b7dee284aa39e025b196f13f, type: 3}

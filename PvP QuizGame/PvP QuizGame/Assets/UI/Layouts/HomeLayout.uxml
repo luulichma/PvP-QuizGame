@@ -2,7 +2,14 @@
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     
     <!-- Root Container: Flex Column -->
-    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; display: flex; flex-direction: column;">
+    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+
+        <!-- Animated Background Orbs -->
+        <ui:VisualElement name="bg-orbs-container" picking-mode="Ignore" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden;">
+            <ui:VisualElement name="glow-orb-1" style="position: absolute; width: 1200px; height: 1200px; border-radius: 600px; background-color: rgba(0, 229, 255, 0.03); top: -20%; left: -20%;" />
+            <ui:VisualElement name="glow-orb-2" style="position: absolute; width: 1000px; height: 1000px; border-radius: 500px; background-color: rgba(179, 136, 255, 0.04); bottom: -20%; right: -10%;" />
+            <ui:VisualElement name="glow-orb-3" style="position: absolute; width: 800px; height: 800px; border-radius: 400px; background-color: rgba(255, 209, 102, 0.02); top: 30%; left: 40%;" />
+        </ui:VisualElement>
 
         <!-- Background Particles -->
         <ui:VisualElement name="home-particle-layer" class="particle-container" picking-mode="Ignore" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;" />

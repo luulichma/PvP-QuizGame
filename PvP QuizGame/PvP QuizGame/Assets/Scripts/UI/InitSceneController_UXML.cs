@@ -69,7 +69,7 @@ public class InitSceneController_UXML : MonoBehaviour
         var particleLayer = root.Q<VisualElement>("init-particle-layer");
         if (particleLayer != null && UIParticleEffect.Instance != null)
         {
-            UIParticleEffect.Instance.SpawnAmbientParticles(particleLayer, 20);
+            UIParticleEffect.Instance.SpawnAmbientParticles(particleLayer, 60); // Dense bubbles
         }
 
         LocalizationManager.OnLanguageChanged += OnLocalizationReady;

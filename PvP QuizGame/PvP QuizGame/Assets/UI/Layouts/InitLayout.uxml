@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
-    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; align-items: center; justify-content: center; padding: 5%;">
+    <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; align-items: center; justify-content: center; padding: 5%; overflow: hidden;">
         <!-- Logo — Glass card with glow border -->
         <ui:VisualElement name="logo" style="width: 45%; aspect-ratio: 1; max-width: 200px; background-color: rgba(179, 136, 255, 0.08); border-radius: 40px; margin-bottom: 8%; justify-content: center; align-items: center; border-width: 2px; border-color: rgba(179, 136, 255, 0.3);">
             <ui:Label text="PVP" style="color: white; font-size: 60px; -unity-font-style: bold; letter-spacing: 4px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(179, 136, 255, 0.4);" />
