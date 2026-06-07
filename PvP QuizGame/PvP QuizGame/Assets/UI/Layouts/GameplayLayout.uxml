@@ -5,10 +5,10 @@
         <!-- HUD — Player Info + Timer -->
         <ui:VisualElement name="hud" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 24px; margin-top: 80px;">
             <!-- Player 1 (Me) -->
-            <ui:VisualElement name="p1-info" class="player-card" style="width: 320px;">
-                <ui:VisualElement name="p1-avatar" class="avatar-ring avatar-ring-cyan" style="width: 100px; height: 100px; border-radius: 50px; margin-right: 18px;" />
-                <ui:VisualElement>
-                    <ui:Label name="p1-label" text="ME" style="color: rgba(255, 255, 255, 0.5); font-size: 26px; letter-spacing: 1px; -unity-font-style: bold;" />
+            <ui:VisualElement name="p1-info" class="player-card" style="width: 320px; overflow: hidden;">
+                <ui:VisualElement name="p1-avatar" class="avatar-ring avatar-ring-cyan" style="width: 100px; height: 100px; border-radius: 50px; margin-right: 18px; flex-shrink: 0;" />
+                <ui:VisualElement style="flex-shrink: 1; overflow: hidden;">
+                    <ui:Label name="p1-label" text="ME" style="color: rgba(255, 255, 255, 0.5); font-size: 26px; letter-spacing: 1px; -unity-font-style: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" />
                     <ui:Label name="p1-score" text="0" style="color: white; font-size: 64px; -unity-font-style: bold;" />
                 </ui:VisualElement>
             </ui:VisualElement>
@@ -21,10 +21,10 @@
             </ui:VisualElement>
 
             <!-- Player 2 (Opponent) -->
-            <ui:VisualElement name="p2-info" class="player-card" style="flex-direction: row-reverse; width: 320px;">
-                <ui:VisualElement name="p2-avatar" class="avatar-ring avatar-ring-gold" style="width: 100px; height: 100px; border-radius: 50px; margin-left: 18px;" />
-                <ui:VisualElement style="align-items: flex-end;">
-                    <ui:Label name="p2-label" text="OPP" style="color: rgba(255, 255, 255, 0.5); font-size: 26px; letter-spacing: 1px; -unity-text-align: upper-right; -unity-font-style: bold;" />
+            <ui:VisualElement name="p2-info" class="player-card" style="flex-direction: row-reverse; width: 320px; overflow: hidden;">
+                <ui:VisualElement name="p2-avatar" class="avatar-ring avatar-ring-gold" style="width: 100px; height: 100px; border-radius: 50px; margin-left: 18px; flex-shrink: 0;" />
+                <ui:VisualElement style="align-items: flex-end; flex-shrink: 1; overflow: hidden;">
+                    <ui:Label name="p2-label" text="OPP" style="color: rgba(255, 255, 255, 0.5); font-size: 26px; letter-spacing: 1px; -unity-text-align: upper-right; -unity-font-style: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" />
                     <ui:Label name="p2-score" text="0" style="color: white; font-size: 64px; -unity-font-style: bold; -unity-text-align: upper-right;" />
                 </ui:VisualElement>
                 <ui:Label name="p2-status" text="Dang suy nghi..." style="color: rgba(255, 255, 255, 0.35); font-size: 20px; -unity-font-style: italic; position: absolute; bottom: 8px; right: 36px;" />
@@ -33,7 +33,15 @@
 
         <!-- QUESTION AREA -->
         <ui:VisualElement name="question-area" style="flex-grow: 1; justify-content: center; align-items: center; width: 100%; margin-top: 20px;">
-            <ui:Label name="question-counter" text="CAU 1 / 10" style="color: #B388FF; font-size: 28px; margin-bottom: 16px; letter-spacing: 3px; -unity-font-style: bold;" />
+            <!-- Row 1: Question counter — big & prominent -->
+            <ui:Label name="question-counter" text="CAU HOI 1" style="color: #B388FF; font-size: 40px; letter-spacing: 3px; -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 16px;" />
+            <!-- Row 2: Progress bar + fraction -->
+            <ui:VisualElement style="flex-direction: row; align-items: center; width: 90%; max-width: 800px; margin-bottom: 20px;">
+                <ui:VisualElement name="progress-bar-bg" style="flex-grow: 1; height: 10px; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; overflow: hidden; margin-right: 16px;">
+                    <ui:VisualElement name="progress-bar-fill" style="width: 10%; height: 100%; background-color: #00E5FF; border-radius: 5px;" />
+                </ui:VisualElement>
+                <ui:Label name="question-progress-text" text="1 / 10" style="color: rgba(255,255,255,0.7); font-size: 28px; -unity-font-style: bold; flex-shrink: 0;" />
+            </ui:VisualElement>
             <ui:VisualElement class="question-card" style="flex-grow: 1; width: 100%; max-height: 450px;">
                 <ui:Label name="question-text" text="Cau hoi dang duoc tai...?" style="color: white; font-size: 42px; -unity-text-align: middle-center; -unity-font-style: bold; white-space: normal;" />
             </ui:VisualElement>

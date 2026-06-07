@@ -27,6 +27,8 @@ public class GameplayUIController_UXML : MonoBehaviour
     private Label _p2Label;
     private Label _questionText;
     private Label _questionCounter;
+    private Label _questionProgressText;
+    private VisualElement _progressBarFill;
     private Label _timerText;
     private VisualElement _timerContainer;
     private TimerArcElement _timerArc;
@@ -81,6 +83,8 @@ public class GameplayUIController_UXML : MonoBehaviour
         _p2Label      = root.Q<Label>("p2-label");
         _questionText = root.Q<Label>("question-text");
         _questionCounter = root.Q<Label>("question-counter");
+        _questionProgressText = root.Q<Label>("question-progress-text");
+        _progressBarFill = root.Q<VisualElement>("progress-bar-fill");
         _timerText      = root.Q<Label>("timer-text");
         _timerContainer = root.Q<VisualElement>("timer-container");
 
@@ -298,14 +302,33 @@ public class GameplayUIController_UXML : MonoBehaviour
 
             if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
             {
-                string fmt = LocalizationManager.Instance.GetText("game_question_counter");
+                string fmt = LocalizationManager.Instance.GetText("game_question_counter_title"); // e.g. "CÂU HỎI {0}"
                 if (string.IsNullOrEmpty(fmt) || fmt.StartsWith("["))
-                    fmt = "{0} / {1}";
-                _questionCounter.text = string.Format(fmt, answered, total);
+                    fmt = "CÂU HỎI {0}";
+                _questionCounter.text = string.Format(fmt, answered);
             }
             else
             {
-                _questionCounter.text = $"{answered} / {total}";
+                _questionCounter.text = $"CÂU HỎI {answered}";
+            }
+
+            if (_questionProgressText != null)
+            {
+                _questionProgressText.text = $"{answered} / {total}";
+            }
+
+            if (_progressBarFill != null)
+            {
+                float fillPercent = Mathf.Clamp01((float)answered / total) * 100f;
+                // Animate fill percent
+                float currentWidth = _progressBarFill.resolvedStyle.width;
+                if (float.IsNaN(currentWidth)) currentWidth = 0f;
+                
+                // Do a simple DOTween To animation for width
+                DOTween.To(() => _progressBarFill.style.width.value.value, 
+                           x => _progressBarFill.style.width = Length.Percent(x), 
+                           fillPercent, 
+                           0.5f).SetEase(Ease.OutCubic);
             }
         }
     }
@@ -594,47 +617,78 @@ public class GameplayUIController_UXML : MonoBehaviour
         if (p2Final != null)
             UIAnimator.DOCountTo(p2Final, 0, ScoreManager.Instance.Player2Score, 0.8f);
 
-        // Reward — hiển thị cả XP và tiền
-        var rewardAmount = _resultPopupInstance.Q<Label>("reward-amount");
-        if (rewardAmount != null)
+        // Reward — hiển thị tiền, XP, Rank Points tách dòng
+        var rewardParent = _resultPopupInstance.Q<VisualElement>(className: "reward-container");
+        if (rewardParent != null)
         {
+            rewardParent.Clear();
+
             int money = ScoreManager.Instance.LastRewardMoney;
             int xp = ScoreManager.Instance.LastRewardExp;
-            var rewardParent = rewardAmount.parent;
 
             bool isSurrender = (money == 0 && xp == 0 && result == WinResult.Player2Wins);
 
             if (isSurrender)
             {
-                // Đầu hàng — 0 tiền, 0 XP
-                rewardAmount.text = "$0";
-                rewardAmount.style.color = new Color(1f, 0.32f, 0.32f, 0.7f);
-
                 var surrenderNote = new Label(
                     L != null
                         ? L.GetText("game_surrender_no_reward", "Đầu hàng — Không nhận được thưởng.")
                         : "Đầu hàng — Không nhận được thưởng."
                 );
-                surrenderNote.style.fontSize = 20;
+                surrenderNote.style.fontSize = 28;
                 surrenderNote.style.color = new Color(1f, 0.32f, 0.32f, 0.7f);
                 surrenderNote.style.unityTextAlign = TextAnchor.MiddleCenter;
                 surrenderNote.style.marginTop = 6;
-                rewardParent?.Add(surrenderNote);
+                rewardParent.Add(surrenderNote);
             }
             else
             {
-                // Hiển thị tiền
-                rewardAmount.text = $"+${money:N0}";
-                rewardAmount.style.color = new Color(1f, 0.84f, 0.28f); // Gold
+                // Tiền
+                var moneyReward = new Label($"💰 +${money:N0}");
+                moneyReward.style.fontSize = 40;
+                moneyReward.style.color = new Color(1f, 0.84f, 0.28f); // Gold
+                moneyReward.style.unityFontStyleAndWeight = FontStyle.Bold;
+                moneyReward.style.unityTextAlign = TextAnchor.MiddleCenter;
+                moneyReward.style.marginTop = 8;
+                rewardParent.Add(moneyReward);
 
-                // Hiển thị XP bên dưới
-                var xpReward = new Label($"+{xp} XP");
-                xpReward.style.fontSize = 28;
+                // XP
+                var xpReward = new Label($"⚡ +{xp} XP");
+                xpReward.style.fontSize = 40;
                 xpReward.style.color = new Color(0f, 0.90f, 1f); // Cyan
                 xpReward.style.unityFontStyleAndWeight = FontStyle.Bold;
                 xpReward.style.unityTextAlign = TextAnchor.MiddleCenter;
-                xpReward.style.marginTop = 4;
-                rewardParent?.Add(xpReward);
+                xpReward.style.marginTop = 8;
+                rewardParent.Add(xpReward);
+
+                // Điểm Xếp Hạng
+                int rankPoints = ScoreManager.Instance.LastRewardRankPoints;
+                string sign = rankPoints > 0 ? "+" : "";
+                var rankReward = new Label($"🏆 {sign}{rankPoints} RP");
+                rankReward.style.fontSize = 40;
+                rankReward.style.color = rankPoints >= 0 ? new Color(0.85f, 0.44f, 1f) : new Color(1f, 0.32f, 0.32f); 
+                rankReward.style.unityFontStyleAndWeight = FontStyle.Bold;
+                rankReward.style.unityTextAlign = TextAnchor.MiddleCenter;
+                rankReward.style.marginTop = 8;
+                rewardParent.Add(rankReward);
+
+                // Animation lần lượt
+                moneyReward.style.opacity = 0f;
+                xpReward.style.opacity = 0f;
+                rankReward.style.opacity = 0f;
+                
+                moneyReward.style.translate = new StyleTranslate(new Translate(0, 20));
+                xpReward.style.translate = new StyleTranslate(new Translate(0, 20));
+                rankReward.style.translate = new StyleTranslate(new Translate(0, 20));
+                
+                UIAnimator.DOFade(moneyReward, 1f, 0.3f).SetDelay(0.3f);
+                UIAnimator.DOTranslate(moneyReward, Vector2.zero, 0.4f).SetDelay(0.3f).SetEase(Ease.OutBack);
+                
+                UIAnimator.DOFade(xpReward, 1f, 0.3f).SetDelay(0.5f);
+                UIAnimator.DOTranslate(xpReward, Vector2.zero, 0.4f).SetDelay(0.5f).SetEase(Ease.OutBack);
+                
+                UIAnimator.DOFade(rankReward, 1f, 0.3f).SetDelay(0.7f);
+                UIAnimator.DOTranslate(rankReward, Vector2.zero, 0.4f).SetDelay(0.7f).SetEase(Ease.OutBack);
             }
         }
 

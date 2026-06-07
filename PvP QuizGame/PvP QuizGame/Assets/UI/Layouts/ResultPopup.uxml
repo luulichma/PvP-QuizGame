@@ -4,34 +4,30 @@
         <!-- Particle layer for confetti -->
         <ui:VisualElement name="result-particle-layer" class="particle-container" picking-mode="Ignore" />
 
-        <ui:VisualElement name="result-container" class="result-card" style="width: 95%; max-width: 600px; padding: 50px;">
+        <ui:VisualElement name="result-container" class="result-card" style="width: auto; min-width: 800px; max-width: 95%; padding: 50px; align-self: center;">
             <!-- Trophy / Icon area -->
             <ui:VisualElement name="trophy-area" style="width: 130px; height: 130px; border-radius: 65px; background-color: rgba(255, 209, 102, 0.12); border-width: 3px; border-color: rgba(255, 209, 102, 0.25); justify-content: center; align-items: center; margin-bottom: 24px;">
                 <ui:Label name="trophy-icon" text="&#9733;" style="font-size: 72px; color: #FFD166; -unity-text-align: middle-center;" />
             </ui:VisualElement>
 
-            <ui:Label name="result-title" text="KET QUA" style="font-size: 56px; color: white; -unity-font-style: bold; margin-bottom: 12px; letter-spacing: 2px;" />
+            <ui:Label name="result-title" text="KET QUA" style="font-size: 72px; color: white; -unity-font-style: bold; margin-bottom: 12px; letter-spacing: 2px;" />
             <ui:Label name="win-label" text="" style="font-size: 40px; color: #FFD166; -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 30px; white-space: normal;" />
 
             <!-- Score comparison -->
             <ui:VisualElement name="score-container" style="width: 100%; flex-direction: row; justify-content: space-around; margin-bottom: 20px; padding: 16px; background-color: rgba(255, 255, 255, 0.04); border-radius: 16px; border-width: 1px; border-color: rgba(255, 255, 255, 0.06);">
                 <ui:VisualElement style="align-items: center;">
                     <ui:Label name="your-score-label" text="Ban" style="color: rgba(255,255,255,0.5); font-size: 26px; margin-bottom: 4px;" />
-                    <ui:Label name="p1-score-final" text="0" style="color: #00E5FF; font-size: 56px; -unity-font-style: bold;" />
+                    <ui:Label name="p1-score-final" text="0" style="color: #00E5FF; font-size: 72px; -unity-font-style: bold;" />
                 </ui:VisualElement>
                 <ui:Label text="VS" style="color: rgba(255,255,255,0.2); font-size: 34px; -unity-font-style: bold; align-self: center;" />
                 <ui:VisualElement style="align-items: center;">
                     <ui:Label name="opp-score-label" text="Doi thu" style="color: rgba(255,255,255,0.5); font-size: 26px; margin-bottom: 4px;" />
-                    <ui:Label name="p2-score-final" text="0" style="color: #FF5252; font-size: 56px; -unity-font-style: bold;" />
+                    <ui:Label name="p2-score-final" text="0" style="color: #FF5252; font-size: 72px; -unity-font-style: bold;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
             <!-- Reward -->
-            <ui:VisualElement class="reward-container">
-                <ui:Label text="&#9733;" style="color: #FFD166; font-size: 32px; margin-right: 10px;" />
-                <ui:Label name="reward-label" text="Thuong" style="color: rgba(255,255,255,0.5); font-size: 28px; margin-right: 10px;" />
-                <ui:Label name="reward-amount" text="+$0" style="color: #FFD166; font-size: 36px; -unity-font-style: bold;" />
-                <ui:Label text="&#9733;" style="color: #FFD166; font-size: 32px; margin-left: 10px;" />
+            <ui:VisualElement class="reward-container" style="flex-direction: column; align-items: center; margin-top: 10px; margin-bottom: 30px;">
             </ui:VisualElement>
 
             <!-- Action Buttons -->

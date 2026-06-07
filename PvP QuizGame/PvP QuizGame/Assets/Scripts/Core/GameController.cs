@@ -343,8 +343,8 @@ public class GameController : MonoBehaviour
 
         scoreManager.AwardRewards();
 
-        // Online: đẩy profile (level, exp, money) lên cloud
-        if (_isOnline && FirebaseManager.Instance != null)
+        // Bất kể chơi online hay offline, nếu đã đăng nhập Firebase thì đẩy profile (level, exp, money) lên cloud
+        if (FirebaseManager.Instance != null && FirebaseManager.Instance.IsConnected && FirebaseManager.Instance.IsAuthenticated)
         {
             var saveTask = FirebaseManager.Instance.SaveProfileToCloud();
             while (!saveTask.IsCompleted) yield return null;
