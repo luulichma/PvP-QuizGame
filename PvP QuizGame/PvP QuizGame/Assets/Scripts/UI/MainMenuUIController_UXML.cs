@@ -74,8 +74,8 @@ public class MainMenuUIController_UXML : MonoBehaviour
     // Particle layer
     private VisualElement _particleLayer;
 
-    // Settings popup instance
-    private VisualElement _settingsPopup;
+    // REFACTOR-P2: Settings popup được tách ra controller riêng
+    private SettingsPopupController _settingsPopup;
 
     // Leaderboard popup instance
     private VisualElement _leaderboardPopup;
@@ -232,7 +232,7 @@ public class MainMenuUIController_UXML : MonoBehaviour
             LoadAchievementsData();
         }
 
-        RefreshSettingsPopupLocalization();
+        // REFACTOR-P2: SettingsPopupController tự re-localize qua UILocalizer.
     }
 
     private void RefreshPlayerStatsUI()
@@ -429,43 +429,12 @@ public class MainMenuUIController_UXML : MonoBehaviour
         ShowHomePanel();
     }
 
-    /// <summary>Hiển thị toast notification ngắn trên HomeScene (dùng cho cảnh báo guest, lỗi v.v.)</summary>
+    /// <summary>Hiển thị toast notification ngắn trên HomeScene (dùng cho cảnh báo guest, lỗi v.v.)
+    /// REFACTOR-P2: delegate sang ToastService dùng chung.</summary>
     private void ShowInfoToast(string message, float duration = 2.5f)
     {
         if (uiDocument == null) return;
-        var root = uiDocument.rootVisualElement;
-
-        var toast = new UnityEngine.UIElements.Label(message);
-        toast.style.position = UnityEngine.UIElements.Position.Absolute;
-        toast.style.bottom = 160;
-        toast.style.left = 0;
-        toast.style.right = 0;
-        toast.style.unityTextAlign = TextAnchor.MiddleCenter;
-        toast.style.fontSize = 28;
-        toast.style.color = Color.white;
-        toast.style.backgroundColor = new Color(0.18f, 0.05f, 0.26f, 0.92f);
-        toast.style.paddingTop = 18;
-        toast.style.paddingBottom = 18;
-        toast.style.paddingLeft = 28;
-        toast.style.paddingRight = 28;
-        toast.style.borderTopLeftRadius = 16;
-        toast.style.borderTopRightRadius = 16;
-        toast.style.borderBottomLeftRadius = 16;
-        toast.style.borderBottomRightRadius = 16;
-        toast.style.marginLeft = UnityEngine.UIElements.StyleKeyword.Auto;
-        toast.style.marginRight = UnityEngine.UIElements.StyleKeyword.Auto;
-        toast.style.maxWidth = new UnityEngine.UIElements.Length(85, UnityEngine.UIElements.LengthUnit.Percent);
-        toast.style.whiteSpace = UnityEngine.UIElements.WhiteSpace.Normal;
-        toast.style.unityFontStyleAndWeight = FontStyle.Bold;
-
-        root.Add(toast);
-        StartCoroutine(RemoveToastAfter(toast, duration));
-    }
-
-    private System.Collections.IEnumerator RemoveToastAfter(UnityEngine.UIElements.VisualElement el, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (el != null && el.parent != null) el.RemoveFromHierarchy();
+        ToastService.ShowInfo(uiDocument.rootVisualElement, message, duration);
     }
 
     // UX-06: Matchmaking timeout handler
@@ -773,6 +742,8 @@ public class MainMenuUIController_UXML : MonoBehaviour
     }
 
     // ==================== SETTINGS ====================
+    // REFACTOR-P2: Toàn bộ logic build popup Settings + Logout đã tách sang
+    // SettingsPopupController / LogoutConfirmPopupController (Scripts/UI/Popups).
     private void OnSettingsClicked()
     {
         if (settingsPopupTemplate == null)
@@ -781,273 +752,23 @@ public class MainMenuUIController_UXML : MonoBehaviour
             return;
         }
 
-        if (_settingsPopup != null && _settingsPopup.parent != null) return;
+        if (_settingsPopup != null && _settingsPopup.IsOpen) return;
 
-        _settingsPopup = settingsPopupTemplate.Instantiate();
-        
-        // FIX: Đảm bảo TemplateContainer chiếm toàn bộ màn hình
-        _settingsPopup.style.position = Position.Absolute;
-        _settingsPopup.style.top = 0;
-        _settingsPopup.style.bottom = 0;
-        _settingsPopup.style.left = 0;
-        _settingsPopup.style.right = 0;
-
-        uiDocument.rootVisualElement.Add(_settingsPopup);
-
-        // ANIMATION
-        var overlay = _settingsPopup.Q<VisualElement>("overlay") ?? _settingsPopup.Children().First();
-        var popupCard = _settingsPopup.Q<VisualElement>("popup") ?? overlay.Children().First();
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
-
-        // Khởi tạo ngôn ngữ ban đầu cho popup
-        RefreshSettingsPopupLocalization();
-
-        var closeBtn = _settingsPopup.Q<Button>("close-btn");
-        if (closeBtn != null)
-        {
-            closeBtn.clicked += CloseSettingsPopup;
-        }
-
-        // Dropdown Ngôn ngữ
-        // BUG FIX: Chỉ hiển thị các ngôn ngữ có file JSON local tương ứng.
-        // Khi thêm ngôn ngữ mới, cần tạo file StreamingAssets/Localization/<code>.json
-        // rồi bổ sung vào danh sách này.
-        var langDropdown = _settingsPopup.Q<DropdownField>("language-dropdown");
-        if (langDropdown != null)
-        {
-            langDropdown.choices = new System.Collections.Generic.List<string> {
-                "Tiếng Việt", "English", "Français", "Italiano", "Deutsch", "Español", "日本語", "한국어"
-            };
-
-            // Set giá trị hiện tại
-            string current = LocalizationManager.Instance.CurrentLanguage;
-            int idx = GetLanguageIndex(current);
-            langDropdown.index = idx;
-
-            langDropdown.RegisterValueChangedCallback(evt => {
-                string code = GetLanguageCode(evt.newValue);
-                LocalizationManager.Instance.SwitchLanguage(code);
-                Debug.Log($"[MainMenu] Đã chọn ngôn ngữ: {evt.newValue} ({code})");
-            });
-        }
-
-        // Toggles Âm thanh
-        var musicToggle = _settingsPopup.Q<Toggle>("music-toggle");
-        var sfxToggle = _settingsPopup.Q<Toggle>("sfx-toggle");
-
-        if (AudioManager.Instance != null)
-        {
-            if (musicToggle != null)
-            {
-                musicToggle.value = AudioManager.Instance.IsMusicEnabled;
-                musicToggle.RegisterValueChangedCallback(evt => {
-                    AudioManager.Instance.SetMusicEnabled(evt.newValue);
-                });
-            }
-
-            if (sfxToggle != null)
-            {
-                sfxToggle.value = AudioManager.Instance.IsSFXEnabled;
-                sfxToggle.RegisterValueChangedCallback(evt => {
-                    AudioManager.Instance.SetSFXEnabled(evt.newValue);
-                });
-            }
-        }
-
-        var logoutBtn = _settingsPopup.Q<Button>("logout-btn");
-        if (logoutBtn != null)
-        {
-            logoutBtn.clicked += ShowLogoutConfirmation;
-        }
-
-        Debug.Log("[MainMenu] Mở Settings Popup.");
-    }
-
-    private void ShowLogoutConfirmation()
-    {
-        if (logoutPopupTemplate == null) return;
-        
-        var popup = logoutPopupTemplate.Instantiate();
-        popup.style.position = Position.Absolute;
-        popup.style.top = 0; popup.style.bottom = 0;
-        popup.style.left = 0; popup.style.right = 0;
-
-        uiDocument.rootVisualElement.Add(popup);
-
-        // ANIMATION — tên khớp với LogoutConfirmPopup.uxml
-        var overlay = popup.Q<VisualElement>("overlay") ?? popup.Children().First();
-        var popupCard = popup.Q<VisualElement>("popup-container") ?? overlay.Children().First();
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
-
-        var titleLabel = popup.Q<Label>("logout-title");
-        var msgLabel = popup.Q<Label>("message-label");
-        var confirmBtn = popup.Q<Button>("logout-yes-btn");
-        var cancelBtn = popup.Q<Button>("logout-no-btn");
-
-        var fm = FirebaseManager.Instance;
-        var pdm = PlayerDataManager.Instance;
-        var L = LocalizationManager.Instance;
-
-        if (L != null && L.IsReady)
-        {
-            if (titleLabel != null) titleLabel.text = L.GetText("logout_confirm_title", "ĐĂNG XUẤT");
-            if (confirmBtn != null) confirmBtn.text = L.GetText("logout_confirm_ok", "ĐĂNG XUẤT");
-            if (cancelBtn != null) cancelBtn.text = L.GetText("logout_confirm_cancel", "HỦY");
-        }
-
-        // Cấu hình tin nhắn cảnh báo
-        if (fm != null && fm.IsAuthenticated && msgLabel != null)
-        {
-            bool isGuest = fm.IsAnonymous;
-
-            if (isGuest)
-            {
-                msgLabel.text = L != null && L.IsReady ? L.GetText("logout_confirm_msg_guest", "CẢNH BÁO: Đăng xuất sẽ làm MẤT dữ liệu!") : "CẢNH BÁO: Đăng xuất sẽ làm MẤT dữ liệu!";
-                msgLabel.style.color = Color.red;
-            }
-            else
-            {
-                msgLabel.text = L != null && L.IsReady ? L.GetText("logout_confirm_msg_user", "Bạn có chắc chắn muốn đăng xuất không?") : "Bạn có chắc chắn muốn đăng xuất không?";
-                msgLabel.style.color = new Color(0.2f, 0.2f, 0.2f);
-            }
-        }
-
-        if (confirmBtn != null)
-        {
-            confirmBtn.clicked += () => {
-                Debug.Log("[MainMenu] Thục hiện Đăng xuất...");
-                if (fm != null) fm.SignOut();
-                if (pdm != null) pdm.ClearData();
-                
-                // Quay về InitScene
-                UnityEngine.SceneManagement.SceneManager.LoadScene("InitScene");
-            };
-        }
-
-        if (cancelBtn != null)
-        {
-            cancelBtn.clicked += () => {
-                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                    popup.RemoveFromHierarchy();
-                });
-            };
-        }
+        _settingsPopup = new SettingsPopupController(settingsPopupTemplate, logoutPopupTemplate, uiDocument.rootVisualElement);
+        _settingsPopup.Show();
     }
 
     // ==================== PROFILE ====================
-    private VisualElement _profilePopup;
+    // REFACTOR-P2: Logic build popup Profile đã tách sang ProfilePopupController (Scripts/UI/Popups).
+    private ProfilePopupController _profilePopup;
 
     private void OnOpenProfileClicked()
     {
         if (profilePopupTemplate == null) return;
-        
-        _profilePopup = profilePopupTemplate.Instantiate();
-        _profilePopup.style.position = Position.Absolute;
-        _profilePopup.style.top = 0; _profilePopup.style.bottom = 0;
-        _profilePopup.style.left = 0; _profilePopup.style.right = 0;
+        if (_profilePopup != null && _profilePopup.IsOpen) return;
 
-        uiDocument.rootVisualElement.Add(_profilePopup);
-
-        // ANIMATION — tên khớp với ProfilePopup.uxml
-        var overlay = _profilePopup.Q<VisualElement>("profile-overlay") ?? _profilePopup.Children().First();
-        var popupCard = _profilePopup.Q<VisualElement>("profile-container") ?? overlay.Children().First();
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
-
-        var nameInput = _profilePopup.Q<TextField>("profile-name-field");
-        var saveBtn = _profilePopup.Q<Button>("profile-save-btn");
-        var closeBtn = _profilePopup.Q<Button>("profile-close-btn");
-
-        // Localization cho Profile Popup
-        if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
-        {
-            var L = LocalizationManager.Instance;
-            var title = _profilePopup.Q<Label>("profile-title");
-            var nameInputLocalize = _profilePopup.Q<TextField>("profile-name-field");
-
-            if (title != null) title.text = L.GetText("profile_title", "HỒ SƠ CÁ NHÂN");
-            if (nameInputLocalize != null) nameInputLocalize.label = L.GetText("profile_display_name", "TÊN HIỂN THỊ");
-            if (saveBtn != null) saveBtn.text = L.GetText("profile_save", "LƯU THAY ĐỔI");
-            if (closeBtn != null) closeBtn.text = L.GetText("menu_cancel", "HỦY");
-        }
-
-        var data = PlayerDataManager.Instance.Data;
-        if (nameInput != null) nameInput.value = data.playerName;
-
-        // Hiển thị avatar bằng AvatarHelper (initial letter) — nhất quán với GameplayUI
-        var profileAvatar = _profilePopup.Q<VisualElement>("profile-avatar");
-        if (profileAvatar != null)
-            AvatarHelper.SetAvatar(profileAvatar, data.playerName);
-
-        // Cập nhật avatar preview khi user đổi tên
-        if (nameInput != null)
-        {
-            nameInput.RegisterValueChangedCallback(evt => {
-                string preview = string.IsNullOrWhiteSpace(evt.newValue) ? "?" : evt.newValue.Trim();
-                if (profileAvatar != null)
-                    AvatarHelper.SetAvatar(profileAvatar, preview);
-            });
-        }
-
-        if (saveBtn != null)
-        {
-            saveBtn.clicked += async () =>
-            {
-                string newName = nameInput.value.Trim();
-
-                // FEAT-03: Hiển lỗi trên UI thay vì chỉ log warning
-                if (newName.Length < 3)
-                {
-                    var errLabel = _profilePopup.Q<Label>("profile-name-error");
-                    if (errLabel == null)
-                    {
-                        // Tạo label lỗi nếu chưa có trong UXML
-                        errLabel = new Label();
-                        errLabel.name = "profile-name-error";
-                        errLabel.style.color = new Color(0.87f, 0.12f, 0.12f);
-                        errLabel.style.fontSize = 24;
-                        errLabel.style.marginTop = 8;
-                        nameInput.parent?.Add(errLabel);
-                    }
-                    var L2 = LocalizationManager.Instance;
-                    errLabel.text = L2 != null
-                        ? L2.GetText("profile_name_too_short", "Tên phải từ 3 ký tự trở lên.")
-                        : "Tên phải từ 3 ký tự trở lên.";
-                    return;
-                }
-                else
-                {
-                    // Xóa lỗi nếu có
-                    _profilePopup.Q<Label>("profile-name-error")?.RemoveFromHierarchy();
-                }
-
-                // BUG-FIX: Dùng UpdateDisplayName() để đồng bộ cả FirebaseManager.LocalDisplayName,
-                // PlayerData.playerName, PlayerPrefs và Firebase cùng một lúc.
-                // Nếu chỉ gán data.playerName rồi gọi SaveProfileToCloud(), Firebase sẽ lưu
-                // LocalDisplayName cũ (chưa được cập nhật) lên cloud, gây mất tên ở lượt sau.
-                if (FirebaseManager.Instance != null)
-                {
-                    FirebaseManager.Instance.UpdateDisplayName(newName);
-                }
-                else
-                {
-                    // Fallback khi không có Firebase (offline)
-                    data.playerName = newName;
-                    PlayerDataManager.Instance.SaveData();
-                }
-
-                RefreshPlayerStatsUI();
-                UIAnimator.HidePopupAnim(overlay, popupCard, () =>
-                {
-                    _profilePopup.RemoveFromHierarchy();
-                });
-            };
-        }
-
-        if (closeBtn != null) closeBtn.clicked += () => {
-            UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                _profilePopup.RemoveFromHierarchy();
-            });
-        };
+        _profilePopup = new ProfilePopupController(profilePopupTemplate, uiDocument.rootVisualElement, RefreshPlayerStatsUI);
+        _profilePopup.Show();
     }
 
     // ==================== LEADERBOARD ====================
@@ -1206,25 +927,6 @@ public class MainMenuUIController_UXML : MonoBehaviour
         }
     }
 
-    // ======== Legacy helpers (giữ lại để tương thích nếu nơi khác gọi) ========
-    private int GetLanguageIndex(string code)
-    {
-        return code switch {
-            "vi" => 0, "en" => 1, "fr" => 2, "it" => 3,
-            "de" => 4, "es" => 5, "ja" => 6, "ko" => 7,
-            _ => 1
-        };
-    }
-
-    private string GetLanguageCode(string name)
-    {
-        return name switch {
-            "Tiếng Việt" => "vi", "English" => "en", "Français" => "fr", "Italiano" => "it",
-            "Deutsch" => "de", "Español" => "es", "日本語" => "ja", "한국어" => "ko",
-            _ => "en"
-        };
-    }
-
     // UX-08: Android back button
     private void Update()
     {
@@ -1243,46 +945,13 @@ public class MainMenuUIController_UXML : MonoBehaviour
                 _inlineAuthPopup = null;
                 return;
             }
-            // Nếu có popup settings/profile/logout, đóng popup
-            if (_settingsPopup != null && _settingsPopup.parent != null)
+            // Nếu có popup settings, đóng popup
+            if (_settingsPopup != null && _settingsPopup.IsOpen)
             {
-                CloseSettingsPopup();
+                _settingsPopup.Close();
                 return;
             }
             Application.Quit();
-        }
-    }
-
-    private void RefreshSettingsPopupLocalization()
-    {
-        if (_settingsPopup == null || LocalizationManager.Instance == null || !LocalizationManager.Instance.IsReady) return;
-        var L = LocalizationManager.Instance;
-
-        var titleLabel = _settingsPopup.Q<Label>("settings-title");
-        if (titleLabel != null) titleLabel.text = L.GetText("settings_title");
-        var musicLabel = _settingsPopup.Q<Label>("music-label");
-        if (musicLabel != null) musicLabel.text = L.GetText("settings_music");
-        var sfxLabel = _settingsPopup.Q<Label>("sfx-label");
-        if (sfxLabel != null) sfxLabel.text = L.GetText("settings_sfx");
-        var langLabel = _settingsPopup.Q<Label>("language-label");
-        if (langLabel != null) langLabel.text = L.GetText("settings_language");
-        var closeBtn = _settingsPopup.Q<Button>("close-btn");
-        if (closeBtn != null) closeBtn.text = L.GetText("settings_close");
-
-        var logoutBtn = _settingsPopup.Q<Button>("logout-btn");
-        if (logoutBtn != null) logoutBtn.text = L.GetText("settings_logout");
-    }
-
-    private void CloseSettingsPopup()
-    {
-        if (_settingsPopup != null)
-        {
-            var overlay = _settingsPopup.Q<VisualElement>("overlay") ?? _settingsPopup.Children().First();
-            var popupCard = _settingsPopup.Q<VisualElement>("popup") ?? overlay.Children().First();
-            UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                _settingsPopup.RemoveFromHierarchy();
-                _settingsPopup = null;
-            });
         }
     }
 

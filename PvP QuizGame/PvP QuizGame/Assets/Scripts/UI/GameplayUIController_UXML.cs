@@ -465,36 +465,12 @@ public class GameplayUIController_UXML : MonoBehaviour
     }
 
     // ==================== TOAST ====================
+    // REFACTOR-P2: delegate sang ToastService dùng chung (gộp bản copy-paste với MainMenu).
 
     private void ShowToast(string message, float duration = 2f)
     {
         if (uiDocument == null) return;
-        var root = uiDocument.rootVisualElement;
-
-        var toast = new Label(message);
-        toast.AddToClassList("toast");
-        toast.style.opacity = 0f;
-
-        root.Add(toast);
-
-        // Slide up + fade in
-        toast.style.translate = new StyleTranslate(new Translate(new Length(0), new Length(20)));
-        UIAnimator.DOFade(toast, 1f, 0.2f);
-        UIAnimator.DOTranslate(toast, Vector2.zero, 0.3f).SetEase(Ease.OutCubic);
-
-        StartCoroutine(RemoveToastAfter(toast, duration));
-    }
-
-    private IEnumerator RemoveToastAfter(VisualElement el, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (el != null && el.parent != null)
-        {
-            UIAnimator.DOFade(el, 0f, 0.3f);
-            UIAnimator.DOTranslate(el, new Vector2(0, -20), 0.3f);
-            yield return new WaitForSeconds(0.3f);
-            if (el.parent != null) el.RemoveFromHierarchy();
-        }
+        ToastService.Show(uiDocument.rootVisualElement, message, duration);
     }
 
     // ==================== GAME OVER ====================
