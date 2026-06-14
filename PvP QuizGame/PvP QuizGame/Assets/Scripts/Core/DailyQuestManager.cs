@@ -15,7 +15,24 @@ using UnityEngine;
 /// </summary>
 public class DailyQuestManager : MonoBehaviour
 {
-    public static DailyQuestManager Instance { get; private set; }
+    private static DailyQuestManager _instance;
+    public static DailyQuestManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<DailyQuestManager>();
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("[DailyQuestManager]");
+                    _instance = go.AddComponent<DailyQuestManager>();
+                }
+            }
+            return _instance;
+        }
+        private set { _instance = value; }
+    }
 
     public const string QUEST_PLAY_3    = "play_3";
     public const string QUEST_WIN_1     = "win_1";
@@ -55,8 +72,8 @@ public class DailyQuestManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        if (_instance != null && _instance != this) { Destroy(gameObject); return; }
+        _instance = this;
         DontDestroyOnLoad(gameObject);
     }
 

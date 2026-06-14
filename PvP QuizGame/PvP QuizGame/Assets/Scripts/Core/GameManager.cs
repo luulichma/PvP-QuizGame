@@ -11,17 +11,34 @@ using System;
 public class GameManager : MonoBehaviour
 {
     // ==================== SINGLETON ====================
-    public static GameManager Instance { get; private set; }
+    private static GameManager _instance;
+    public static GameManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<GameManager>();
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("[GameManager]");
+                    _instance = go.AddComponent<GameManager>();
+                }
+            }
+            return _instance;
+        }
+        private set { _instance = value; }
+    }
 
     // ==================== LIFECYCLE ====================
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
+        _instance = this;
         DontDestroyOnLoad(gameObject);
 
         // Mobile optimization: ép framerate 60fps (Android mặc định 30fps)

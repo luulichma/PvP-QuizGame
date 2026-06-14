@@ -66,6 +66,7 @@
     margin: 8px;
     cursor: initial;
     white-space: normal;
+    flex-shrink: 0;
     border-left-width: 0;
     border-right-width: 0;
     border-top-width: 0;
@@ -550,19 +551,25 @@
 
 /* ==================== HERO TITLE ==================== */
 .hero-title {
-    font-size: 98px;
+    font-size: 86px;
     color: white;
     -unity-font-style: bold;
     -unity-text-outline-width: 2px;
     -unity-text-outline-color: rgba(179, 136, 255, 0.5);
-    letter-spacing: 3px;
+    letter-spacing: 2px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    max-width: 100%;
 }
 
 .hero-subtitle {
-    font-size: 38px;
+    font-size: 34px;
     color: rgba(179, 136, 255, 0.6);
-    letter-spacing: 6px;
+    letter-spacing: 4px;
     margin-top: 8px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    max-width: 100%;
 }
 
 /* ==========================================================
@@ -631,6 +638,7 @@
 .icon-btn {
     width: 90px;
     height: 90px;
+    flex-shrink: 0;
     padding: 0;
     background-color: rgba(255, 255, 255, 0.06);
     border-radius: 24px;
@@ -683,6 +691,7 @@
 .bottom-nav {
     flex-direction: row;
     height: 120px;
+    flex-shrink: 0;
     background-color: rgba(13, 2, 33, 0.95);
     border-top-width: 2px;
     border-top-color: rgba(179, 136, 255, 0.3);
@@ -819,7 +828,11 @@
 
 /* Trạng thái: hết / đã dùng -> nhìn mờ + không click được */
 .powerup-disabled { opacity: 0.4; }
-.powerup-disabled .powerup-icon { color: rgba(255,255,255,0.3); }
+/* PNG icons cần dùng -unity-background-image-tint-color thay vì color */
+.powerup-disabled .powerup-icon {
+    color: rgba(255,255,255,0.3);
+    -unity-background-image-tint-color: rgba(255,255,255,0.4);
+}
 .powerup-disabled .powerup-name { color: rgba(255,255,255,0.3); }
 .powerup-disabled .powerup-count { color: rgba(255,255,255,0.3); }
 
@@ -1062,5 +1075,6 @@
     -unity-font-style: bold;
 }
 .quest-claim-btn:disabled { opacity: 0.4; }
+/* end of file */
 
 

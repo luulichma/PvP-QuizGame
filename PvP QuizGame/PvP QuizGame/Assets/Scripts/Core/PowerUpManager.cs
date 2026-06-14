@@ -25,6 +25,22 @@ public class PowerUpManager : MonoBehaviour
     public const string PU_TIME   = "pu_time";
     public const string PU_SHIELD = "pu_shield";
 
+    // ==================== [FIX] AUTO-BOOTSTRAP SINGLETON ====================
+    /// <summary>
+    /// Đảm bảo PowerUpManager luôn tồn tại runtime — vì hiện chưa có scene nào
+    /// chứa GameObject "PowerUpManager", dẫn tới Instance = null khi gameplay bắt đầu
+    /// và 3 nút power-up không phản hồi click.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void AutoBootstrap()
+    {
+        if (Instance != null) return;
+        var go = new GameObject("[Auto] PowerUpManager");
+        go.AddComponent<PowerUpManager>();
+        // DontDestroyOnLoad sẽ được gọi trong Awake()
+        Debug.Log("[PowerUpManager] Auto-bootstrap singleton.");
+    }
+
     // ==================== EVENTS ====================
     /// <summary>Power-up vừa được dùng thành công. param = id ("pu_5050"...).</summary>
     public static event Action<string> OnPowerUpUsed;

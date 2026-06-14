@@ -90,9 +90,32 @@ public class PlayerDataManager : MonoBehaviour
         }
 
         // [PHASE-2] Power-Up inventory
-        playerData.powerUp_5050     = PlayerPrefs.GetInt("PlayerPU_5050", 0);
-        playerData.powerUp_extraTime = PlayerPrefs.GetInt("PlayerPU_Time", 0);
-        playerData.powerUp_shield   = PlayerPrefs.GetInt("PlayerPU_Shield", 0);
+        // [FIX v2] Tặng 3 cái mỗi loại cho:
+        //   1. Người chơi mới (chưa có PlayerPrefs key)
+        //   2. Người chơi cũ đã hết sạch (cả 3 = 0) — tránh dead-end state
+        //      khi shop chưa có / chưa thưởng. Nếu không sẽ thấy 3 nút "x0"
+        //      disabled vĩnh viễn → tưởng tính năng hỏng.
+        const int STARTER_PU = 3;
+        bool isFirstLoad = !PlayerPrefs.HasKey("PlayerPU_5050");
+        playerData.powerUp_5050      = PlayerPrefs.GetInt("PlayerPU_5050",  isFirstLoad ? STARTER_PU : 0);
+        playerData.powerUp_extraTime = PlayerPrefs.GetInt("PlayerPU_Time",  isFirstLoad ? STARTER_PU : 0);
+        playerData.powerUp_shield    = PlayerPrefs.GetInt("PlayerPU_Shield", isFirstLoad ? STARTER_PU : 0);
+
+        bool ranOut = playerData.powerUp_5050 == 0
+                   && playerData.powerUp_extraTime == 0
+                   && playerData.powerUp_shield == 0;
+        if (isFirstLoad || ranOut)
+        {
+            playerData.powerUp_5050      = STARTER_PU;
+            playerData.powerUp_extraTime = STARTER_PU;
+            playerData.powerUp_shield    = STARTER_PU;
+            PlayerPrefs.SetInt("PlayerPU_5050",  STARTER_PU);
+            PlayerPrefs.SetInt("PlayerPU_Time",  STARTER_PU);
+            PlayerPrefs.SetInt("PlayerPU_Shield", STARTER_PU);
+            PlayerPrefs.Save();
+            string reason = isFirstLoad ? "người chơi mới" : "đã hết sạch — refill";
+            Debug.Log($"[PlayerDataManager] {reason} — tặng {STARTER_PU} mỗi loại power-up.");
+        }
 
         // [PHASE-2] Tier & Season
         playerData.currentTier             = PlayerPrefs.GetInt("PlayerCurrentTier", 1);

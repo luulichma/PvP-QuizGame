@@ -136,6 +136,10 @@ public class InputController_UXML : MonoBehaviour
             btn.SetEnabled(false);
             if (!btn.ClassListContains("answer-eliminated"))
                 btn.AddToClassList("answer-eliminated");
+            
+            // [FIX] Inline opacity from entry animation overrides USS. We must explicitly animate it out.
+            btn.DOFade(0f, 0.3f);
+            UIAnimator.DOScale(btn, new Vector2(0.8f, 0.8f), 0.3f);
         }
 
         Debug.Log($"[InputController_UXML] 50:50 ẩn {eliminateCount} đáp án sai (correct={correct}).");

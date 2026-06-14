@@ -17,27 +17,28 @@
         <ui:VisualElement name="home-particle-layer" class="particle-container" picking-mode="Ignore" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;" />
 
         <!-- CONTENT AREA -->
-        <ui:VisualElement name="content-area" style="flex-grow: 1; padding: 36px; padding-bottom: 0;">
+        <ui:VisualElement name="content-area" style="flex-grow: 1; flex-shrink: 1; padding: 36px; padding-bottom: 12px; min-height: 0;">
 
             <!-- HOME PANEL -->
-            <ui:VisualElement name="home-panel" style="flex-grow: 1;">
-                <!-- Header Profile — Glassmorphism Card -->
-                <ui:VisualElement name="header" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-                    <ui:VisualElement style="flex-direction: row; align-items: center;">
-                        <ui:Button name="open-profile-btn" style="flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.1); border-radius: 22px; padding: 12px 18px; margin: 0; margin-right: 20px;">
-                            <ui:VisualElement name="avatar" class="avatar-ring" style="width: 100px; height: 100px; border-radius: 50px; margin-right: 20px;" />
-                            <ui:VisualElement name="labels" style="align-items: flex-start;">
-                                <ui:Label name="name-label" text="PLAYER NAME" style="color: white; font-size: 44px; -unity-font-style: bold; margin-bottom: 8px;" />
-                                <ui:Label name="level-tag" text="LEVEL 5" class="header-tag" style="font-size: 36px; padding: 6px 12px; margin-bottom: 8px;" />
+            <ui:VisualElement name="home-panel" style="flex-grow: 1; flex-shrink: 1; min-height: 0;">
+                <!-- Header Profile — Glassmorphism Card (Responsive: column layout to avoid horizontal overflow) -->
+                <ui:VisualElement name="header" style="flex-direction: column; margin-bottom: 30px; flex-shrink: 0;">
+                    <!-- Top row: Profile button (grow) + Settings button (fixed) -->
+                    <ui:VisualElement style="flex-direction: row; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <ui:Button name="open-profile-btn" style="flex-grow: 1; flex-shrink: 1; min-width: 0; flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.1); border-radius: 22px; padding: 12px 18px; margin: 0; margin-right: 16px;">
+                            <ui:VisualElement name="avatar" class="avatar-ring" style="width: 100px; height: 100px; border-radius: 50px; margin-right: 16px; flex-shrink: 0;" />
+                            <ui:VisualElement name="labels" style="align-items: flex-start; flex-grow: 1; flex-shrink: 1; min-width: 0;">
+                                <ui:Label name="name-label" text="PLAYER NAME" style="color: white; font-size: 40px; -unity-font-style: bold; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" />
+                                <ui:Label name="level-tag" text="LEVEL 5" class="header-tag" style="font-size: 30px; padding: 4px 10px; margin-bottom: 6px;" />
                                 <!-- XP Bar -->
-                                <ui:VisualElement class="xp-bar-container" style="width: 280px; height: 16px;">
+                                <ui:VisualElement class="xp-bar-container" style="width: 100%; max-width: 280px; height: 14px;">
                                     <ui:VisualElement name="xp-fill" class="xp-bar-fill" style="width: 0%; height: 100%;" />
                                 </ui:VisualElement>
-                                <ui:Label name="xp-label" text="0 / 500" style="color: rgba(255,255,255,0.35); font-size: 24px; margin-top: 4px;" />
+                                <ui:Label name="xp-label" text="0 / 500" style="color: rgba(255,255,255,0.35); font-size: 22px; margin-top: 4px;" />
 
                                 <!-- [UI Refactor] Tier badge nổi bật — thay thế season-info cũ -->
-                                <ui:VisualElement name="tier-badge-card" class="tier-badge-large tier-bronze" style="margin-top: 10px;">
-                                    <ui:VisualElement name="tier-badge-icon" class="icon icon-award icon-tint-bronze icon-md" style="margin-right: 12px;" />
+                                <ui:VisualElement name="tier-badge-card" class="tier-badge-large tier-bronze" style="margin-top: 8px; flex-shrink: 0;">
+                                    <ui:VisualElement name="tier-badge-icon" class="icon icon-award icon-tint-bronze icon-md" style="margin-right: 10px;" />
                                     <ui:VisualElement style="flex-direction: column; align-items: flex-start;">
                                         <ui:Label name="tier-badge-name" text="DONG" class="tier-badge-large-name" />
                                         <ui:Label name="tier-badge-rp" text="0 RP" class="tier-badge-large-rp" />
@@ -46,27 +47,28 @@
                             </ui:VisualElement>
                         </ui:Button>
 
-                        <ui:VisualElement name="money-block" style="flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.1); border-radius: 22px; padding: 12px 24px;">
-                            <ui:VisualElement class="icon icon-coins icon-tint-money icon-md" style="margin-right: 12px;" />
-                            <ui:Label name="money-label" text="$1,250" style="color: #FFD166; -unity-font-style: bold; font-size: 52px;" />
-                        </ui:VisualElement>
+                        <ui:Button name="settings-btn" class="icon-btn" style="flex-shrink: 0; flex-direction: row; justify-content: center; align-items: center;">
+                            <ui:VisualElement class="icon icon-settings icon-md" />
+                        </ui:Button>
                     </ui:VisualElement>
 
-                    <ui:Button name="settings-btn" class="icon-btn" style="flex-direction: row; justify-content: center; align-items: center;">
-                        <ui:VisualElement class="icon icon-settings icon-md" />
-                    </ui:Button>
+                    <!-- Money block on its own row to avoid horizontal overlap -->
+                    <ui:VisualElement name="money-block" style="flex-direction: row; align-self: flex-start; align-items: center; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.1); border-radius: 22px; padding: 10px 22px; margin-top: 12px;">
+                        <ui:VisualElement class="icon icon-coins icon-tint-money icon-md" style="margin-right: 12px;" />
+                        <ui:Label name="money-label" text="$1,250" style="color: #FFD166; -unity-font-style: bold; font-size: 44px;" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <!-- Hero Banner — Glassmorphism glow (KHÔNG còn intermission overlay) -->
-                <ui:VisualElement name="hero" style="align-items: center; margin-bottom: 50px; padding: 24px;">
-                    <ui:Label name="hero-title-label" text="PVP QUIZ GAME" class="hero-title" />
-                    <ui:Label name="hero-subtitle-label" text="THU THACH KIEN THUC" class="hero-subtitle" />
+                <ui:VisualElement name="hero" style="align-items: center; margin-bottom: 30px; padding: 16px; flex-shrink: 0;">
+                    <ui:Label name="hero-title-label" text="PVP QUIZ GAME" class="hero-title" style="white-space: normal; -unity-text-align: middle-center;" />
+                    <ui:Label name="hero-subtitle-label" text="THU THACH KIEN THUC" class="hero-subtitle" style="white-space: normal; -unity-text-align: middle-center;" />
                 </ui:VisualElement>
 
                 <!-- Main Content (Center) -->
-                <ui:VisualElement name="content" style="flex-grow: 1; justify-content: center; align-items: center;">
-                    <ui:Button name="find-match-btn" text="TIM TRAN DAU" class="btn btn-glow" style="width: 100%; max-width: 85%; height: 150px; font-size: 60px; margin-bottom: 20px; border-radius: 26px; letter-spacing: 2px;" />
-                    <ui:Button name="practice-btn" text="DAU VOI MAY" class="btn btn-secondary" style="width: 100%; max-width: 78%; height: 120px; font-size: 48px; margin-bottom: 20px; border-radius: 22px;" />
+                <ui:VisualElement name="content" style="flex-grow: 1; flex-shrink: 1; min-height: 0; justify-content: center; align-items: center;">
+                    <ui:Button name="find-match-btn" text="TIM TRAN DAU" class="btn btn-glow" style="width: 85%; height: 150px; font-size: 56px; margin: 0; margin-bottom: 20px; border-radius: 26px; letter-spacing: 2px; flex-shrink: 0;" />
+                    <ui:Button name="practice-btn" text="DAU VOI MAY" class="btn btn-secondary" style="width: 78%; height: 120px; font-size: 44px; margin: 0; margin-bottom: 20px; border-radius: 22px; flex-shrink: 0;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
@@ -139,11 +141,11 @@
 
             <!-- MATCHMAKING PANEL (Hidden by default) — Spinner -->
             <ui:VisualElement name="matchmaking-panel" style="flex-grow: 1; justify-content: center; align-items: center; display: none;">
-                <ui:VisualElement style="align-items: center; background-color: rgba(255, 255, 255, 0.05); border-radius: 28px; padding: 50px 40px; border-width: 1px; border-color: rgba(255, 255, 255, 0.1); min-width: 350px;">
+                <ui:VisualElement style="align-items: center; background-color: rgba(255, 255, 255, 0.05); border-radius: 28px; padding: 40px 32px; border-width: 1px; border-color: rgba(255, 255, 255, 0.1); width: 90%; max-width: 700px;">
                     <ui:VisualElement class="spinner" />
-                    <ui:Label name="searching-label" text="DANG TIM DOI THU..." style="font-size: 52px; color: white; margin-bottom: 8px; letter-spacing: 2px; -unity-font-style: bold;" />
-                    <ui:Label text="Vui long cho trong giay lat" style="font-size: 32px; color: rgba(255,255,255,0.3); margin-bottom: 50px;" />
-                    <ui:Button name="cancel-match-btn" text="HUY TIM KIEM" class="btn btn-danger" style="width: 360px; height: 100px; font-size: 44px; border-radius: 22px;" />
+                    <ui:Label name="searching-label" text="DANG TIM DOI THU..." style="font-size: 48px; color: white; margin-bottom: 8px; letter-spacing: 2px; -unity-font-style: bold; white-space: normal; -unity-text-align: middle-center;" />
+                    <ui:Label text="Vui long cho trong giay lat" style="font-size: 28px; color: rgba(255,255,255,0.3); margin-bottom: 40px; white-space: normal; -unity-text-align: middle-center;" />
+                    <ui:Button name="cancel-match-btn" text="HUY TIM KIEM" class="btn btn-danger" style="width: 90%; max-width: 360px; height: 100px; font-size: 40px; border-radius: 22px; margin: 0;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
