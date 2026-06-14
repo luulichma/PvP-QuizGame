@@ -378,9 +378,23 @@ public class GameController : MonoBehaviour
         
         Debug.Log("[GameController] Hết giờ! Đang chấm điểm...");
         
-        // BUG-02: Dùng _currentP2Answer thay vì hardcode -1 để bot offline không bị tính sai
-        // Online: nếu P2 chưa trả lời, _currentP2Answer vẫn là -1 (mặc định sai)
-        StartCoroutine(RevealAndAdvance(_currentLocalAnswer, _currentP2Answer));
+        if (_isOnline)
+        {
+            // [SYNC FIX] Thay vì tự advance locally, client sẽ đẩy đáp án (hoặc -1) lên Firebase
+            // và chờ Firebase báo OnBothPlayersAnswered để tiến hành đồng bộ.
+            if (_currentLocalAnswer == -1)
+            {
+                if (FirebaseMatchProvider.Instance != null)
+                {
+                    FirebaseMatchProvider.Instance.SubmitAnswerP1(-1);
+                }
+            }
+        }
+        else
+        {
+            // BUG-02: Dùng _currentP2Answer thay vì hardcode -1 để bot offline không bị tính sai
+            StartCoroutine(RevealAndAdvance(_currentLocalAnswer, _currentP2Answer));
+        }
     }
 
     // BUG-03: AFK timeout cho online mode — nếu P2 không trả lời sau QuestionDuration + 5s, auto submit -1
@@ -393,6 +407,12 @@ public class GameController : MonoBehaviour
         {
             Debug.LogWarning("[GameController] P2 (Opponent) không trả lời kịp — auto submit -1.");
             HandleBothPlayersAnswered(_currentLocalAnswer, -1);
+            
+            if (_isOnline && FirebaseManager.Instance != null && FirebaseManager.Instance.IsHost)
+            {
+                var qm = QuizManager.Instance;
+                if (qm != null) FirebaseManager.Instance.HostAdvanceQuestion(qm.AnsweredCount + 1);
+            }
         }
     }
 
