@@ -1,0 +1,134 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+
+    <!-- [PHASE-2] Shop Panel — Text-based, không cần asset art -->
+    <ui:VisualElement name="shop-root" style="flex-grow: 1; padding: 12px;">
+
+        <!-- Header: Title + Balance -->
+        <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+            <ui:Label name="shop-title-label" text="CUA HANG" style="font-size: 58px; color: white; -unity-font-style: bold;" />
+            <ui:VisualElement class="shop-balance">
+                <ui:VisualElement class="icon icon-coins icon-tint-money" style="width: 46px; height: 46px; margin-right: 8px;" />
+                <ui:Label name="shop-balance-label" text="$0" style="color: #FFD166; -unity-font-style: bold; font-size: 44px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:ScrollView style="flex-grow: 1;">
+
+            <!-- POWER-UP CARDS -->
+            <ui:Label name="shop-section-powerups" text="POWER-UP" style="font-size: 34px; color: rgba(255,255,255,0.6); -unity-font-style: bold; margin-bottom: 10px; letter-spacing: 2px;" />
+
+            <!-- 50:50 -->
+            <ui:VisualElement name="card-5050" class="shop-card">
+                <ui:VisualElement class="shop-card-header">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; flex-shrink: 1;">
+                        <ui:VisualElement class="icon icon-scissors shop-card-icon" style="width: 58px; height: 58px;" />
+                        <ui:VisualElement style="flex-shrink: 1;">
+                            <ui:Label name="card-5050-title" text="50:50" class="shop-card-title" />
+                            <ui:Label name="card-5050-desc" text="Loai bo 2 dap an sai" class="shop-card-desc" />
+                            <ui:Label name="card-5050-owned" text="Co: 0" class="shop-card-owned" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="card-5050-price" text="150$" class="shop-card-price" />
+                </ui:VisualElement>
+                <ui:VisualElement class="shop-buy-row">
+                    <ui:Button name="card-5050-buy1" text="MUA x1" class="shop-buy-btn" />
+                    <ui:Button name="card-5050-buy5" text="MUA x5 -10%" class="shop-buy-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- +Time -->
+            <ui:VisualElement name="card-time" class="shop-card">
+                <ui:VisualElement class="shop-card-header">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; flex-shrink: 1;">
+                        <ui:VisualElement class="icon icon-timer shop-card-icon" style="width: 58px; height: 58px;" />
+                        <ui:VisualElement style="flex-shrink: 1;">
+                            <ui:Label name="card-time-title" text="Them gio (+5s)" class="shop-card-title" />
+                            <ui:Label name="card-time-desc" text="+5 giay cho cau hoi hien tai" class="shop-card-desc" />
+                            <ui:Label name="card-time-owned" text="Co: 0" class="shop-card-owned" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="card-time-price" text="100$" class="shop-card-price" />
+                </ui:VisualElement>
+                <ui:VisualElement class="shop-buy-row">
+                    <ui:Button name="card-time-buy1" text="MUA x1" class="shop-buy-btn" />
+                    <ui:Button name="card-time-buy5" text="MUA x5 -10%" class="shop-buy-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Shield -->
+            <ui:VisualElement name="card-shield" class="shop-card">
+                <ui:VisualElement class="shop-card-header">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; flex-shrink: 1;">
+                        <ui:VisualElement class="icon icon-shield shop-card-icon" style="width: 58px; height: 58px;" />
+                        <ui:VisualElement style="flex-shrink: 1;">
+                            <ui:Label name="card-shield-title" text="La chan" class="shop-card-title" />
+                            <ui:Label name="card-shield-desc" text="Giu streak khi tra loi sai" class="shop-card-desc" />
+                            <ui:Label name="card-shield-owned" text="Co: 0" class="shop-card-owned" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="card-shield-price" text="200$" class="shop-card-price" />
+                </ui:VisualElement>
+                <ui:VisualElement class="shop-buy-row">
+                    <ui:Button name="card-shield-buy1" text="MUA x1" class="shop-buy-btn" />
+                    <ui:Button name="card-shield-buy5" text="MUA x5 -10%" class="shop-buy-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- BUNDLES -->
+            <ui:Label name="shop-section-bundles" text="GOI UU DAI" style="font-size: 34px; color: #FFD166; -unity-font-style: bold; margin-top: 16px; margin-bottom: 10px; letter-spacing: 2px;" />
+
+            <!-- Starter -->
+            <ui:VisualElement name="card-starter" class="shop-card shop-bundle-card">
+                <ui:VisualElement class="shop-card-header">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; flex-shrink: 1;">
+                        <ui:VisualElement class="icon icon-party shop-card-icon icon-tint-gold" style="width: 58px; height: 58px;" />
+                        <ui:VisualElement style="flex-shrink: 1;">
+                            <ui:Label name="card-starter-title" text="Goi Khoi Dong" class="shop-card-title" />
+                            <ui:Label name="card-starter-desc" text="2x 50:50 + 3x Them gio (Tiet kiem 17%)" class="shop-card-desc" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="card-starter-price" text="500$" class="shop-card-price" />
+                </ui:VisualElement>
+                <ui:VisualElement class="shop-buy-row">
+                    <ui:Button name="card-starter-buy" text="MUA NGAY" class="shop-buy-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Warrior -->
+            <ui:VisualElement name="card-warrior" class="shop-card shop-bundle-card">
+                <ui:VisualElement class="shop-card-header">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; flex-shrink: 1;">
+                        <ui:VisualElement class="icon icon-swords shop-card-icon" style="width: 58px; height: 58px;" />
+                        <ui:VisualElement style="flex-shrink: 1;">
+                            <ui:Label name="card-warrior-title" text="Goi Chien Binh" class="shop-card-title" />
+                            <ui:Label name="card-warrior-desc" text="1x 50:50 + 2x Them gio + 1x La chan (Tiet kiem 27%)" class="shop-card-desc" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="card-warrior-price" text="400$" class="shop-card-price" />
+                </ui:VisualElement>
+                <ui:VisualElement class="shop-buy-row">
+                    <ui:Button name="card-warrior-buy" text="MUA NGAY" class="shop-buy-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Champion -->
+            <ui:VisualElement name="card-champion" class="shop-card shop-bundle-card">
+                <ui:VisualElement class="shop-card-header">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; flex-shrink: 1;">
+                        <ui:VisualElement class="icon icon-award shop-card-icon icon-tint-gold" style="width: 58px; height: 58px;" />
+                        <ui:VisualElement style="flex-shrink: 1;">
+                            <ui:Label name="card-champion-title" text="Goi Vo Dich" class="shop-card-title" />
+                            <ui:Label name="card-champion-desc" text="3x 50:50 + 3x Them gio + 3x La chan (Tiet kiem 26%)" class="shop-card-desc" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="card-champion-price" text="1000$" class="shop-card-price" />
+                </ui:VisualElement>
+                <ui:VisualElement class="shop-buy-row">
+                    <ui:Button name="card-champion-buy" text="MUA NGAY" class="shop-buy-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:ScrollView>
+    </ui:VisualElement>
+</ui:UXML>

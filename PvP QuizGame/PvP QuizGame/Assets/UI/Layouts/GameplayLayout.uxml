@@ -1,5 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+    <!-- [PHASE-2] Template Power-Up Bar -->
+    <ui:Template name="PowerUpBar" src="project:/Assets/UI/Layouts/PowerUpBar.uxml" />
     <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; padding: 28px;">
 
         <!-- HUD — Player Info + Timer -->
@@ -48,15 +50,22 @@
         </ui:VisualElement>
 
         <!-- ANSWERS GRID -->
-        <ui:VisualElement name="answers-grid" style="margin-top: 30px; margin-bottom: 20px; flex-direction: column; width: 100%; max-width: 900px; align-self: center;">
+        <ui:VisualElement name="answers-grid" style="margin-top: 30px; margin-bottom: 12px; flex-direction: column; width: 100%; max-width: 900px; align-self: center;">
             <ui:Button name="ans-0" text="DA 1" class="btn btn-ans-red" style="min-height: 100px; font-size: 32px; margin-bottom: 16px; margin-left: 0; margin-right: 0; border-radius: 20px;" />
             <ui:Button name="ans-1" text="DA 2" class="btn btn-ans-blue" style="min-height: 100px; font-size: 32px; margin-bottom: 16px; margin-left: 0; margin-right: 0; border-radius: 20px;" />
             <ui:Button name="ans-2" text="DA 3" class="btn btn-ans-yellow" style="min-height: 100px; font-size: 32px; margin-bottom: 16px; margin-left: 0; margin-right: 0; border-radius: 20px;" />
             <ui:Button name="ans-3" text="DA 4" class="btn btn-ans-green" style="min-height: 100px; font-size: 32px; margin-left: 0; margin-right: 0; border-radius: 20px;" />
         </ui:VisualElement>
 
+        <!-- [PHASE-2] POWER-UP BAR — Instance từ PowerUpBar.uxml (wire SerializeField VisualTreeAsset trong GameplayUIController_UXML) -->
+        <ui:VisualElement name="powerup-bar-container" style="width: 100%; max-width: 900px; align-self: center; margin-top: 4px; margin-bottom: 12px;">
+            <ui:Instance template="PowerUpBar" name="powerup-bar-instance" />
+        </ui:VisualElement>
+
         <!-- SETTINGS BUTTON — Glass circle at top right -->
-        <ui:Button name="settings-btn" text="&#9881;" class="icon-btn" style="position: absolute; top: 20px; right: 20px; width: 80px; height: 80px; border-radius: 40px; font-size: 48px; padding-bottom: 4px;" />
+        <ui:Button name="settings-btn" class="icon-btn" style="position: absolute; top: 20px; right: 20px; width: 80px; height: 80px; border-radius: 40px; padding-bottom: 4px; flex-direction: row; justify-content: center; align-items: center;">
+            <ui:VisualElement class="icon icon-settings" style="width: 48px; height: 48px;" />
+        </ui:Button>
 
         <!-- PARTICLE CONTAINER — For confetti / sparkle effects -->
         <ui:VisualElement name="particle-layer" class="particle-container" picking-mode="Ignore" />

@@ -125,8 +125,13 @@ public class GameController : MonoBehaviour
             case GameState.Idle:
                 scoreManager.ResetScores();
                 _opponentLeft = false;
+                // [PHASE-2] Reset Power-Up state cho trận mới
+                if (PowerUpManager.Instance != null) PowerUpManager.Instance.ResetForNewMatch();
                 break;
             case GameState.Countdown:
+                // [PHASE-2] Đảm bảo Power-Up state reset trước khi vào trận
+                // (Idle có thể không được trigger trên first match)
+                if (PowerUpManager.Instance != null) PowerUpManager.Instance.ResetForNewMatch();
                 StartCoroutine(CountdownRoutine());
                 break;
             case GameState.Playing:
@@ -178,11 +183,11 @@ public class GameController : MonoBehaviour
         {
             seed = (int)(System.DateTime.UtcNow.Ticks & 0x7FFFFFFF);
             
-            // Tính số lượng câu hỏi dựa theo Level của local player
+            // [PHASE-2] Số câu/trận dựa theo Tier (tính từ Rank Points, không phải Level)
             if (PlayerDataManager.Instance != null && FirebaseManager.Instance != null)
             {
-                int myLevel = PlayerDataManager.Instance.Data.level;
-                int tier = FirebaseManager.Instance.GetPlayerTier(myLevel);
+                int myRP = PlayerDataManager.Instance.Data.rankPoints;
+                int tier = FirebaseManager.Instance.GetPlayerTier(myRP);
                 questionCount = FirebaseManager.Instance.GetQuestionCountForTier(tier);
             }
             

@@ -47,25 +47,34 @@
     <Analyzer Include="F:\Unity Editor\6000.0.58f2\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Core\ShopManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\Scripts\UI\InfiniteBackground_UXML.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
+    <Compile Include="Assets\Scripts\Core\DailyQuestManager.cs" />
+    <Compile Include="Assets\Scripts\UI\Common\FlyTextService.cs" />
     <Compile Include="Assets\Scripts\UI\Popups\SettingsPopupController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\HomeNavController.cs" />
     <Compile Include="Assets\Scripts\Network\FirebaseManager.cs" />
     <Compile Include="Assets\Scripts\UI\UIParticleEffect.cs" />
     <Compile Include="Assets\Scripts\Network\FirebaseMatchProvider.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\GameplaySettingsPopupController.cs" />
     <Compile Include="Assets\Scripts\Core\PlayerDataManager.cs" />
+    <Compile Include="Assets\Scripts\Network\Firebase\FirebaseManager.Auth.cs" />
     <Compile Include="Assets\Scripts\Data\QuestionData.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\DailyQuestsPanelController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\QuestionViewController.cs" />
     <Compile Include="Assets\Scripts\Core\SceneTransition.cs" />
     <Compile Include="Assets\Firebase\FirebaseApp\Internal\HttpHelpers.cs" />
     <Compile Include="Assets\Scripts\Core\AchievementManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\RankPanelController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_UiFrameRateCounter.cs" />
     <Compile Include="Assets\Scripts\Controller\InputController_UXML.cs" />
     <Compile Include="Assets\Scripts\Controller\TimerController.cs" />
@@ -77,12 +86,20 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\WarpTextExample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ShaderPropAnimator.cs" />
+    <Compile Include="Assets\Scripts\Network\Firebase\FirebaseManager.Matchmaking.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\GameplayHUDController.cs" />
     <Compile Include="Assets\Scripts\Core\GameController.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\LeaderboardPanelController.cs" />
+    <Compile Include="Assets\Scripts\UI\Common\UIIconHelper.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\MatchmakingPanelController.cs" />
+    <Compile Include="Assets\Scripts\Core\SeasonManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\ResultPopupController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark04.cs" />
+    <Compile Include="Assets\Scripts\Core\PowerUpManager.cs" />
     <Compile Include="Assets\Scripts\UI\Common\PopupBase.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ChatController.cs" />
     <Compile Include="Assets\Scripts\UI\MainMenuUIController_UXML.cs" />
@@ -93,16 +110,22 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshSpawner.cs" />
     <Compile Include="Assets\Scripts\UI\UIAnimator.cs" />
     <Compile Include="Assets\Scripts\UI\Popups\ProfilePopupController.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\AchievementsPanelController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\UI\HapticFeedback.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
     <Compile Include="Assets\Scripts\Data\QuizDatabase.cs" />
     <Compile Include="Assets\Firebase\FirebaseApp\Internal\FirebaseInterops.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\PlayerHeaderController.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\ExitConfirmPopupController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\DropdownSample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexColorCycler.cs" />
     <Compile Include="Assets\Scripts\Data\GoogleSheetDownloader.cs" />
     <Compile Include="Assets\Scripts\UI\Common\ToastService.cs" />
+    <Compile Include="Assets\Scripts\UI\Home\ShopPanelController.cs" />
     <Compile Include="Assets\Scripts\UI\SpinnerHelper.cs" />
+    <Compile Include="Assets\Scripts\Network\Firebase\FirebaseManager.Room.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\PowerUpHUDController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
     <Compile Include="Assets\Scripts\UI\TimerArcElement.cs" />
@@ -112,6 +135,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventCheck.cs" />
     <Compile Include="Assets\Scripts\Network\MockOpponent.cs" />
     <Compile Include="Assets\Scripts\Core\LocalizationManager.cs" />
+    <Compile Include="Assets\Scripts\UI\Gameplay\CountdownOverlayController.cs" />
     <Compile Include="Assets\Scripts\Core\QuizManager.cs" />
     <Compile Include="Assets\Scripts\UI\Popups\LogoutConfirmPopupController.cs" />
     <Compile Include="Assets\Scripts\Network\LeaderboardManager.cs" />
@@ -119,6 +143,8 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs" />
     <Compile Include="Assets\Scripts\UI\InitSceneController_UXML.cs" />
     <Compile Include="Assets\Scripts\UI\AvatarHelper.cs" />
+    <Compile Include="Assets\Scripts\UI\Popups\AuthPopupController.cs" />
+    <Compile Include="Assets\Scripts\UI\Popups\EndOfSeasonPopupController.cs" />
     <Reference Include="UnityEngine">
       <HintPath>F:\Unity Editor\6000.0.58f2\Editor\Data\PlaybackEngines\AndroidPlayer\Variations\il2cpp\Managed\UnityEngine.dll</HintPath>
     </Reference>

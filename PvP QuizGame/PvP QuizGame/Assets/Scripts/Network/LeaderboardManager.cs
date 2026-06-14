@@ -11,6 +11,7 @@ public class LeaderboardEntry
     public int rankPoints;
     public int avatarIndex;
     public int rank;
+    public int tier; // [PHASE-2] tier hiện tại của entry này
 }
 
 /// <summary>
@@ -65,13 +66,18 @@ public class LeaderboardManager : MonoBehaviour
                     int rp = 0, avatar = 0;
                     if (child.Child("rankPoints").Value != null) int.TryParse(child.Child("rankPoints").Value.ToString(), out rp);
                     if (child.Child("avatarIndex").Value != null) int.TryParse(child.Child("avatarIndex").Value.ToString(), out avatar);
-                    
+
+                    // [PHASE-2] Lấy tier từ cloud, fallback compute từ RP
+                    int tier = PlayerData.ComputeTier(rp);
+                    if (child.Child("currentTier").Value != null) int.TryParse(child.Child("currentTier").Value.ToString(), out tier);
+
                     var entry = new LeaderboardEntry
                     {
                         uid = child.Key,
                         displayName = child.Child("displayName").Value?.ToString() ?? "Unknown",
                         rankPoints = rp,
-                        avatarIndex = avatar
+                        avatarIndex = avatar,
+                        tier = tier
                     };
                     results.Add(entry);
                 }
@@ -91,5 +97,23 @@ public class LeaderboardManager : MonoBehaviour
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// [PHASE-2] Fetch BXH lọc theo tier hiện tại (Bronze..Legend).
+    /// Sort theo rankPoints desc. Trả về kèm rank position của user trong tier (nếu uid khớp).
+    /// </summary>
+    public async Task<List<LeaderboardEntry>> FetchTierLeaderboardAsync(int tier, int limit = 100)
+    {
+        var all = await FetchTopRankPlayersAsync(500); // Fetch nhiều hơn rồi filter
+        var filtered = new List<LeaderboardEntry>();
+        foreach (var e in all)
+        {
+            if (e.tier == tier) filtered.Add(e);
+        }
+        if (filtered.Count > limit) filtered.RemoveRange(limit, filtered.Count - limit);
+        // Cập nhật rank trong phạm vi tier
+        for (int i = 0; i < filtered.Count; i++) filtered[i].rank = i + 1;
+        return filtered;
     }
 }

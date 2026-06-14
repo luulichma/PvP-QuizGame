@@ -37,6 +37,23 @@ public class TimerController : MonoBehaviour
         Instance = this;
     }
 
+    private void OnEnable()
+    {
+        // [PHASE-2] Lắng power-up "Thêm giờ"
+        PowerUpManager.OnPowerUpUsed += HandlePowerUpUsed;
+    }
+
+    private void OnDisable()
+    {
+        PowerUpManager.OnPowerUpUsed -= HandlePowerUpUsed;
+    }
+
+    private void HandlePowerUpUsed(string id)
+    {
+        if (id != PowerUpManager.PU_TIME) return;
+        AddTime(5f);
+    }
+
     // ==================== API CÔNG KHAI ====================
     /// <summary>Bắt đầu đồng hồ đếm ngược từ đầu</summary>
     public void StartTimer()
@@ -70,6 +87,19 @@ public class TimerController : MonoBehaviour
 
     /// <summary>Tiếp tục sau khi tạm dừng</summary>
     public void ResumeTimer() => IsRunning = true;
+
+    /// <summary>
+    /// [PHASE-2] Cộng thêm thời gian cho câu hiện tại (dùng cho Power-Up "Thêm giờ").
+    /// Không vượt quá totalTime + 30 (sanity cap), không cộng nếu timer không chạy.
+    /// </summary>
+    public void AddTime(float seconds)
+    {
+        if (!IsRunning || seconds <= 0) return;
+        RemainingTime = Mathf.Min(RemainingTime + seconds, totalTime + 30f);
+        // Phát tick để UI update ngay (TimerArc + label)
+        OnTimerTick?.Invoke(RemainingTime);
+        Debug.Log($"<color=yellow>[TimerController] +{seconds}s → {RemainingTime}s còn lại</color>");
+    }
 
     // ==================== COROUTINE ====================
     private IEnumerator TimerRoutine()

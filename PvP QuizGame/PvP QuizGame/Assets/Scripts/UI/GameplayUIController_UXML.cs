@@ -1,14 +1,14 @@
-using System;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Collections;
-using System.Linq;
-using DG.Tweening;
 
 /// <summary>
-/// Điều phối giao diện người dùng TRONG trận đấu (GameplayScene) sử dụng UI Toolkit.
-/// Online mode: hiển thị displayName của 2 người chơi.
-/// NÂNG CẤP: Modern Glassmorphism + Particle Effects + Haptic Feedback + Animated Timer.
+/// [REFACTOR-P2] Router UI của GameplayScene — UI Toolkit.
+/// KHÔNG còn build UI trực tiếp; chỉ subscribe event từ Game layer và route xuống sub-controller:
+/// - GameplayHUDController      : score, timer, tên/avatar, streak, turn summary, trạng thái đối thủ
+/// - QuestionViewController     : câu hỏi + counter + progress bar
+/// - CountdownOverlayController : đếm ngược 3-2-1-GO
+/// - ResultPopupController      : popup kết quả trận
+/// - GameplaySettingsPopupController / ExitConfirmPopupController (popup trong trận)
 /// </summary>
 public class GameplayUIController_UXML : MonoBehaviour
 {
@@ -21,48 +21,17 @@ public class GameplayUIController_UXML : MonoBehaviour
     [SerializeField] private VisualTreeAsset exitPopupTemplate;
     [SerializeField] private VisualTreeAsset settingsPopupTemplate;
 
-    private Label _p1ScoreLabel;
-    private Label _p2ScoreLabel;
-    private Label _p1Label;
-    private Label _p2Label;
-    private Label _questionText;
-    private Label _questionCounter;
-    private Label _questionProgressText;
-    private VisualElement _progressBarFill;
-    private Label _timerText;
-    private VisualElement _timerContainer;
-    private TimerArcElement _timerArc;
-    private Coroutine _timerRotateCoroutine;
-    private VisualElement _p1Avatar;
-    private VisualElement _p2Avatar;
-    private VisualElement _p1Info;
-    private VisualElement _p2Info;
-    private Label _p2StatusLabel;
+    // ==================== SUB-CONTROLLERS ====================
+    private GameplayHUDController _hud;
+    private QuestionViewController _questionView;
+    private CountdownOverlayController _countdown;
+    private ResultPopupController _resultPopup;
+    private GameplaySettingsPopupController _settingsPopup;
+    private ExitConfirmPopupController _exitPopup;
+    // [PHASE-2] Power-Up HUD
+    private PowerUpHUDController _powerUpHUD;
 
-    // Particle layer
-    private VisualElement _particleLayer;
-
-    private VisualElement _resultPopupInstance;
-    private VisualElement _exitPopupInstance;
-    private VisualElement _settingsPopupInstance;
-
-    // BUG-04: Lưu reference để unsubscribe
-    private Action _playAgainHandler;
-    private Action _backHomeHandler;
-
-    // UX-03: Turn summary state
-    private bool _isShowingTurnSummary = false;
-
-    // UX-04: Countdown overlay
-    private VisualElement _countdownOverlay;
-    private Label _countdownLabel;
-
-    // Score tracking for animation
-    private int _lastP1Score = 0;
-    private int _lastP2Score = 0;
-
-    // Timer urgent state
-    private bool _timerIsUrgent = false;
+    private Button _settingsBtn;
 
     private void Awake()
     {
@@ -77,406 +46,112 @@ public class GameplayUIController_UXML : MonoBehaviour
 
         var root = uiDocument.rootVisualElement;
 
-        _p1ScoreLabel = root.Q<Label>("p1-score");
-        _p2ScoreLabel = root.Q<Label>("p2-score");
-        _p1Label      = root.Q<Label>("p1-label");
-        _p2Label      = root.Q<Label>("p2-label");
-        _questionText = root.Q<Label>("question-text");
-        _questionCounter = root.Q<Label>("question-counter");
-        _questionProgressText = root.Q<Label>("question-progress-text");
-        _progressBarFill = root.Q<VisualElement>("progress-bar-fill");
-        _timerText      = root.Q<Label>("timer-text");
-        _timerContainer = root.Q<VisualElement>("timer-container");
+        // ---- Khởi tạo sub-controllers ----
+        _hud = new GameplayHUDController(root, this);
+        _questionView = new QuestionViewController(root);
+        _countdown = new CountdownOverlayController(root);
+        _hud.Attach();
 
-        // Khởi tạo TimerArcElement và chèn vào sau timer-ring-bg
-        if (_timerContainer != null)
-        {
-            _timerArc = new TimerArcElement { StrokeWidth = 8f };
-            _timerArc.ArcColor = new Color(0f, 0.898f, 1f);
-            // Insert ở index 1 (sau timer-ring-bg, trước timer-text)
-            _timerContainer.Insert(1, _timerArc);
-            _timerRotateCoroutine = StartCoroutine(RotateTimerSlowly());
-        }
-        _p1Avatar = root.Q<VisualElement>("p1-avatar");
-        _p2Avatar = root.Q<VisualElement>("p2-avatar");
-        _p1Info = root.Q<VisualElement>("p1-info");
-        _p2Info = root.Q<VisualElement>("p2-info");
-        _p2StatusLabel = root.Q<Label>("p2-status");
-        _particleLayer = root.Q<VisualElement>("particle-layer");
+        // [PHASE-2] Power-Up bar
+        _powerUpHUD = new PowerUpHUDController(root);
+        _powerUpHUD.Attach();
 
-        var settingsBtn = root.Q<Button>("settings-btn");
-        if (settingsBtn != null) settingsBtn.clicked += ShowSettingsPopup;
+        _settingsBtn = root.Q<Button>("settings-btn");
+        if (_settingsBtn != null) _settingsBtn.clicked += ShowSettingsPopup;
 
-        GameController.OnGameStateChanged  += HandleGameStateChanged;
-        QuizManager.OnQuestionChanged      += HandleQuestionChanged;
-        ScoreManager.OnScoreChanged        += HandleScoreChanged;
-        TimerController.OnTimerTick        += HandleTimerTick;
-        GameController.OnGameOver          += HandleGameOver;
-        GameController.OnOpponentLeft      += HandleOpponentLeft;
+        // ---- Subscribe Game layer events ----
+        GameController.OnGameStateChanged     += HandleGameStateChanged;
+        QuizManager.OnQuestionChanged         += HandleQuestionChanged;
+        ScoreManager.OnScoreChanged           += HandleScoreChanged;
+        TimerController.OnTimerTick           += HandleTimerTick;
+        GameController.OnGameOver             += HandleGameOver;
+        GameController.OnOpponentLeft         += HandleOpponentLeft;
         GameController.OnOpponentAnswerResult += HandleOpponentAnswerResult;
-        GameController.OnCountdownTick     += HandleCountdownTick;
-        GameController.OnTurnSummary       += HandleTurnSummary;
-        ScoreManager.OnStreakChanged       += HandleStreakChanged;
+        GameController.OnCountdownTick        += HandleCountdownTick;
+        GameController.OnTurnSummary          += HandleTurnSummary;
+        ScoreManager.OnStreakChanged          += HandleStreakChanged;
 
         LocalizationManager.OnLanguageChanged += LocalizeHUD;
         if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
             LocalizeHUD();
 
-        // Animate HUD entry
-        AnimateHUDEntry(root);
+        _hud.AnimateEntry();
     }
 
     private void OnDisable()
     {
-        GameController.OnGameStateChanged  -= HandleGameStateChanged;
-        QuizManager.OnQuestionChanged      -= HandleQuestionChanged;
-        ScoreManager.OnScoreChanged        -= HandleScoreChanged;
-        TimerController.OnTimerTick        -= HandleTimerTick;
-        GameController.OnGameOver          -= HandleGameOver;
-        GameController.OnOpponentLeft      -= HandleOpponentLeft;
+        GameController.OnGameStateChanged     -= HandleGameStateChanged;
+        QuizManager.OnQuestionChanged         -= HandleQuestionChanged;
+        ScoreManager.OnScoreChanged           -= HandleScoreChanged;
+        TimerController.OnTimerTick           -= HandleTimerTick;
+        GameController.OnGameOver             -= HandleGameOver;
+        GameController.OnOpponentLeft         -= HandleOpponentLeft;
         GameController.OnOpponentAnswerResult -= HandleOpponentAnswerResult;
-        GameController.OnCountdownTick     -= HandleCountdownTick;
-        GameController.OnTurnSummary       -= HandleTurnSummary;
-        ScoreManager.OnStreakChanged       -= HandleStreakChanged;
+        GameController.OnCountdownTick        -= HandleCountdownTick;
+        GameController.OnTurnSummary          -= HandleTurnSummary;
+        ScoreManager.OnStreakChanged          -= HandleStreakChanged;
 
         LocalizationManager.OnLanguageChanged -= LocalizeHUD;
 
-        if (_timerRotateCoroutine != null)
-        {
-            StopCoroutine(_timerRotateCoroutine);
-            _timerRotateCoroutine = null;
-        }
+        _hud?.Detach();
+        _powerUpHUD?.Detach(); // [PHASE-2]
 
-        if (uiDocument != null)
-        {
-            var root = uiDocument.rootVisualElement;
-            if (root != null)
-            {
-                var settingsBtn = root.Q<Button>("settings-btn");
-                if (settingsBtn != null) settingsBtn.clicked -= ShowSettingsPopup;
-            }
-        }
+        if (_settingsBtn != null) _settingsBtn.clicked -= ShowSettingsPopup;
     }
 
-    /// <summary>Animate HUD elements khi scene mở.</summary>
-    private void AnimateHUDEntry(VisualElement root)
-    {
-        if (_p1Info != null) UIAnimator.DOSlideFromLeft(_p1Info, 0.5f, 80f);
-        if (_p2Info != null) UIAnimator.DOSlideFromRight(_p2Info, 0.5f, 80f);
-        if (_timerContainer != null) UIAnimator.DOBounceIn(_timerContainer, 0.6f);
-    }
-
-    /// <summary>Xoay chậm timer container 18°/giây. Bù ngược timer-text để chữ số không bị nghiêng.</summary>
-    private System.Collections.IEnumerator RotateTimerSlowly()
-    {
-        float angle = 0f;
-        while (true)
-        {
-            angle += 18f * Time.deltaTime;
-            if (angle >= 360f) angle -= 360f;
-
-            if (_timerContainer != null)
-                _timerContainer.style.rotate = new StyleRotate(new Rotate(angle));
-            // Bù ngược để timerText luôn đứng thẳng
-            if (_timerText != null)
-                _timerText.style.rotate = new StyleRotate(new Rotate(-angle));
-
-            yield return null;
-        }
-    }
+    // ==================== EVENT ROUTING ====================
 
     private void HandleGameStateChanged(GameState state)
     {
         switch (state)
         {
             case GameState.Countdown:
-                CreateCountdownOverlay();
+                _countdown.Create();
                 break;
             case GameState.Playing:
-                _lastP1Score = 0;
-                _lastP2Score = 0;
-                UpdateScoreUI(0, 0);
-                _timerIsUrgent = false;
-                if (_countdownOverlay != null)
-                {
-                    _countdownOverlay.RemoveFromHierarchy();
-                    _countdownOverlay = null;
-                }
-                if (_resultPopupInstance != null)
-                {
-                    _resultPopupInstance.RemoveFromHierarchy();
-                    _resultPopupInstance = null;
-                }
+                _hud.ResetForNewGame();
+                _countdown.Remove();
+                if (_resultPopup != null && _resultPopup.IsOpen)
+                    _resultPopup.CloseImmediate();
+                _resultPopup = null;
                 break;
         }
     }
 
-    // ==================== COUNTDOWN ====================
-
-    private void CreateCountdownOverlay()
-    {
-        if (uiDocument == null) return;
-        _countdownOverlay = new VisualElement();
-        _countdownOverlay.AddToClassList("countdown-overlay");
-
-        _countdownLabel = new Label("3");
-        _countdownLabel.AddToClassList("countdown-number");
-
-        _countdownOverlay.Add(_countdownLabel);
-        uiDocument.rootVisualElement.Add(_countdownOverlay);
-    }
-
-    private void HandleCountdownTick(int tick)
-    {
-        if (_countdownLabel == null) return;
-
-        // Haptic mỗi tick
-        HapticFeedback.CountdownTick();
-
-        if (tick == 0)
-        {
-            _countdownLabel.text = "GO!";
-            _countdownLabel.RemoveFromClassList("countdown-number");
-            _countdownLabel.AddToClassList("countdown-go");
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.countdownGoSound);
-            UIAnimator.DOScale(_countdownLabel, new Vector2(0.5f, 0.5f), 0.5f).SetEase(Ease.InBack);
-            UIAnimator.DOFade(_countdownLabel, 0f, 0.5f);
-        }
-        else
-        {
-            _countdownLabel.text = tick.ToString();
-            // Pop animation
-            UIAnimator.DOCountdownPop(_countdownLabel, 0.8f);
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.countdownTickSound);
-        }
-    }
-
-    // ==================== QUESTION ====================
+    private void HandleCountdownTick(int tick) => _countdown.HandleTick(tick);
 
     private void HandleQuestionChanged(QuestionData question)
     {
         if (question == null) return;
-
-        if (_questionText != null)
-        {
-            string qKey = question.questionText;
-            _questionText.text = LocalizationManager.Instance != null
-                                 ? LocalizationManager.Instance.GetText(qKey)
-                                 : qKey;
-
-            // Animation: slide down + fade in cho question card
-            var questionCard = _questionText.parent;
-            if (questionCard != null)
-            {
-                questionCard.style.translate = new StyleTranslate(new Translate(new Length(0), new Length(-40)));
-                questionCard.style.opacity = 0f;
-                questionCard.style.scale = new StyleScale(new Scale(new Vector2(0.95f, 0.95f)));
-                UIAnimator.DOFade(questionCard, 1f, 0.25f);
-                UIAnimator.DOTranslate(questionCard, Vector2.zero, 0.35f).SetEase(Ease.OutBack);
-                UIAnimator.DOScale(questionCard, Vector2.one, 0.35f).SetEase(Ease.OutBack);
-            }
-        }
-
-        // Reset trạng thái đối thủ
-        SetOpponentStatus("game_opp_thinking", "Đang suy nghĩ...");
-
-        // Reset timer urgent state
-        _timerIsUrgent = false;
-        if (_timerArc != null)
-        {
-            _timerArc.FillAmount = 1f;
-            _timerArc.ArcColor  = new Color(0f, 0.898f, 1f);
-        }
-        if (_timerText != null) _timerText.style.color = Color.white;
-
-        // Swoosh sound
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.swooshSound);
-
-        if (_questionCounter != null && QuizManager.Instance != null)
-        {
-            int answered = QuizManager.Instance.AnsweredCount + 1;
-            int total    = QuizManager.Instance.TotalCount;
-
-            if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
-            {
-                string fmt = LocalizationManager.Instance.GetText("game_question_counter_title"); // e.g. "CÂU HỎI {0}"
-                if (string.IsNullOrEmpty(fmt) || fmt.StartsWith("["))
-                    fmt = "CÂU HỎI {0}";
-                _questionCounter.text = string.Format(fmt, answered);
-            }
-            else
-            {
-                _questionCounter.text = $"CÂU HỎI {answered}";
-            }
-
-            if (_questionProgressText != null)
-            {
-                _questionProgressText.text = $"{answered} / {total}";
-            }
-
-            if (_progressBarFill != null)
-            {
-                float fillPercent = Mathf.Clamp01((float)answered / total) * 100f;
-                // Animate fill percent
-                float currentWidth = _progressBarFill.resolvedStyle.width;
-                if (float.IsNaN(currentWidth)) currentWidth = 0f;
-                
-                // Do a simple DOTween To animation for width
-                DOTween.To(() => _progressBarFill.style.width.value.value, 
-                           x => _progressBarFill.style.width = Length.Percent(x), 
-                           fillPercent, 
-                           0.5f).SetEase(Ease.OutCubic);
-            }
-        }
+        _questionView.ShowQuestion(question);
+        _hud.OnNewQuestion();
+        _powerUpHUD?.RefreshOnNewQuestion(); // [PHASE-2]
     }
 
-    // ==================== SCORE ====================
+    private void HandleScoreChanged(int p1Score, int p2Score) => _hud.HandleScoreChanged(p1Score, p2Score);
+    private void HandleTimerTick(float remaining) => _hud.HandleTimerTick(remaining);
+    private void HandleOpponentLeft() => _hud.HandleOpponentLeft();
+    private void HandleOpponentAnswerResult(bool isCorrect) => _hud.HandleOpponentAnswerResult(isCorrect);
+    private void HandleStreakChanged(int streak) => _hud.HandleStreakChanged(streak);
 
-    private void HandleScoreChanged(int p1Score, int p2Score)
+    private void HandleTurnSummary(bool p1Correct, bool p2Correct, int p1Score, int p2Score, bool isLast)
+        => _hud.HandleTurnSummary(p1Correct, p2Correct, p1Score, p2Score, isLast);
+
+    /// <summary>Public API giữ tương thích — InputController/Network có thể gọi.</summary>
+    public void SetOpponentStatus(string statusKey, string fallback)
+        => _hud?.SetOpponentStatus(statusKey, fallback);
+
+    private void LocalizeHUD()
     {
-        // Animated score counter
-        if (_p1ScoreLabel != null && p1Score != _lastP1Score)
-        {
-            UIAnimator.DOCountTo(_p1ScoreLabel, _lastP1Score, p1Score, 0.4f);
-            // Pulse player card khi score tăng
-            if (p1Score > _lastP1Score && _p1Info != null)
-            {
-                UIAnimator.DOScale(_p1Info, new Vector2(1.05f, 1.05f), 0.15f).SetEase(Ease.OutBack)
-                    .OnComplete(() => UIAnimator.DOScale(_p1Info, Vector2.one, 0.15f));
-            }
-        }
-
-        if (_p2ScoreLabel != null && p2Score != _lastP2Score)
-        {
-            UIAnimator.DOCountTo(_p2ScoreLabel, _lastP2Score, p2Score, 0.4f);
-            if (p2Score > _lastP2Score && _p2Info != null)
-            {
-                UIAnimator.DOScale(_p2Info, new Vector2(1.05f, 1.05f), 0.15f).SetEase(Ease.OutBack)
-                    .OnComplete(() => UIAnimator.DOScale(_p2Info, Vector2.one, 0.15f));
-            }
-        }
-
-        _lastP1Score = p1Score;
-        _lastP2Score = p2Score;
-    }
-
-    // ==================== TIMER ====================
-
-    private void HandleTimerTick(float remaining)
-    {
-        // Cập nhật số đếm
-        if (_timerText != null)
-        {
-            _timerText.text = TimerController.Instance != null
-                ? TimerController.Instance.GetFormattedTime()
-                : $"{Mathf.CeilToInt(remaining)}";
-        }
-
-        // Cập nhật arc fill
-        if (_timerArc != null && TimerController.Instance != null)
-        {
-            float fill = remaining / TimerController.Instance.TotalTime;
-            _timerArc.FillAmount = fill;
-            
-            // Hiệu ứng "vắt kiệt năng lượng": viền mỏng dần
-            _timerArc.StrokeWidth = Mathf.Lerp(1.5f, 14f, fill);
-
-            // Blend màu cyan → đỏ trong 5 giây cuối
-            if (remaining <= 5f)
-            {
-                float t = remaining / 5f; // 1 → 0
-                _timerArc.ArcColor = Color.Lerp(
-                    new Color(1f, 0.32f, 0.32f),
-                    new Color(0f, 0.898f, 1f), t);
-            }
-            else
-            {
-                _timerArc.ArcColor = new Color(0f, 0.898f, 1f);
-            }
-        }
-
-        // Urgent state — màu chữ
-        if (remaining <= 5f && !_timerIsUrgent)
-        {
-            _timerIsUrgent = true;
-            if (_timerText != null) _timerText.style.color = new Color(1f, 0.32f, 0.32f);
-            // Bỏ hiệu ứng scale DOPulseGlow để vòng tròn giữ nguyên kích thước
-        }
-        else if (remaining > 5f && _timerIsUrgent)
-        {
-            _timerIsUrgent = false;
-            if (_timerText != null) _timerText.style.color = Color.white;
-        }
-
-        // Urgent tick sound + haptic
-        if (remaining <= 5f && remaining > 0)
-        {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.timerUrgentSound);
-            HapticFeedback.CountdownTick();
-        }
-    }
-
-    // ==================== OPPONENT ====================
-
-    private void HandleOpponentLeft()
-    {
-        string msg = LocalizationManager.Instance != null
-            ? LocalizationManager.Instance.GetText("game_opponent_left", "Đối thủ đã rời trận — Bạn thắng!")
-            : "Đối thủ đã rời trận — Bạn thắng!";
-        ShowToast(msg, 2.5f);
-        HapticFeedback.Medium();
-        Debug.LogWarning("[GameplayUI] Đối thủ đã rời trận!");
-    }
-
-    private void HandleOpponentAnswerResult(bool isCorrect)
-    {
-        if (_p2Avatar == null) return;
-        SetOpponentStatus("game_opp_answered", "Đã trả lời!");
-
-        var indicator = new Label(isCorrect ? "✅" : "❌");
-        indicator.style.position = Position.Absolute;
-        indicator.style.fontSize = 40;
-        indicator.style.unityTextAlign = TextAnchor.MiddleCenter;
-        indicator.style.right = -8;
-        indicator.style.bottom = -8;
-        indicator.style.width = 50;
-        indicator.style.height = 50;
-        indicator.style.opacity = 0f;
-
-        _p2Avatar.Add(indicator);
-        // Bounce in animation
-        UIAnimator.DOBounceIn(indicator, 0.4f);
-        StartCoroutine(RemoveAfterDelay(indicator, 2.0f));
-    }
-
-    private System.Collections.IEnumerator RemoveAfterDelay(VisualElement el, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (el != null && el.parent != null)
-        {
-            UIAnimator.DOFade(el, 0f, 0.2f);
-            yield return new WaitForSeconds(0.2f);
-            if (el.parent != null) el.RemoveFromHierarchy();
-        }
-    }
-
-    // ==================== TOAST ====================
-    // REFACTOR-P2: delegate sang ToastService dùng chung (gộp bản copy-paste với MainMenu).
-
-    private void ShowToast(string message, float duration = 2f)
-    {
-        if (uiDocument == null) return;
-        ToastService.Show(uiDocument.rootVisualElement, message, duration);
+        _hud?.LocalizeNames();
+        _questionView?.ShowLoadingText();
     }
 
     // ==================== GAME OVER ====================
 
     private void HandleGameOver()
     {
+        // Giữ behavior cũ: fallback load template từ Resources nếu chưa gán Inspector
         if (resultPopupTemplate == null)
             resultPopupTemplate = Resources.Load<VisualTreeAsset>("UI/ResultPopup");
 
@@ -486,375 +161,32 @@ public class GameplayUIController_UXML : MonoBehaviour
             return;
         }
 
-        if (_resultPopupInstance != null)
-        {
-            _resultPopupInstance.RemoveFromHierarchy();
-            _resultPopupInstance = null;
-        }
+        if (_resultPopup != null && _resultPopup.IsOpen)
+            _resultPopup.CloseImmediate();
 
-        _resultPopupInstance = resultPopupTemplate.Instantiate();
-        uiDocument.rootVisualElement.Add(_resultPopupInstance);
-        _resultPopupInstance.style.position = Position.Absolute;
-        _resultPopupInstance.style.top = 0;
-        _resultPopupInstance.style.bottom = 0;
-        _resultPopupInstance.style.left = 0;
-        _resultPopupInstance.style.right = 0;
-
-        // ANIMATION: Result Popup
-        var overlay = _resultPopupInstance.Q<VisualElement>("result-overlay") ?? _resultPopupInstance.Children().First();
-        var popupCard = _resultPopupInstance.Q<VisualElement>("result-container") ?? overlay.Children().First();
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
-
-        if (ScoreManager.Instance == null) return;
-
-        WinResult result = ScoreManager.Instance.GetWinner();
-
-        // Haptic feedback dựa theo kết quả
-        if (result == WinResult.Player1Wins)
-            HapticFeedback.Heavy();
-        else if (result == WinResult.Player2Wins)
-            HapticFeedback.Medium();
-        else
-            HapticFeedback.Light();
-
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlayResultSound(result == WinResult.Player1Wins);
-
-        // CONFETTI khi thắng!
-        if (result == WinResult.Player1Wins)
-        {
-            var confettiLayer = _resultPopupInstance.Q<VisualElement>("result-particle-layer");
-            if (confettiLayer != null && UIParticleEffect.Instance != null)
-            {
-                UIParticleEffect.Instance.SpawnConfetti(confettiLayer, 50, 3f);
-            }
-        }
-
-        var L = LocalizationManager.Instance;
-
-        // Trophy icon
-        var trophyIcon = _resultPopupInstance.Q<Label>("trophy-icon");
-        if (trophyIcon != null)
-        {
-            string icon = result switch
-            {
-                WinResult.Player1Wins => "🏆",
-                WinResult.Player2Wins => "😢",
-                WinResult.Draw        => "🤝",
-                _ => "⭐"
-            };
-            trophyIcon.text = icon;
-            trophyIcon.style.fontSize = 52;
-            // Bounce in trophy
-            var trophyArea = _resultPopupInstance.Q<VisualElement>("trophy-area");
-            if (trophyArea != null)
-                UIAnimator.DOBounceIn(trophyArea, 0.6f);
-        }
-
-        var title = _resultPopupInstance.Q<Label>("result-title");
-        if (title != null)
-        {
-            string titleKey = result switch
-            {
-                WinResult.Player1Wins => "game_win",
-                WinResult.Player2Wins => "game_lose",
-                WinResult.Draw        => "game_draw",
-                _ => "game_draw"
-            };
-            title.text = L != null ? L.GetText(titleKey) : titleKey;
-            title.style.color = result switch
-            {
-                WinResult.Player1Wins => new Color(0f, 0.9f, 0.46f),
-                WinResult.Player2Wins => new Color(1f, 0.32f, 0.32f),
-                WinResult.Draw        => new Color(1f, 0.84f, 0.28f),
-                _ => Color.white
-            };
-        }
-
-        // Localize stat labels
-        var yourScoreLbl = _resultPopupInstance.Q<Label>("your-score-label");
-        if (yourScoreLbl != null)
-            yourScoreLbl.text = L != null ? L.GetText("game_your_score", "Bạn") : "Bạn";
-
-        var oppScoreLbl = _resultPopupInstance.Q<Label>("opp-score-label");
-        if (oppScoreLbl != null)
-            oppScoreLbl.text = L != null ? L.GetText("game_opp_score", "Đối thủ") : "Đối thủ";
-
-        var rewardLbl = _resultPopupInstance.Q<Label>("reward-label");
-        if (rewardLbl != null)
-            rewardLbl.text = L != null ? L.GetText("game_reward", "Thưởng") : "Thưởng";
-
-        // Animated score counter
-        var p1Final = _resultPopupInstance.Q<Label>("p1-score-final");
-        if (p1Final != null)
-            UIAnimator.DOCountTo(p1Final, 0, ScoreManager.Instance.Player1Score, 0.8f);
-
-        var p2Final = _resultPopupInstance.Q<Label>("p2-score-final");
-        if (p2Final != null)
-            UIAnimator.DOCountTo(p2Final, 0, ScoreManager.Instance.Player2Score, 0.8f);
-
-        // Reward — hiển thị tiền, XP, Rank Points tách dòng
-        var rewardParent = _resultPopupInstance.Q<VisualElement>(className: "reward-container");
-        if (rewardParent != null)
-        {
-            rewardParent.Clear();
-
-            int money = ScoreManager.Instance.LastRewardMoney;
-            int xp = ScoreManager.Instance.LastRewardExp;
-
-            bool isSurrender = (money == 0 && xp == 0 && result == WinResult.Player2Wins);
-
-            if (isSurrender)
-            {
-                var surrenderNote = new Label(
-                    L != null
-                        ? L.GetText("game_surrender_no_reward", "Đầu hàng — Không nhận được thưởng.")
-                        : "Đầu hàng — Không nhận được thưởng."
-                );
-                surrenderNote.style.fontSize = 28;
-                surrenderNote.style.color = new Color(1f, 0.32f, 0.32f, 0.7f);
-                surrenderNote.style.unityTextAlign = TextAnchor.MiddleCenter;
-                surrenderNote.style.marginTop = 6;
-                rewardParent.Add(surrenderNote);
-            }
-            else
-            {
-                // Tiền
-                var moneyReward = new Label($"💰 +${money:N0}");
-                moneyReward.style.fontSize = 40;
-                moneyReward.style.color = new Color(1f, 0.84f, 0.28f); // Gold
-                moneyReward.style.unityFontStyleAndWeight = FontStyle.Bold;
-                moneyReward.style.unityTextAlign = TextAnchor.MiddleCenter;
-                moneyReward.style.marginTop = 8;
-                rewardParent.Add(moneyReward);
-
-                // XP
-                var xpReward = new Label($"⚡ +{xp} XP");
-                xpReward.style.fontSize = 40;
-                xpReward.style.color = new Color(0f, 0.90f, 1f); // Cyan
-                xpReward.style.unityFontStyleAndWeight = FontStyle.Bold;
-                xpReward.style.unityTextAlign = TextAnchor.MiddleCenter;
-                xpReward.style.marginTop = 8;
-                rewardParent.Add(xpReward);
-
-                // Điểm Xếp Hạng
-                int rankPoints = ScoreManager.Instance.LastRewardRankPoints;
-                string sign = rankPoints > 0 ? "+" : "";
-                var rankReward = new Label($"🏆 {sign}{rankPoints} RP");
-                rankReward.style.fontSize = 40;
-                rankReward.style.color = rankPoints >= 0 ? new Color(0.85f, 0.44f, 1f) : new Color(1f, 0.32f, 0.32f); 
-                rankReward.style.unityFontStyleAndWeight = FontStyle.Bold;
-                rankReward.style.unityTextAlign = TextAnchor.MiddleCenter;
-                rankReward.style.marginTop = 8;
-                rewardParent.Add(rankReward);
-
-                // Animation lần lượt
-                moneyReward.style.opacity = 0f;
-                xpReward.style.opacity = 0f;
-                rankReward.style.opacity = 0f;
-                
-                moneyReward.style.translate = new StyleTranslate(new Translate(0, 20));
-                xpReward.style.translate = new StyleTranslate(new Translate(0, 20));
-                rankReward.style.translate = new StyleTranslate(new Translate(0, 20));
-                
-                UIAnimator.DOFade(moneyReward, 1f, 0.3f).SetDelay(0.3f);
-                UIAnimator.DOTranslate(moneyReward, Vector2.zero, 0.4f).SetDelay(0.3f).SetEase(Ease.OutBack);
-                
-                UIAnimator.DOFade(xpReward, 1f, 0.3f).SetDelay(0.5f);
-                UIAnimator.DOTranslate(xpReward, Vector2.zero, 0.4f).SetDelay(0.5f).SetEase(Ease.OutBack);
-                
-                UIAnimator.DOFade(rankReward, 1f, 0.3f).SetDelay(0.7f);
-                UIAnimator.DOTranslate(rankReward, Vector2.zero, 0.4f).SetDelay(0.7f).SetEase(Ease.OutBack);
-            }
-        }
-
-        var playAgainBtn = _resultPopupInstance.Q<Button>("play-again-btn");
-        if (playAgainBtn != null)
-        {
-            if (L != null) playAgainBtn.text = L.GetText("game_play_again");
-            if (_playAgainHandler != null) playAgainBtn.clicked -= _playAgainHandler;
-
-            bool isOnline = FirebaseManager.Instance != null
-                            && !FirebaseManager.Instance.isOfflineMode
-                            && !string.IsNullOrEmpty(FirebaseManager.Instance.CurrentRoomId);
-
-            if (isOnline)
-            {
-                _playAgainHandler = () => {
-                    FirebaseManager.Instance.LeaveRoom();
-                    if (GameManager.Instance != null) GameManager.Instance.LoadHomeScene();
-                };
-            }
-            else
-            {
-                _playAgainHandler = () => {
-                    if (_resultPopupInstance != null)
-                    {
-                        _resultPopupInstance.RemoveFromHierarchy();
-                        _resultPopupInstance = null;
-                    }
-                    if (GameController.Instance != null) GameController.Instance.RestartGame();
-                };
-            }
-            playAgainBtn.clicked += _playAgainHandler;
-        }
-
-        var backHomeBtn = _resultPopupInstance.Q<Button>("back-home-btn");
-        if (backHomeBtn != null)
-        {
-            if (L != null) backHomeBtn.text = L.GetText("game_back_home");
-            if (_backHomeHandler != null) backHomeBtn.clicked -= _backHomeHandler;
-            _backHomeHandler = () => {
-                if (FirebaseManager.Instance != null) FirebaseManager.Instance.LeaveRoom();
-                if (GameManager.Instance != null) GameManager.Instance.LoadHomeScene();
-                else UnityEngine.SceneManagement.SceneManager.LoadScene("HomeScene");
-            };
-            backHomeBtn.clicked += _backHomeHandler;
-        }
+        _resultPopup = new ResultPopupController(resultPopupTemplate, uiDocument.rootVisualElement);
+        _resultPopup.Show();
     }
 
-    // ==================== EXIT CONFIRMATION ====================
+    // ==================== POPUPS ====================
 
     private void ShowSettingsPopup()
     {
         if (settingsPopupTemplate == null) return;
-        if (_settingsPopupInstance != null) return;
+        if (_settingsPopup != null && _settingsPopup.IsOpen) return;
 
-        _settingsPopupInstance = settingsPopupTemplate.Instantiate();
-        uiDocument.rootVisualElement.Add(_settingsPopupInstance);
-        _settingsPopupInstance.style.position = Position.Absolute;
-        _settingsPopupInstance.style.top = 0;
-        _settingsPopupInstance.style.bottom = 0;
-        _settingsPopupInstance.style.left = 0;
-        _settingsPopupInstance.style.right = 0;
-
-        var overlay = _settingsPopupInstance.Q<VisualElement>("overlay") ?? _settingsPopupInstance.Children().First();
-        var popupCard = _settingsPopupInstance.Q<VisualElement>("popup") ?? overlay.Children().First();
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
-
-        // Localization
-        if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
-        {
-            var L = LocalizationManager.Instance;
-            var title = _settingsPopupInstance.Q<Label>("settings-title");
-            var musicLbl = _settingsPopupInstance.Q<Label>("music-label");
-            var sfxLbl = _settingsPopupInstance.Q<Label>("sfx-label");
-            var quitBtn = _settingsPopupInstance.Q<Button>("quit-game-btn");
-            var cancelBtn = _settingsPopupInstance.Q<Button>("cancel-btn");
-
-            if (title != null) title.text = L.GetText("settings_title", "CÀI ĐẶT");
-            if (musicLbl != null) musicLbl.text = L.GetText("settings_music", "Âm nhạc");
-            if (sfxLbl != null) sfxLbl.text = L.GetText("settings_sfx", "Hiệu ứng");
-            if (quitBtn != null) quitBtn.text = L.GetText("game_quit_game", "THOÁT GAME");
-            if (cancelBtn != null) cancelBtn.text = L.GetText("menu_cancel", "HỦY");
-        }
-
-        // Toggles Âm thanh
-        var musicToggle = _settingsPopupInstance.Q<Toggle>("music-toggle");
-        var sfxToggle = _settingsPopupInstance.Q<Toggle>("sfx-toggle");
-
-        if (AudioManager.Instance != null)
-        {
-            if (musicToggle != null)
-            {
-                musicToggle.value = AudioManager.Instance.IsMusicEnabled;
-                musicToggle.RegisterValueChangedCallback(evt => {
-                    AudioManager.Instance.SetMusicEnabled(evt.newValue);
-                });
-            }
-
-            if (sfxToggle != null)
-            {
-                sfxToggle.value = AudioManager.Instance.IsSFXEnabled;
-                sfxToggle.RegisterValueChangedCallback(evt => {
-                    AudioManager.Instance.SetSFXEnabled(evt.newValue);
-                });
-            }
-        }
-
-        // Thoát game button
-        var quitGameBtn = _settingsPopupInstance.Q<Button>("quit-game-btn");
-        if (quitGameBtn != null)
-        {
-            quitGameBtn.clicked += () => {
-                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                    _settingsPopupInstance.RemoveFromHierarchy();
-                    _settingsPopupInstance = null;
-                    ShowExitConfirmation();
-                });
-            };
-        }
-
-        // Hủy button
-        var cancelSettingsBtn = _settingsPopupInstance.Q<Button>("cancel-btn");
-        if (cancelSettingsBtn != null)
-        {
-            cancelSettingsBtn.clicked += () => {
-                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                    _settingsPopupInstance.RemoveFromHierarchy();
-                    _settingsPopupInstance = null;
-                });
-            };
-        }
+        _settingsPopup = new GameplaySettingsPopupController(
+            settingsPopupTemplate, uiDocument.rootVisualElement, ShowExitConfirmation);
+        _settingsPopup.Show();
     }
 
     private void ShowExitConfirmation()
     {
         if (exitPopupTemplate == null) return;
-        if (_exitPopupInstance != null) return;
+        if (_exitPopup != null && _exitPopup.IsOpen) return;
 
-        _exitPopupInstance = exitPopupTemplate.Instantiate();
-        uiDocument.rootVisualElement.Add(_exitPopupInstance);
-        _exitPopupInstance.style.position = Position.Absolute;
-        _exitPopupInstance.style.top = 0;
-        _exitPopupInstance.style.bottom = 0;
-        _exitPopupInstance.style.left = 0;
-        _exitPopupInstance.style.right = 0;
-
-        var overlay = _exitPopupInstance.Q<VisualElement>("overlay") ?? _exitPopupInstance.Children().First();
-        var popupCard = _exitPopupInstance.Q<VisualElement>("popup") ?? overlay.Children().First();
-        UIAnimator.ShowPopupAnim(overlay, popupCard);
-
-        if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
-        {
-            var L = LocalizationManager.Instance;
-            var title = _exitPopupInstance.Q<Label>("confirm-title");
-            var msg = _exitPopupInstance.Q<Label>("confirm-msg");
-            if (title != null) title.text = L.GetText("game_exit_title", "BỎ CUỘC?");
-            if (msg != null) msg.text = L.GetText("game_exit_msg", "Nếu thoát bây giờ, bạn sẽ bị xử THUA ngay lập tức.");
-        }
-
-        HapticFeedback.Light();
-
-        var confirmBtn = _exitPopupInstance.Q<Button>("confirm-btn");
-        if (confirmBtn != null)
-        {
-            if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
-                confirmBtn.text = LocalizationManager.Instance.GetText("game_exit_confirm", "XÁC NHẬN THOÁT");
-
-            confirmBtn.clicked += () => {
-                HapticFeedback.Heavy();
-                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                    _exitPopupInstance.RemoveFromHierarchy();
-                    _exitPopupInstance = null;
-                    if (GameController.Instance != null) GameController.Instance.ForcedSurrender();
-                });
-            };
-        }
-
-        var cancelBtn = _exitPopupInstance.Q<Button>("cancel-btn");
-        if (cancelBtn != null)
-        {
-            if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady)
-                cancelBtn.text = LocalizationManager.Instance.GetText("menu_cancel", "HỦY");
-
-            cancelBtn.clicked += () => {
-                UIAnimator.HidePopupAnim(overlay, popupCard, () => {
-                    _exitPopupInstance.RemoveFromHierarchy();
-                    _exitPopupInstance = null;
-                });
-            };
-        }
+        _exitPopup = new ExitConfirmPopupController(exitPopupTemplate, uiDocument.rootVisualElement);
+        _exitPopup.Show();
     }
 
     // UX-08: Android back button
@@ -862,198 +194,9 @@ public class GameplayUIController_UXML : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (_exitPopupInstance != null) return;
-            if (_resultPopupInstance != null) return;
+            if (_exitPopup != null && _exitPopup.IsOpen) return;
+            if (_resultPopup != null && _resultPopup.IsOpen) return;
             ShowExitConfirmation();
         }
-    }
-
-    // ==================== LOCALIZATION ====================
-
-    private void LocalizeHUD()
-    {
-        if (uiDocument == null) return;
-        var root = uiDocument.rootVisualElement;
-        if (root == null) return;
-        if (LocalizationManager.Instance == null || !LocalizationManager.Instance.IsReady) return;
-
-        var L = LocalizationManager.Instance;
-
-        if (FirebaseManager.Instance != null)
-        {
-            string myName = FirebaseManager.Instance.LocalDisplayName
-                ?? (FirebaseManager.Instance.IsAuthenticated
-                    ? FirebaseManager.Instance.LocalUserId
-                    : "PLAYER");
-
-            string oppName = FirebaseManager.Instance.OpponentName
-                ?? (!string.IsNullOrEmpty(FirebaseManager.Instance.OpponentId)
-                    ? FirebaseManager.Instance.OpponentId
-                    : "BOT");
-
-            if (myName != null && myName.Length > 12 && !myName.Contains(" "))
-                myName = myName.Substring(0, 12);
-            if (oppName != null && oppName.Length > 12 && !oppName.Contains(" "))
-                oppName = oppName.Substring(0, 12);
-
-            if (_p1Label != null) _p1Label.text = myName;
-            if (_p2Label != null) _p2Label.text = oppName;
-
-            if (_p1Avatar != null)
-                AvatarHelper.SetAvatar(_p1Avatar, myName);
-            if (_p2Avatar != null)
-                AvatarHelper.SetAvatar(_p2Avatar, oppName);
-        }
-        else
-        {
-            if (_p1Label != null) _p1Label.text = L.GetText("game_score_me");
-            if (_p2Label != null) _p2Label.text = L.GetText("game_score_opp");
-        }
-
-        if (_questionText != null && QuizManager.Instance == null)
-            _questionText.text = L.GetText("game_loading_question");
-    }
-
-    private void UpdateScoreUI(int p1Score, int p2Score)
-    {
-        if (_p1ScoreLabel != null) _p1ScoreLabel.text = p1Score.ToString();
-        if (_p2ScoreLabel != null) _p2ScoreLabel.text = p2Score.ToString();
-    }
-
-    // ==================== TURN SUMMARY ====================
-
-    private void HandleTurnSummary(bool p1Correct, bool p2Correct, int p1Score, int p2Score, bool isLast)
-    {
-        if (uiDocument == null) return;
-        if (_isShowingTurnSummary) return;
-        _isShowingTurnSummary = true;
-
-        var root = uiDocument.rootVisualElement;
-
-        var summary = new VisualElement();
-        summary.name = "turn-summary-overlay";
-        summary.AddToClassList("countdown-overlay");
-        summary.style.opacity = 0f;
-
-        var container = new VisualElement();
-        container.AddToClassList("turn-summary-card");
-
-        var L = LocalizationManager.Instance;
-
-        // P1 result
-        string p1Icon = p1Correct ? "✅" : "❌";
-        string p1Text = p1Correct
-            ? (L != null ? L.GetText("game_turn_correct", "Đúng") : "Đúng")
-            : (L != null ? L.GetText("game_turn_wrong", "Sai") : "Sai");
-        var p1Label = new Label($"Bạn: {p1Icon} {p1Text}");
-        p1Label.style.fontSize = 36;
-        p1Label.style.color = p1Correct ? new Color(0f, 0.9f, 0.46f) : new Color(1f, 0.32f, 0.32f);
-        p1Label.style.unityFontStyleAndWeight = FontStyle.Bold;
-        p1Label.style.marginBottom = 8;
-        container.Add(p1Label);
-
-        // P2 result
-        string p2Icon = p2Correct ? "✅" : "❌";
-        string p2Text = p2Correct
-            ? (L != null ? L.GetText("game_turn_correct", "Đúng") : "Đúng")
-            : (L != null ? L.GetText("game_turn_wrong", "Sai") : "Sai");
-        var p2LabelEl = new Label($"Đối thủ: {p2Icon} {p2Text}");
-        p2LabelEl.style.fontSize = 36;
-        p2LabelEl.style.color = p2Correct ? new Color(0f, 0.9f, 0.46f) : new Color(1f, 0.32f, 0.32f);
-        p2LabelEl.style.unityFontStyleAndWeight = FontStyle.Bold;
-        p2LabelEl.style.marginBottom = 16;
-        container.Add(p2LabelEl);
-
-        // Divider
-        var divider = new VisualElement();
-        divider.AddToClassList("glass-separator");
-        container.Add(divider);
-
-        // Score line
-        var scoreLabel = new Label($"{p1Score} — {p2Score}");
-        scoreLabel.style.fontSize = 46;
-        scoreLabel.style.color = Color.white;
-        scoreLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-        scoreLabel.style.marginTop = 12;
-        scoreLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        container.Add(scoreLabel);
-
-        summary.Add(container);
-        root.Add(summary);
-
-        // Fade in + scale
-        UIAnimator.ShowPopupAnim(summary, container);
-
-        StartCoroutine(RemoveTurnSummaryAfter(summary, 2.5f));
-    }
-
-    private IEnumerator RemoveTurnSummaryAfter(VisualElement el, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (el != null && el.parent != null)
-        {
-            UIAnimator.DOFade(el, 0f, 0.2f);
-            yield return new WaitForSeconds(0.2f);
-            el.RemoveFromHierarchy();
-            _isShowingTurnSummary = false;
-        }
-    }
-
-    // ==================== STREAK ====================
-
-    private void HandleStreakChanged(int streak)
-    {
-        if (streak >= 2)
-        {
-            string msg = $"🔥 {streak}x Streak!";
-            ShowStreakToast(msg);
-            HapticFeedback.Streak(streak);
-
-            // Sparkle effect trên particle layer
-            if (_particleLayer != null && UIParticleEffect.Instance != null)
-            {
-                UIParticleEffect.Instance.SpawnSparkle(_particleLayer, 50f, 50f, 8 + streak * 2);
-            }
-        }
-    }
-
-    private void ShowStreakToast(string message)
-    {
-        if (uiDocument == null) return;
-        var root = uiDocument.rootVisualElement;
-
-        var badge = new Label(message);
-        badge.style.position = Position.Absolute;
-        badge.style.top = Length.Percent(35);
-        badge.style.left = 0;
-        badge.style.right = 0;
-        badge.style.unityTextAlign = TextAnchor.MiddleCenter;
-        badge.style.fontSize = 44;
-        badge.style.color = new Color(1f, 0.84f, 0.28f);
-        badge.style.unityFontStyleAndWeight = FontStyle.Bold;
-        badge.style.unityTextOutlineWidth = 2;
-        badge.style.unityTextOutlineColor = new Color(0f, 0f, 0f, 0.5f);
-        badge.pickingMode = PickingMode.Ignore;
-
-        root.Add(badge);
-
-        // Streak flash animation
-        UIAnimator.DOStreakFlash(badge, 1.2f).OnComplete(() => {
-            if (badge.parent != null) badge.RemoveFromHierarchy();
-        });
-    }
-
-    // ==================== OPPONENT STATUS ====================
-
-    public void SetOpponentStatus(string statusKey, string fallback)
-    {
-        if (_p2StatusLabel == null) return;
-        string text = LocalizationManager.Instance != null && LocalizationManager.Instance.IsReady
-            ? LocalizationManager.Instance.GetText(statusKey, fallback)
-            : fallback;
-        _p2StatusLabel.text = text;
-
-        _p2StatusLabel.style.opacity = 0f;
-        UIAnimator.DOFade(_p2StatusLabel, 1f, 0.3f);
     }
 }

@@ -32,13 +32,20 @@ public class ScoreManager : MonoBehaviour
     private const int DRAW_MONEY = 40;
     private const int LOSE_MONEY = 10;
 
+    // [PHASE-2] Theo economy-design v2.0 §4.1 — RP cố định, KHÔNG nhân Level Multiplier
     private const int WIN_RANK_POINTS = 30;
     private const int DRAW_RANK_POINTS = 10;
-    private const int LOSE_RANK_POINTS = -10;
+    private const int LOSE_RANK_POINTS = -15;
+    private const int FORCED_LOSE_RANK_POINTS = -25; // Đầu hàng
 
     public int LastRewardMoney { get; private set; }
     public int LastRewardExp { get; private set; }
     public int LastRewardRankPoints { get; private set; }
+
+    // [IM] Khi intermission, RP được bù bằng Money+EXP. Dùng cho popup kết quả + toast.
+    public int LastIntermissionBonusMoney { get; private set; }
+    public int LastIntermissionBonusExp { get; private set; }
+    public bool LastWasIntermission { get; private set; }
 
     private WinResult? _forcedWinnerResult = null;
     private bool _didAnswerWrongThisMatch = false;
@@ -73,6 +80,11 @@ public class ScoreManager : MonoBehaviour
             expAwarded = WIN_XP;
             moneyAwarded = WIN_MONEY;
             rankPointsAwarded = WIN_RANK_POINTS;
+
+            // [PHASE-2] Daily Quests
+            DailyQuestManager.Instance?.NotifyMatchWon();
+            if (!_didAnswerWrongThisMatch)
+                DailyQuestManager.Instance?.NotifyPerfectRound();
             
             // Achievement tracking
             bool isOffline = FirebaseManager.Instance != null && FirebaseManager.Instance.isOfflineMode;
@@ -113,7 +125,7 @@ public class ScoreManager : MonoBehaviour
             {
                 expAwarded = 0;
                 moneyAwarded = 0;
-                rankPointsAwarded = -20; // Phạt nặng hơn
+                rankPointsAwarded = FORCED_LOSE_RANK_POINTS; // [PHASE-2] -25 RP
             }
             else
             {
@@ -130,14 +142,34 @@ public class ScoreManager : MonoBehaviour
             }
         }
 
+        // [IM] Khi intermission: KHÔNG cộng/trừ RP, bù bằng Money + EXP (tỷ lệ 1 RP = 2$ + 1 XP).
+        // Chỉ bù khi RP dương (thắng/hòa). Loss/Surrender = 0 (không phạt RP, không bonus).
+        bool isIntermission = SeasonManager.Instance != null && SeasonManager.Instance.IsIntermission;
+        int bonusMoney = 0, bonusExp = 0;
+        if (isIntermission)
+        {
+            if (rankPointsAwarded > 0)
+            {
+                bonusMoney = rankPointsAwarded * 2;
+                bonusExp   = rankPointsAwarded * 1;
+                moneyAwarded += bonusMoney;
+                expAwarded   += bonusExp;
+            }
+            rankPointsAwarded = 0; // RP bị freeze trong intermission
+        }
+        LastIntermissionBonusMoney = bonusMoney;
+        LastIntermissionBonusExp = bonusExp;
+        LastWasIntermission = isIntermission;
+
         // Áp dụng Hệ số thưởng (Multiplier) dựa trên Level
         int playerLevel = PlayerDataManager.Instance.Data.level;
         float multiplier = 1.0f + (playerLevel * 0.1f);
 
-        // Chỉ nhân lên cho phần thưởng dương (không nhân phần trừ điểm)
+        // [PHASE-2] Chỉ nhân Money & EXP. RP cố định — KHÔNG nhân multiplier
+        // Lý do: RP phải phản ánh kỹ năng thuần túy, không phải thời gian đã chơi.
         if (expAwarded > 0) expAwarded = Mathf.RoundToInt(expAwarded * multiplier);
         if (moneyAwarded > 0) moneyAwarded = Mathf.RoundToInt(moneyAwarded * multiplier);
-        if (rankPointsAwarded > 0) rankPointsAwarded = Mathf.RoundToInt(rankPointsAwarded * multiplier);
+        // rankPointsAwarded GIỮ NGUYÊN — không nhân multiplier
 
         LastRewardExp = expAwarded;
         LastRewardMoney = moneyAwarded;
@@ -146,9 +178,16 @@ public class ScoreManager : MonoBehaviour
         PlayerDataManager.Instance.Data.AddExp(expAwarded);
         PlayerDataManager.Instance.Data.AddMoney(moneyAwarded);
         PlayerDataManager.Instance.Data.AddRankPoints(rankPointsAwarded);
+
+        // [PHASE-2] Cập nhật tier ngay sau khi RP thay đổi (hardcore demotion)
+        PlayerDataManager.Instance.Data.RecomputeTier();
+
         PlayerDataManager.Instance.SaveData();
 
-        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: +{expAwarded} XP, +{moneyAwarded}$ tiền, {rankPointsAwarded} Điểm Xếp Hạng! (Hệ số: {multiplier}x)</color>");
+        // [PHASE-2] Daily Quest: chơi 1 trận (đếm bất kể kết quả)
+        DailyQuestManager.Instance?.NotifyMatchPlayed();
+
+        Debug.Log($"<color=cyan>[ScoreManager] Kết thúc: +{expAwarded} XP, +{moneyAwarded}$ tiền, {rankPointsAwarded} RP! (Hệ số: {multiplier}x){(isIntermission ? $" [INTERMISSION bonus: +{bonusMoney}$ +{bonusExp} XP]" : "")}</color>");
         
         // Gọi AchievementManager để check sau khi stats đã cập nhật
         if (AchievementManager.Instance != null)
@@ -196,11 +235,24 @@ public class ScoreManager : MonoBehaviour
             {
                 CurrentStreak++;
                 OnStreakChanged?.Invoke(CurrentStreak);
+                // [PHASE-2] Daily Quest: đúng 1 câu
+                DailyQuestManager.Instance?.NotifyCorrectAnswer();
             }
             else
             {
-                CurrentStreak = 0;
-                OnStreakChanged?.Invoke(0);
+                // [PHASE-2] Shield logic: nếu shield đang active → giữ streak, consume shield
+                bool shieldSaved = PowerUpManager.Instance != null && PowerUpManager.Instance.IsShieldActive;
+                if (shieldSaved)
+                {
+                    PowerUpManager.Instance.ConsumeShield();
+                    Debug.Log("<color=cyan>[ScoreManager] Shield cứu streak khỏi 1 lần sai!</color>");
+                    // Giữ nguyên CurrentStreak — KHÔNG raise OnStreakChanged
+                }
+                else
+                {
+                    CurrentStreak = 0;
+                    OnStreakChanged?.Invoke(0);
+                }
                 _didAnswerWrongThisMatch = true;
             }
         }

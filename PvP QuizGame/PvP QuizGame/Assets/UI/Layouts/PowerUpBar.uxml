@@ -1,0 +1,29 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
+    <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
+
+    <!-- [PHASE-2] Power-Up Bar — 3 nút consumable trong trận -->
+    <ui:VisualElement name="powerup-bar" class="powerup-bar" picking-mode="Position" style="flex-direction: row; justify-content: center; align-items: center; padding: 8px 0;">
+
+        <!-- 50:50 -->
+        <ui:Button name="pu-5050-btn" class="powerup-btn">
+            <ui:VisualElement class="icon icon-scissors powerup-icon" style="width: 42px; height: 42px;" />
+            <ui:Label name="pu-5050-label" text="50:50" class="powerup-name" />
+            <ui:Label name="pu-5050-count" text="x0" class="powerup-count" />
+        </ui:Button>
+
+        <!-- Extra Time -->
+        <ui:Button name="pu-time-btn" class="powerup-btn">
+            <ui:VisualElement class="icon icon-timer powerup-icon" style="width: 42px; height: 42px;" />
+            <ui:Label name="pu-time-label" text="+5s" class="powerup-name" />
+            <ui:Label name="pu-time-count" text="x0" class="powerup-count" />
+        </ui:Button>
+
+        <!-- Shield -->
+        <ui:Button name="pu-shield-btn" class="powerup-btn">
+            <ui:VisualElement class="icon icon-shield powerup-icon" style="width: 42px; height: 42px;" />
+            <ui:Label name="pu-shield-label" text="Shield" class="powerup-name" />
+            <ui:Label name="pu-shield-count" text="x0" class="powerup-count" />
+        </ui:Button>
+
+    </ui:VisualElement>
+</ui:UXML>

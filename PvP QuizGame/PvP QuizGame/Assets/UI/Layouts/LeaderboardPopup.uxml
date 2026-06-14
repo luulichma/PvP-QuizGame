@@ -4,7 +4,7 @@
         <ui:VisualElement name="popup" class="card-glow" style="width: 95%; max-width: 800px; padding: 40px; height: 80%; align-self: center; background-color: rgba(13, 2, 33, 0.95);">
             <!-- Header -->
             <ui:VisualElement style="flex-direction: row; justify-content: center; align-items: center; margin-bottom: 20px;">
-                <ui:Label text="&#127942;" style="font-size: 50px; margin-right: 14px;" />
+                <ui:VisualElement class="icon icon-trophy icon-tint-gold" style="width: 50px; height: 50px; margin-right: 14px;" />
                 <ui:Label name="leaderboard-title" text="BANG XEP HANG" style="font-size: 50px; -unity-font-style: bold; color: #FFD700; letter-spacing: 2px;" />
             </ui:VisualElement>
 

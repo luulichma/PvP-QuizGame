@@ -514,6 +514,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1179898959}
   - component: {fileID: 1179898958}
+  - component: {fileID: 1179898962}
+  - component: {fileID: 1179898961}
+  - component: {fileID: 1179898960}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -548,6 +551,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1179898960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179898957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c918e33f725a86742a2f76d072861860, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1179898961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179898957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6d4c4c94f45cca4b9561b7984d52f15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1179898962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179898957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c3020d71118f91438cb9f15cd8ddf0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1434317216
 GameObject:
   m_ObjectHideFlags: 0
@@ -644,8 +683,8 @@ MonoBehaviour:
   btnClickSound: {fileID: 0}
   correctSound: {fileID: 0}
   wrongSound: {fileID: 0}
-  winSound: {fileID: 0}
-  loseSound: {fileID: 0}
+  winSound: {fileID: 8300000, guid: 5b3d10e97545fc14fa155a5ae6aedc3f, type: 3}
+  loseSound: {fileID: 8300000, guid: ce9adc078ba647c4695429af5c899d69, type: 3}
   countdownTickSound: {fileID: 0}
   countdownGoSound: {fileID: 0}
   timerUrgentSound: {fileID: 0}

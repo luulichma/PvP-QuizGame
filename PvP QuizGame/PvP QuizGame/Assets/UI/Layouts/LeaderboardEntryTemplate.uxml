@@ -2,20 +2,20 @@
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
     <ui:VisualElement class="glass-panel" style="flex-direction: row; align-items: center; padding: 15px; margin-bottom: 10px; border-radius: 15px;">
         <!-- Rank -->
-        <ui:Label name="rank-label" text="1" style="font-size: 40px; -unity-font-style: bold; color: white; width: 80px; -unity-text-align: middle-center;" />
-        
+        <ui:Label name="rank-label" text="1" style="font-size: 48px; -unity-font-style: bold; color: white; width: 90px; -unity-text-align: middle-center;" />
+
         <!-- Avatar (sử dụng AvatarHelper) -->
-        <ui:VisualElement name="avatar" class="avatar-ring" style="width: 70px; height: 70px; margin-right: 20px; align-items: center; justify-content: center; border-radius: 35px; overflow: hidden;">
-            <ui:Label name="avatar-text" text="A" style="font-size: 40px; -unity-font-style: bold; color: white;" />
+        <ui:VisualElement name="avatar" class="avatar-ring" style="width: 80px; height: 80px; margin-right: 20px; align-items: center; justify-content: center; border-radius: 40px; overflow: hidden;">
+            <ui:Label name="avatar-text" text="A" style="font-size: 48px; -unity-font-style: bold; color: white;" />
         </ui:VisualElement>
 
         <!-- Name -->
-        <ui:Label name="name-label" text="PlayerName" style="font-size: 36px; -unity-font-style: bold; color: white; flex-grow: 1;" />
+        <ui:Label name="name-label" text="PlayerName" style="font-size: 44px; -unity-font-style: bold; color: white; flex-grow: 1;" />
 
         <!-- Points -->
         <ui:VisualElement style="align-items: flex-end;">
-            <ui:Label name="points-label" text="1500" style="font-size: 40px; -unity-font-style: bold; color: #FFD700;" />
-            <ui:Label name="points-text" text="Diem" style="font-size: 20px; color: rgba(255,255,255,0.7);" />
+            <ui:Label name="points-label" text="1500" style="font-size: 48px; -unity-font-style: bold; color: #FFD700;" />
+            <ui:Label name="points-text" text="Diem" style="font-size: 24px; color: rgba(255,255,255,0.7);" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

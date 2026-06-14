@@ -12,7 +12,10 @@ public class AchievementDef
     public int targetValue;
     public int rewardAmount;
     public RewardType rewardType;
-    public string iconString;
+    // [Icon Fix] iconString cũ chứa emoji (🤖, 💰...) — mất trên build APK.
+    // Đổi sang iconClass + iconTint (USS class name) để dùng PNG icon.
+    public string iconClass;     // ví dụ "icon-bot", "icon-coins", "icon-crown"
+    public string iconTint;      // ví dụ "icon-tint-gold", "icon-tint-money"; nullable.
 }
 
 public class AchievementManager : MonoBehaviour
@@ -31,14 +34,14 @@ public class AchievementManager : MonoBehaviour
 
     private void InitializeAchievements()
     {
-        achievements.Add(new AchievementDef { id = "ach_bot_1", name = "Khởi Động Sương Sương", description = "Thắng trận đấu máy đầu tiên.", targetValue = 1, rewardAmount = 50, rewardType = RewardType.Money, iconString = "🤖" });
-        achievements.Add(new AchievementDef { id = "ach_bot_50", name = "Kẻ Hủy Diệt Máy Móc", description = "Đánh bại Bot 50 lần.", targetValue = 50, rewardAmount = 500, rewardType = RewardType.Money, iconString = "🦾" });
-        achievements.Add(new AchievementDef { id = "ach_money_10k", name = "Phú Hào Mới Nổi", description = "Tổng tiền tích lũy chạm mốc 10,000$.", targetValue = 10000, rewardAmount = 1000, rewardType = RewardType.Money, iconString = "💰" });
-        achievements.Add(new AchievementDef { id = "ach_rank_1k", name = "Bước Chân Thần Tốc", description = "Đạt 1,000 Điểm Xếp Hạng.", targetValue = 1000, rewardAmount = 200, rewardType = RewardType.Money, iconString = "⚡" });
-        achievements.Add(new AchievementDef { id = "ach_rank_5k", name = "Đỉnh Bảng Phong Thần", description = "Đạt 5,000 Điểm Xếp Hạng.", targetValue = 5000, rewardAmount = 1000, rewardType = RewardType.Money, iconString = "👑" });
-        achievements.Add(new AchievementDef { id = "ach_streak_5", name = "Cỗ Máy Ghi Điểm", description = "Thắng 5 trận Đấu Thường liên tiếp.", targetValue = 5, rewardAmount = 300, rewardType = RewardType.Money, iconString = "🔥" });
-        achievements.Add(new AchievementDef { id = "ach_streak_10", name = "Độc Cô Cầu Bại", description = "Thắng 10 trận Đấu Thường liên tiếp.", targetValue = 10, rewardAmount = 1000, rewardType = RewardType.Money, iconString = "⚔️" });
-        achievements.Add(new AchievementDef { id = "ach_perfect_1", name = "Trí Tuệ Đỉnh Cao", description = "Chiến thắng một trận đấu mà không trả lời sai câu nào.", targetValue = 1, rewardAmount = 100, rewardType = RewardType.RankPoints, iconString = "🧠" });
+        achievements.Add(new AchievementDef { id = "ach_bot_1", name = "Khởi Động Sương Sương", description = "Thắng trận đấu máy đầu tiên.", targetValue = 1, rewardAmount = 50, rewardType = RewardType.Money, iconClass = "icon-bot", iconTint = IconTint.Cyan });
+        achievements.Add(new AchievementDef { id = "ach_bot_50", name = "Kẻ Hủy Diệt Máy Móc", description = "Đánh bại Bot 50 lần.", targetValue = 50, rewardAmount = 500, rewardType = RewardType.Money, iconClass = "icon-swords", iconTint = IconTint.Silver });
+        achievements.Add(new AchievementDef { id = "ach_money_10k", name = "Phú Hào Mới Nổi", description = "Tổng tiền tích lũy chạm mốc 10,000$.", targetValue = 10000, rewardAmount = 1000, rewardType = RewardType.Money, iconClass = "icon-coins", iconTint = IconTint.Money });
+        achievements.Add(new AchievementDef { id = "ach_rank_1k", name = "Bước Chân Thần Tốc", description = "Đạt 1,000 Điểm Xếp Hạng.", targetValue = 1000, rewardAmount = 200, rewardType = RewardType.Money, iconClass = "icon-zap", iconTint = IconTint.Gold });
+        achievements.Add(new AchievementDef { id = "ach_rank_5k", name = "Đỉnh Bảng Phong Thần", description = "Đạt 5,000 Điểm Xếp Hạng.", targetValue = 5000, rewardAmount = 1000, rewardType = RewardType.Money, iconClass = "icon-crown", iconTint = IconTint.Legend });
+        achievements.Add(new AchievementDef { id = "ach_streak_5", name = "Cỗ Máy Ghi Điểm", description = "Thắng 5 trận Đấu Thường liên tiếp.", targetValue = 5, rewardAmount = 300, rewardType = RewardType.Money, iconClass = "icon-flame", iconTint = IconTint.Red });
+        achievements.Add(new AchievementDef { id = "ach_streak_10", name = "Độc Cô Cầu Bại", description = "Thắng 10 trận Đấu Thường liên tiếp.", targetValue = 10, rewardAmount = 1000, rewardType = RewardType.Money, iconClass = "icon-swords", iconTint = IconTint.Gold });
+        achievements.Add(new AchievementDef { id = "ach_perfect_1", name = "Trí Tuệ Đỉnh Cao", description = "Chiến thắng một trận đấu mà không trả lời sai câu nào.", targetValue = 1, rewardAmount = 100, rewardType = RewardType.RankPoints, iconClass = "icon-brain", iconTint = IconTint.Purple });
     }
 
     public void RecordPerfectWin()

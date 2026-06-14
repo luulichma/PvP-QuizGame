@@ -1,6 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi:schemaLocation="UnityEngine.UIElements ../../UIElementsSchema/UnityEngine.UIElements.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" editor-extension-mode="False">
     <Style src="project:/Assets/UI/Styles/GlobalStyles.uss" />
-    
+    <!-- [PHASE-2] Template Shop Panel -->
+    <ui:Template name="ShopPanel" src="project:/Assets/UI/Layouts/ShopPanel.uxml" />
+
     <!-- Root Container: Flex Column -->
     <ui:VisualElement name="root" class="bg-gradient" style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
 
@@ -16,7 +18,7 @@
 
         <!-- CONTENT AREA -->
         <ui:VisualElement name="content-area" style="flex-grow: 1; padding: 36px; padding-bottom: 0;">
-            
+
             <!-- HOME PANEL -->
             <ui:VisualElement name="home-panel" style="flex-grow: 1;">
                 <!-- Header Profile — Glassmorphism Card -->
@@ -25,98 +27,150 @@
                         <ui:Button name="open-profile-btn" style="flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.1); border-radius: 22px; padding: 12px 18px; margin: 0; margin-right: 20px;">
                             <ui:VisualElement name="avatar" class="avatar-ring" style="width: 100px; height: 100px; border-radius: 50px; margin-right: 20px;" />
                             <ui:VisualElement name="labels" style="align-items: flex-start;">
-                                <ui:Label name="name-label" text="PLAYER NAME" style="color: white; font-size: 36px; -unity-font-style: bold; margin-bottom: 8px;" />
-                                <ui:Label name="level-tag" text="LEVEL 5" class="header-tag" style="font-size: 29px; padding: 6px 12px; margin-bottom: 8px;" />
+                                <ui:Label name="name-label" text="PLAYER NAME" style="color: white; font-size: 44px; -unity-font-style: bold; margin-bottom: 8px;" />
+                                <ui:Label name="level-tag" text="LEVEL 5" class="header-tag" style="font-size: 36px; padding: 6px 12px; margin-bottom: 8px;" />
                                 <!-- XP Bar -->
                                 <ui:VisualElement class="xp-bar-container" style="width: 280px; height: 16px;">
                                     <ui:VisualElement name="xp-fill" class="xp-bar-fill" style="width: 0%; height: 100%;" />
                                 </ui:VisualElement>
-                                <ui:Label name="xp-label" text="0 / 500" style="color: rgba(255,255,255,0.35); font-size: 19px; margin-top: 4px;" />
+                                <ui:Label name="xp-label" text="0 / 500" style="color: rgba(255,255,255,0.35); font-size: 24px; margin-top: 4px;" />
+
+                                <!-- [UI Refactor] Tier badge nổi bật — thay thế season-info cũ -->
+                                <ui:VisualElement name="tier-badge-card" class="tier-badge-large tier-bronze" style="margin-top: 10px;">
+                                    <ui:VisualElement name="tier-badge-icon" class="icon icon-award icon-tint-bronze icon-md" style="margin-right: 12px;" />
+                                    <ui:VisualElement style="flex-direction: column; align-items: flex-start;">
+                                        <ui:Label name="tier-badge-name" text="DONG" class="tier-badge-large-name" />
+                                        <ui:Label name="tier-badge-rp" text="0 RP" class="tier-badge-large-rp" />
+                                    </ui:VisualElement>
+                                </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:Button>
 
                         <ui:VisualElement name="money-block" style="flex-direction: row; align-items: center; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.1); border-radius: 22px; padding: 12px 24px;">
-                            <ui:Label text="&#128176;" style="font-size: 43px; margin-right: 12px;" />
-                            <ui:Label name="money-label" text="$1,250" style="color: #FFD166; -unity-font-style: bold; font-size: 43px;" />
+                            <ui:VisualElement class="icon icon-coins icon-tint-money icon-md" style="margin-right: 12px;" />
+                            <ui:Label name="money-label" text="$1,250" style="color: #FFD166; -unity-font-style: bold; font-size: 52px;" />
                         </ui:VisualElement>
                     </ui:VisualElement>
 
-                    <ui:Button name="settings-btn" class="icon-btn" text="&#9881;" />
+                    <ui:Button name="settings-btn" class="icon-btn" style="flex-direction: row; justify-content: center; align-items: center;">
+                        <ui:VisualElement class="icon icon-settings icon-md" />
+                    </ui:Button>
                 </ui:VisualElement>
 
-                <!-- Hero Banner — Glassmorphism glow -->
+                <!-- Hero Banner — Glassmorphism glow (KHÔNG còn intermission overlay) -->
                 <ui:VisualElement name="hero" style="align-items: center; margin-bottom: 50px; padding: 24px;">
-                    <ui:Label text="PVP QUIZ GAME" class="hero-title" />
-                    <ui:Label text="THU THACH KIEN THUC" class="hero-subtitle" />
+                    <ui:Label name="hero-title-label" text="PVP QUIZ GAME" class="hero-title" />
+                    <ui:Label name="hero-subtitle-label" text="THU THACH KIEN THUC" class="hero-subtitle" />
                 </ui:VisualElement>
 
                 <!-- Main Content (Center) -->
                 <ui:VisualElement name="content" style="flex-grow: 1; justify-content: center; align-items: center;">
-                    <!-- Primary CTA — Tìm trận -->
-                    <ui:Button name="find-match-btn" text="TIM TRAN DAU" class="btn btn-glow" style="width: 100%; max-width: 85%; height: 140px; font-size: 50px; margin-bottom: 20px; border-radius: 26px; letter-spacing: 2px;" />
-
-                    <!-- Secondary — Đấu máy -->
-                    <ui:Button name="practice-btn" text="DAU VOI MAY" class="btn btn-secondary" style="width: 100%; max-width: 78%; height: 110px; font-size: 40px; margin-bottom: 20px; border-radius: 22px;" />
+                    <ui:Button name="find-match-btn" text="TIM TRAN DAU" class="btn btn-glow" style="width: 100%; max-width: 85%; height: 150px; font-size: 60px; margin-bottom: 20px; border-radius: 26px; letter-spacing: 2px;" />
+                    <ui:Button name="practice-btn" text="DAU VOI MAY" class="btn btn-secondary" style="width: 100%; max-width: 78%; height: 120px; font-size: 48px; margin-bottom: 20px; border-radius: 22px;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- SHOP PANEL (Ẩn mặc định) -->
-            <ui:VisualElement name="shop-panel" class="main-panel" style="display: none; align-items: center; justify-content: center;">
-                <ui:Label text="&#128722;" style="font-size: 144px; margin-bottom: 20px;" />
-                <ui:Label name="shop-title-label" text="CUA HANG" style="font-size: 72px; color: white; -unity-font-style: bold; margin-bottom: 10px;" />
-                <ui:Label name="shop-coming-soon-label" text="Tinh nang dang duoc phat trien (Coming Soon)" style="font-size: 36px; color: rgba(255,255,255,0.5);" />
+            <!-- [PHASE-2] SHOP PANEL — Instance ShopPanel.uxml (Ẩn mặc định) -->
+            <ui:VisualElement name="shop-panel" class="main-panel" style="display: none;">
+                <ui:Instance template="ShopPanel" name="shop-panel-instance" />
             </ui:VisualElement>
 
-            <!-- LEADERBOARD PANEL (Hidden by default) -->
-            <ui:VisualElement name="leaderboard-panel" style="flex-grow: 1; display: none; padding-bottom: 20px;">
-                <!-- Sub-tabs -->
-                <ui:VisualElement class="sub-tabs-container">
-                    <ui:Button name="subtab-leaderboard-btn" class="sub-tab-btn sub-tab-active" text="XEP HANG" />
-                    <ui:Button name="subtab-achievements-btn" class="sub-tab-btn" text="THANH TUU" />
+            <!-- [UI Refactor] RANK PANEL — Season banner + tier filter + BXH -->
+            <ui:VisualElement name="rank-panel" style="flex-grow: 1; display: none; padding-bottom: 20px;">
+                <!-- Season banner — chuyển từ home/header sang đây -->
+                <ui:VisualElement name="rank-season-banner" class="rank-season-banner">
+                    <ui:VisualElement style="flex-direction: column; align-items: center;">
+                        <ui:Label name="rank-season-title" text="MUA 1" class="rank-season-title" />
+                        <ui:Label name="rank-season-info" text="Con 30 ngay" class="rank-season-info" />
+                        <ui:Label name="rank-season-message" text="" class="rank-season-message" style="display: none;" />
+                        <ui:Label name="rank-season-countdown" text="" class="rank-season-countdown" style="display: none;" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- Top Rank Points Content -->
+                <!-- Tier filter chips -->
+                <ui:VisualElement name="tier-filter-tabs" class="tier-filter-tabs">
+                    <ui:Button name="tier-tab-1" class="tier-tab tier-tab-bronze" style="flex-direction: row; justify-content: center; align-items: center;">
+                        <ui:VisualElement class="icon icon-award icon-tint-bronze icon-sm" style="margin-right: 6px;" />
+                        <ui:Label text="DONG" style="-unity-font-style: bold;" />
+                    </ui:Button>
+                    <ui:Button name="tier-tab-2" class="tier-tab tier-tab-silver" style="flex-direction: row; justify-content: center; align-items: center;">
+                        <ui:VisualElement class="icon icon-award icon-tint-silver icon-sm" style="margin-right: 6px;" />
+                        <ui:Label text="BAC" style="-unity-font-style: bold;" />
+                    </ui:Button>
+                    <ui:Button name="tier-tab-3" class="tier-tab tier-tab-gold" style="flex-direction: row; justify-content: center; align-items: center;">
+                        <ui:VisualElement class="icon icon-award icon-tint-gold icon-sm" style="margin-right: 6px;" />
+                        <ui:Label text="VANG" style="-unity-font-style: bold;" />
+                    </ui:Button>
+                    <ui:Button name="tier-tab-4" class="tier-tab tier-tab-diamond" style="flex-direction: row; justify-content: center; align-items: center;">
+                        <ui:VisualElement class="icon icon-gem icon-tint-diamond icon-sm" style="margin-right: 6px;" />
+                        <ui:Label text="KIM CUONG" style="-unity-font-style: bold;" />
+                    </ui:Button>
+                    <ui:Button name="tier-tab-5" class="tier-tab tier-tab-legend" style="flex-direction: row; justify-content: center; align-items: center;">
+                        <ui:VisualElement class="icon icon-crown icon-tint-legend icon-sm" style="margin-right: 6px;" />
+                        <ui:Label text="HUYEN THOAI" style="-unity-font-style: bold;" />
+                    </ui:Button>
+                </ui:VisualElement>
+
+                <!-- Leaderboard scroll -->
                 <ui:VisualElement name="subpanel-leaderboard" class="card-glow" style="flex-grow: 1; padding: 20px; border-radius: 28px;">
-                    <ui:Label name="leaderboard-loading-label" text="Dang tai du lieu..." style="font-size: 36px; color: white; -unity-text-align: middle-center; flex-grow: 1;" />
+                    <ui:Label name="leaderboard-loading-label" text="Dang tai du lieu..." style="font-size: 40px; color: white; -unity-text-align: middle-center; flex-grow: 1; -unity-text-align: middle-center;" />
                     <ui:ScrollView name="leaderboard-scroll" style="flex-grow: 1; display: none;" />
                 </ui:VisualElement>
+            </ui:VisualElement>
 
-                <!-- Achievements Content -->
-                <ui:VisualElement name="subpanel-achievements" class="card-glow" style="flex-grow: 1; padding: 20px; border-radius: 28px; display: none;">
+            <!-- [UI Refactor] ACHIEVEMENTS PANEL — gộp Thành tựu + Daily Quests -->
+            <ui:VisualElement name="achievements-panel" style="flex-grow: 1; display: none; padding-bottom: 20px;">
+                <!-- Sub-tabs trong Achievements panel -->
+                <ui:VisualElement class="sub-tabs-container">
+                    <ui:Button name="subtab-achievements-btn" class="sub-tab-btn sub-tab-active" text="THANH TUU" />
+                    <ui:Button name="subtab-quests-btn" class="sub-tab-btn" text="NHIEM VU" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="subpanel-achievements" class="card-glow" style="flex-grow: 1; padding: 20px; border-radius: 28px;">
                     <ui:ScrollView name="achievements-scroll" style="flex-grow: 1;" />
+                </ui:VisualElement>
+
+                <ui:VisualElement name="subpanel-quests" class="card-glow" style="flex-grow: 1; padding: 20px; border-radius: 28px; display: none;">
+                    <ui:Label name="quests-title" text="NHIEM VU HANG NGAY" style="font-size: 44px; color: white; -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 8px;" />
+                    <ui:Label name="quests-reset-label" text="Reset sau: 23:59" style="font-size: 28px; color: rgba(255,255,255,0.5); -unity-text-align: middle-center; margin-bottom: 14px;" />
+                    <ui:ScrollView name="quests-scroll" style="flex-grow: 1;" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
             <!-- MATCHMAKING PANEL (Hidden by default) — Spinner -->
             <ui:VisualElement name="matchmaking-panel" style="flex-grow: 1; justify-content: center; align-items: center; display: none;">
-                <!-- Glass card for matchmaking -->
                 <ui:VisualElement style="align-items: center; background-color: rgba(255, 255, 255, 0.05); border-radius: 28px; padding: 50px 40px; border-width: 1px; border-color: rgba(255, 255, 255, 0.1); min-width: 350px;">
                     <ui:VisualElement class="spinner" />
-                    <ui:Label name="searching-label" text="DANG TIM DOI THU..." style="font-size: 43px; color: white; margin-bottom: 8px; letter-spacing: 2px; -unity-font-style: bold;" />
-                    <ui:Label text="Vui long cho trong giay lat" style="font-size: 26px; color: rgba(255,255,255,0.3); margin-bottom: 50px;" />
-                    <ui:Button name="cancel-match-btn" text="HUY TIM KIEM" class="btn btn-danger" style="width: 320px; height: 90px; font-size: 36px; border-radius: 22px;" />
+                    <ui:Label name="searching-label" text="DANG TIM DOI THU..." style="font-size: 52px; color: white; margin-bottom: 8px; letter-spacing: 2px; -unity-font-style: bold;" />
+                    <ui:Label text="Vui long cho trong giay lat" style="font-size: 32px; color: rgba(255,255,255,0.3); margin-bottom: 50px;" />
+                    <ui:Button name="cancel-match-btn" text="HUY TIM KIEM" class="btn btn-danger" style="width: 360px; height: 100px; font-size: 44px; border-radius: 22px;" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            
+
         </ui:VisualElement>
 
-        <!-- BOTTOM NAVIGATION BAR -->
+        <!-- [UI Refactor] BOTTOM NAVIGATION BAR — 4 tab -->
         <ui:VisualElement class="bottom-nav">
             <ui:Button name="nav-shop-btn" class="nav-tab">
-                <ui:Label text="&#128722;" class="nav-tab-icon" />
+                <ui:VisualElement class="icon icon-shop nav-tab-icon" style="width: 66px; height: 66px;" />
                 <ui:Label text="SHOP" class="nav-tab-label" />
             </ui:Button>
 
             <ui:Button name="nav-home-btn" class="nav-tab nav-tab-active">
-                <ui:Label text="&#127968;" class="nav-tab-icon" />
+                <ui:VisualElement class="icon icon-home nav-tab-icon" style="width: 66px; height: 66px;" />
                 <ui:Label text="HOME" class="nav-tab-label" />
             </ui:Button>
 
-            <ui:Button name="nav-leaderboard-btn" class="nav-tab">
-                <ui:Label text="&#127942;" class="nav-tab-icon" />
+            <ui:Button name="nav-rank-btn" class="nav-tab">
+                <ui:VisualElement class="icon icon-trophy nav-tab-icon" style="width: 66px; height: 66px;" />
                 <ui:Label text="RANK" class="nav-tab-label" />
             </ui:Button>
+
+            <ui:Button name="nav-achievements-btn" class="nav-tab">
+                <ui:VisualElement class="icon icon-star nav-tab-icon" style="width: 66px; height: 66px;" />
+                <ui:Label text="THANH TUU" class="nav-tab-label" />
+            </ui:Button>
         </ui:VisualElement>
-        
+
     </ui:VisualElement>
 </ui:UXML>

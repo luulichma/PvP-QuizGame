@@ -41,6 +41,9 @@ public class InputController_UXML : MonoBehaviour
     private int _localPlayerId = 1;
     private int _myLastAnswer = -1;
 
+    // [PHASE-2] Tracking indexes đã bị ẩn bởi 50:50 cho câu hiện tại
+    private readonly HashSet<int> _eliminatedByFiftyFifty = new HashSet<int>();
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -64,6 +67,9 @@ public class InputController_UXML : MonoBehaviour
 
         GameController.OnGameStateChanged += HandleGameStateChanged;
         QuizManager.OnQuestionChanged     += HandleQuestionChanged;
+
+        // [PHASE-2] Listen 50:50
+        PowerUpManager.OnPowerUpUsed += HandlePowerUpUsed;
     }
 
     private IEnumerator RetryQueryButtonsRoutine()
@@ -83,12 +89,56 @@ public class InputController_UXML : MonoBehaviour
     {
         GameController.OnGameStateChanged -= HandleGameStateChanged;
         QuizManager.OnQuestionChanged     -= HandleQuestionChanged;
+        PowerUpManager.OnPowerUpUsed      -= HandlePowerUpUsed; // [PHASE-2]
 
         foreach (var kv in _buttonHandlers)
         {
             if (kv.Key != null) kv.Key.clicked -= kv.Value;
         }
         _buttonHandlers.Clear();
+    }
+
+    // [PHASE-2] 50:50 — ẩn 2 đáp án sai khi user dùng power-up
+    private void HandlePowerUpUsed(string id)
+    {
+        if (id != PowerUpManager.PU_5050) return;
+        var question = QuizManager.Instance?.CurrentQuestion;
+        if (question == null || _answerButtons.Count < 4) return;
+
+        int correct = question.correctAnswerIndex;
+
+        // Lấy danh sách index sai còn đang sống (chưa bị ẩn từ trước)
+        var wrongIndexes = new List<int>();
+        for (int i = 0; i < _answerButtons.Count; i++)
+        {
+            if (i == correct) continue;
+            if (_eliminatedByFiftyFifty.Contains(i)) continue;
+            if (_answerButtons[i] == null) continue;
+            if (_answerButtons[i].style.display == DisplayStyle.None) continue;
+            wrongIndexes.Add(i);
+        }
+
+        // Random 2 trong 3 đáp án sai để ẩn
+        // Fisher-Yates partial shuffle
+        for (int i = 0; i < wrongIndexes.Count; i++)
+        {
+            int swap = UnityEngine.Random.Range(i, wrongIndexes.Count);
+            (wrongIndexes[i], wrongIndexes[swap]) = (wrongIndexes[swap], wrongIndexes[i]);
+        }
+
+        int eliminateCount = Mathf.Min(2, wrongIndexes.Count);
+        for (int i = 0; i < eliminateCount; i++)
+        {
+            int idx = wrongIndexes[i];
+            _eliminatedByFiftyFifty.Add(idx);
+            var btn = _answerButtons[idx];
+            if (btn == null) continue;
+            btn.SetEnabled(false);
+            if (!btn.ClassListContains("answer-eliminated"))
+                btn.AddToClassList("answer-eliminated");
+        }
+
+        Debug.Log($"[InputController_UXML] 50:50 ẩn {eliminateCount} đáp án sai (correct={correct}).");
     }
 
     private void Update()
@@ -286,6 +336,9 @@ public class InputController_UXML : MonoBehaviour
 
         Debug.Log($"[InputController_UXML] Cập nhật {_answerButtons.Count} nút cho câu '{question.questionText}'");
 
+        // [PHASE-2] Reset 50:50 eliminated state cho câu mới
+        _eliminatedByFiftyFifty.Clear();
+
         for (int i = 0; i < _answerButtons.Count; i++)
         {
             if (i < question.answers.Length)
@@ -305,6 +358,9 @@ public class InputController_UXML : MonoBehaviour
                 _answerButtons[i].style.borderRightWidth = 0;
                 _answerButtons[i].style.borderLeftColor = GetAnswerGlowColor(i);
                 _answerButtons[i].style.borderRightColor = Color.clear;
+
+                // [PHASE-2] Bỏ class "answer-eliminated" còn sót từ câu trước
+                _answerButtons[i].RemoveFromClassList("answer-eliminated");
             }
             else
             {

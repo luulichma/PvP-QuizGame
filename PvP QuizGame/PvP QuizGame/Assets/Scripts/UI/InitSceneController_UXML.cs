@@ -417,7 +417,9 @@ public class InitSceneController_UXML : MonoBehaviour
     {
         if (_tipLabel == null) return;
         string tip = _loadingTips[UnityEngine.Random.Range(0, _loadingTips.Length)];
-        _tipLabel.text = "💡 " + tip;
+        // [Icon Fix] Bỏ prefix emoji 💡 — _tipLabel là plain Label, không render emoji
+        // trên build APK. Nếu muốn icon, dùng UIIconHelper.MakeIconLabel("icon-lightbulb", tip).
+        _tipLabel.text = tip;
     }
 
     /// <summary>

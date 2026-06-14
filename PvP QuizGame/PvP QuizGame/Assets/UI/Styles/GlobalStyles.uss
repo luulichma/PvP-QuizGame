@@ -195,7 +195,7 @@
     color: #FFD166;
     padding: 4px 14px;
     border-radius: 12px;
-    font-size: 34px;
+    font-size: 42px;
     -unity-font-style: bold;
     border-width: 1px;
     border-color: rgba(255, 209, 102, 0.3);
@@ -550,7 +550,7 @@
 
 /* ==================== HERO TITLE ==================== */
 .hero-title {
-    font-size: 82px;
+    font-size: 98px;
     color: white;
     -unity-font-style: bold;
     -unity-text-outline-width: 2px;
@@ -559,11 +559,73 @@
 }
 
 .hero-subtitle {
-    font-size: 31px;
+    font-size: 38px;
     color: rgba(179, 136, 255, 0.6);
     letter-spacing: 6px;
     margin-top: 8px;
 }
+
+/* ==========================================================
+   PNG ICONS (replace emoji unicode for build compatibility)
+   Dùng cho UI Toolkit — tất cả PNG đều trắng, tint qua
+   -unity-background-image-tint-color để đổi màu.
+   ========================================================== */
+.icon {
+    width: 64px;
+    height: 64px;
+    background-image: none;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+    flex-shrink: 0;
+}
+
+.icon-settings   { background-image: url("project:///Assets/UI/Icons/icon_settings.png"); }
+.icon-medal      { background-image: url("project:///Assets/UI/Icons/icon_medal.png"); }
+.icon-award      { background-image: url("project:///Assets/UI/Icons/icon_award.png"); }
+.icon-gem        { background-image: url("project:///Assets/UI/Icons/icon_gem.png"); }
+.icon-crown      { background-image: url("project:///Assets/UI/Icons/icon_crown.png"); }
+.icon-coins      { background-image: url("project:///Assets/UI/Icons/icon_coins.png"); }
+.icon-shop       { background-image: url("project:///Assets/UI/Icons/icon_shop.png"); }
+.icon-home       { background-image: url("project:///Assets/UI/Icons/icon_home.png"); }
+.icon-trophy     { background-image: url("project:///Assets/UI/Icons/icon_trophy.png"); }
+.icon-star       { background-image: url("project:///Assets/UI/Icons/icon_star.png"); }
+.icon-star-filled{ background-image: url("project:///Assets/UI/Icons/icon_star_filled.png"); }
+.icon-scissors   { background-image: url("project:///Assets/UI/Icons/icon_scissors.png"); }
+.icon-timer      { background-image: url("project:///Assets/UI/Icons/icon_timer.png"); }
+.icon-shield     { background-image: url("project:///Assets/UI/Icons/icon_shield.png"); }
+.icon-party      { background-image: url("project:///Assets/UI/Icons/icon_party.png"); }
+.icon-swords     { background-image: url("project:///Assets/UI/Icons/icon_swords.png"); }
+.icon-frown      { background-image: url("project:///Assets/UI/Icons/icon_frown.png"); }
+.icon-handshake  { background-image: url("project:///Assets/UI/Icons/icon_handshake.png"); }
+.icon-bot        { background-image: url("project:///Assets/UI/Icons/icon_bot.png"); }
+.icon-zap        { background-image: url("project:///Assets/UI/Icons/icon_zap.png"); }
+.icon-flame      { background-image: url("project:///Assets/UI/Icons/icon_flame.png"); }
+.icon-brain      { background-image: url("project:///Assets/UI/Icons/icon_brain.png"); }
+.icon-check      { background-image: url("project:///Assets/UI/Icons/icon_check.png"); }
+.icon-x          { background-image: url("project:///Assets/UI/Icons/icon_x.png"); }
+.icon-gamepad    { background-image: url("project:///Assets/UI/Icons/icon_gamepad.png"); }
+.icon-gift       { background-image: url("project:///Assets/UI/Icons/icon_gift.png"); }
+.icon-lightbulb  { background-image: url("project:///Assets/UI/Icons/icon_lightbulb.png"); }
+
+/* Color tints bổ sung */
+.icon-tint-green { -unity-background-image-tint-color: #00E676; }
+.icon-tint-red   { -unity-background-image-tint-color: #FF5252; }
+.icon-tint-cyan  { -unity-background-image-tint-color: #00E5FF; }
+
+/* Tier color tints — đều dùng chung icon_award.png */
+.icon-tint-bronze  { -unity-background-image-tint-color: #E0A06B; }
+.icon-tint-silver  { -unity-background-image-tint-color: #E0E0E0; }
+.icon-tint-gold    { -unity-background-image-tint-color: #FFD166; }
+.icon-tint-diamond { -unity-background-image-tint-color: #6EE9FF; }
+.icon-tint-legend  { -unity-background-image-tint-color: #D4B8FF; }
+.icon-tint-money   { -unity-background-image-tint-color: #FFD166; }
+.icon-tint-purple  { -unity-background-image-tint-color: #B388FF; }
+
+/* Kích thước thông dụng */
+.icon-sm { width: 36px; height: 36px; }
+.icon-md { width: 52px; height: 52px; }
+.icon-lg { width: 72px; height: 72px; }
+.icon-xl { width: 96px; height: 96px; }
 
 /* ==================== ICON BUTTON ==================== */
 .icon-btn {
@@ -576,7 +638,7 @@
     border-color: rgba(255, 255, 255, 0.12);
     justify-content: center;
     align-items: center;
-    font-size: 53px;
+    font-size: 62px;
     color: rgba(255, 255, 255, 0.7);
     transition-property: background-color, scale;
     transition-duration: 0.2s;
@@ -641,14 +703,15 @@
 }
 
 .nav-tab-icon {
-    font-size: 55px;
+    font-size: 66px;
     color: rgba(255, 255, 255, 0.5);
-    transition-property: color, scale;
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.5);
+    transition-property: color, scale, -unity-background-image-tint-color;
     transition-duration: 0.2s;
 }
 
 .nav-tab-label {
-    font-size: 24px;
+    font-size: 30px;
     color: rgba(255, 255, 255, 0.5);
     -unity-font-style: bold;
     margin-top: 4px;
@@ -656,11 +719,11 @@
     transition-duration: 0.2s;
 }
 
-.nav-tab:hover .nav-tab-icon { color: rgba(255, 255, 255, 0.8); scale: 1.1 1.1; }
+.nav-tab:hover .nav-tab-icon { color: rgba(255, 255, 255, 0.8); -unity-background-image-tint-color: rgba(255, 255, 255, 0.8); scale: 1.1 1.1; }
 .nav-tab:hover .nav-tab-label { color: rgba(255, 255, 255, 0.8); }
 
 .nav-tab-active {}
-.nav-tab-active .nav-tab-icon { color: #00E5FF; scale: 1.15 1.15; }
+.nav-tab-active .nav-tab-icon { color: #00E5FF; -unity-background-image-tint-color: #00E5FF; scale: 1.15 1.15; }
 .nav-tab-active .nav-tab-label { color: #00E5FF; }
 
 /* ==================== SUB-TABS (Leaderboard Header) ==================== */
@@ -678,7 +741,7 @@
     border-width: 0;
     border-radius: 16px;
     padding: 16px 0;
-    font-size: 34px;
+    font-size: 40px;
     -unity-font-style: bold;
     color: rgba(255, 255, 255, 0.5);
     transition-property: background-color, color;
@@ -703,5 +766,301 @@
     flex-grow: 1;
     padding: 20px;
 }
+
+/* ==================== [PHASE-2] POWER-UP BAR (Gameplay) ==================== */
+.powerup-bar {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+}
+
+.powerup-btn {
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    margin: 6px;
+    padding: 10px 4px;
+    transition-property: background-color, scale;
+    transition-duration: 0.15s;
+}
+
+.powerup-btn:hover {
+    background-color: rgba(255, 209, 102, 0.18);
+    scale: 1.03 1.03;
+}
+
+.powerup-btn:active { scale: 0.97 0.97; }
+
+.powerup-icon {
+    font-size: 42px;
+    -unity-text-align: middle-center;
+    margin-bottom: 2px;
+}
+
+.powerup-name {
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: white;
+    -unity-text-align: middle-center;
+}
+
+.powerup-count {
+    font-size: 18px;
+    color: #FFD166;
+    -unity-text-align: middle-center;
+    margin-top: 2px;
+}
+
+/* Trạng thái: hết / đã dùng -> nhìn mờ + không click được */
+.powerup-disabled { opacity: 0.4; }
+.powerup-disabled .powerup-icon { color: rgba(255,255,255,0.3); }
+.powerup-disabled .powerup-name { color: rgba(255,255,255,0.3); }
+.powerup-disabled .powerup-count { color: rgba(255,255,255,0.3); }
+
+.powerup-active {
+    background-color: rgba(0, 229, 255, 0.25);
+    border-color: #00E5FF;
+}
+
+/* ==================== [PHASE-2] ANSWER ELIMINATED (50:50) ==================== */
+.answer-eliminated { opacity: 0.18; }
+
+/* ==================== [PHASE-2] TIER BADGES ==================== */
+.tier-badge {
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-left: 6px;
+}
+
+/* [UI Refactor] Tier badge LỚN cho header — thay thế season label */
+.tier-badge-large {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 18px;
+    border-width: 2px;
+    margin-top: 6px;
+}
+.tier-badge-large-icon {
+    font-size: 48px;
+    margin-right: 12px;
+}
+.tier-badge-large-name {
+    font-size: 32px;
+    -unity-font-style: bold;
+}
+.tier-badge-large-rp {
+    font-size: 22px;
+    margin-top: 2px;
+}
+
+/* Tier color áp cho cả badge nhỏ + badge lớn */
+.tier-bronze   { background-color: rgba(205, 127, 50, 0.4);  color: #E0A06B; border-color: rgba(205, 127, 50, 0.7); }
+.tier-silver   { background-color: rgba(192, 192, 192, 0.4); color: #E0E0E0; border-color: rgba(192, 192, 192, 0.7); }
+.tier-gold     { background-color: rgba(255, 215, 0, 0.4);   color: #FFE066; border-color: rgba(255, 215, 0, 0.7); }
+.tier-diamond  { background-color: rgba(0, 229, 255, 0.4);   color: #6EE9FF; border-color: rgba(0, 229, 255, 0.7); }
+.tier-legend   { background-color: rgba(179, 136, 255, 0.4); color: #D4B8FF; border-color: rgba(179, 136, 255, 0.7); }
+
+/* [UI Refactor] Tier filter tabs trong Rank panel */
+.tier-filter-tabs {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding: 6px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+}
+.tier-tab {
+    flex-grow: 1;
+    background-color: transparent;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    margin: 4px;
+    padding: 10px 4px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    transition-property: background-color, color, scale;
+    transition-duration: 0.15s;
+}
+.tier-tab:hover { background-color: rgba(255, 255, 255, 0.08); color: white; scale: 1.03 1.03; }
+.tier-tab-active { background-color: rgba(255, 209, 102, 0.25); color: white; border-color: #FFD166; }
+
+/* [UI Refactor] Rank panel season banner */
+.rank-season-banner {
+    align-items: center;
+    padding: 18px 24px;
+    margin-bottom: 18px;
+    background-color: rgba(179, 136, 255, 0.12);
+    border-width: 1px;
+    border-color: rgba(179, 136, 255, 0.35);
+    border-radius: 20px;
+}
+.rank-season-banner.intermission-banner-style {
+    background-color: rgba(255, 209, 102, 0.12);
+    border-color: rgba(255, 209, 102, 0.6);
+}
+.rank-season-title {
+    font-size: 44px;
+    color: #D4B8FF;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+.rank-season-banner.intermission-banner-style .rank-season-title { color: #FFD166; }
+.rank-season-info {
+    font-size: 28px;
+    color: rgba(255,255,255,0.7);
+    -unity-text-align: middle-center;
+}
+.rank-season-message {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.85);
+    -unity-text-align: middle-center;
+    margin-top: 6px;
+    white-space: normal;
+}
+.rank-season-countdown {
+    font-size: 32px;
+    color: #00E5FF;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-top: 4px;
+}
+
+/* ==================== [PHASE-2] SHOP PANEL ==================== */
+.shop-balance {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+.shop-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 14px;
+}
+.shop-card-header { flex-direction: row; align-items: center; justify-content: space-between; }
+.shop-card-icon { font-size: 58px; margin-right: 14px; }
+.shop-card-title { font-size: 36px; color: white; -unity-font-style: bold; }
+.shop-card-desc { font-size: 26px; color: rgba(255,255,255,0.6); margin-top: 6px; }
+.shop-card-price { font-size: 34px; color: #FFD166; -unity-font-style: bold; }
+.shop-card-owned { font-size: 24px; color: rgba(255,255,255,0.5); }
+.shop-buy-row { flex-direction: row; justify-content: flex-end; margin-top: 10px; }
+.shop-buy-btn {
+    background-color: rgba(0, 229, 255, 0.2);
+    border-width: 1px;
+    border-color: #00E5FF;
+    border-radius: 14px;
+    padding: 10px 18px;
+    margin-left: 10px;
+    color: white;
+    font-size: 28px;
+    -unity-font-style: bold;
+}
+.shop-buy-btn:hover { background-color: rgba(0, 229, 255, 0.35); }
+.shop-bundle-card { border-color: rgba(255, 209, 102, 0.4); }
+.shop-bundle-card .shop-card-title { color: #FFD166; }
+
+/* ==================== [IM] INTERMISSION BANNER + LABEL ==================== */
+.intermission-banner {
+    margin-top: 12px;
+    padding: 18px 28px;
+    background-color: rgba(255, 209, 102, 0.12);
+    border-width: 2px;
+    border-color: rgba(255, 209, 102, 0.6);
+    border-radius: 24px;
+    align-items: center;
+    justify-content: center;
+}
+.intermission-title {
+    font-size: 44px;
+    color: #FFD166;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+.intermission-message {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.85);
+    -unity-text-align: middle-center;
+    margin-bottom: 6px;
+    white-space: normal;
+}
+.intermission-countdown {
+    font-size: 28px;
+    color: #00E5FF;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+/* Header label khi intermission — đổi màu vàng glow */
+.season-intermission-label {
+    color: #FFD166;
+    -unity-font-style: bold;
+}
+
+/* ==================== [PHASE-2] SEASON / TIER INFO BAR ==================== */
+.season-info {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(179, 136, 255, 0.18);
+    border-width: 1px;
+    border-color: rgba(179, 136, 255, 0.4);
+    border-radius: 14px;
+    padding: 6px 12px;
+    margin-top: 6px;
+}
+.season-info-label { color: #D4B8FF; font-size: 22px; -unity-font-style: bold; }
+
+/* ==================== [PHASE-2] QUEST CARDS ==================== */
+.quest-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 12px;
+}
+.quest-card-claimed { opacity: 0.5; }
+.quest-progress-bar {
+    width: 100%;
+    height: 10px;
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 5px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+.quest-progress-fill {
+    height: 100%;
+    background-color: #00E5FF;
+    border-radius: 5px;
+}
+.quest-claim-btn {
+    background-color: rgba(0, 229, 255, 0.25);
+    border-width: 1px;
+    border-color: #00E5FF;
+    border-radius: 12px;
+    padding: 10px 20px;
+    color: white;
+    font-size: 28px;
+    -unity-font-style: bold;
+}
+.quest-claim-btn:disabled { opacity: 0.4; }
 
 

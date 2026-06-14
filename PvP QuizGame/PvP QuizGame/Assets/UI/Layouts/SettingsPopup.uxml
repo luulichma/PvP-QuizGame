@@ -4,7 +4,7 @@
         <ui:VisualElement name="popup" class="card-glow" style="width: 95%; max-width: 700px; padding: 50px; height: auto; align-self: center; background-color: rgba(13, 2, 33, 0.92);">
             <!-- Header -->
             <ui:VisualElement style="flex-direction: row; justify-content: center; align-items: center; margin-bottom: 40px;">
-                <ui:Label text="&#9881;" style="font-size: 44px; color: #B388FF; margin-right: 14px;" />
+                <ui:VisualElement class="icon icon-settings icon-tint-purple" style="width: 44px; height: 44px; margin-right: 14px;" />
                 <ui:Label name="settings-title" text="CAI DAT" style="font-size: 50px; -unity-font-style: bold; color: white; letter-spacing: 2px;" />
             </ui:VisualElement>
 

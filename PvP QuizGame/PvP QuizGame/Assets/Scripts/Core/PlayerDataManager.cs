@@ -31,7 +31,7 @@ public class PlayerDataManager : MonoBehaviour
         PlayerPrefs.SetInt("PlayerRankPoints", playerData.rankPoints);
         PlayerPrefs.SetInt("PlayerAvatar", playerData.avatarIndex);
         PlayerPrefs.SetString("PlayerName", playerData.playerName);
-        
+
         // Achievements
         PlayerPrefs.SetInt("PlayerBotWins", playerData.botWins);
         PlayerPrefs.SetInt("PlayerTotalMoney", playerData.totalMoneyEarned);
@@ -39,8 +39,22 @@ public class PlayerDataManager : MonoBehaviour
         PlayerPrefs.SetInt("PlayerHighestStreak", playerData.highestWinStreak);
         PlayerPrefs.SetString("PlayerUnlockedAchievements", string.Join(",", playerData.unlockedAchievements));
 
+        // [PHASE-2] Power-Up inventory
+        PlayerPrefs.SetInt("PlayerPU_5050",   playerData.powerUp_5050);
+        PlayerPrefs.SetInt("PlayerPU_Time",   playerData.powerUp_extraTime);
+        PlayerPrefs.SetInt("PlayerPU_Shield", playerData.powerUp_shield);
+
+        // [PHASE-2] Tier & Season
+        PlayerPrefs.SetInt("PlayerCurrentTier",        playerData.currentTier);
+        PlayerPrefs.SetInt("PlayerHighestTierSeason",  playerData.highestTierThisSeason);
+        PlayerPrefs.SetInt("PlayerLastSeasonProcessed", playerData.lastSeasonProcessed);
+        PlayerPrefs.SetString("PlayerSeasonBadges",    playerData.seasonBadges ?? "");
+
+        // [PHASE-2] Daily Quests
+        PlayerPrefs.SetString("PlayerDailyQuests", playerData.dailyQuestsData ?? "");
+
         PlayerPrefs.Save();
-        
+
         Debug.Log("[PlayerDataManager] Đã lưu dữ liệu người chơi.");
     }
 
@@ -61,21 +75,38 @@ public class PlayerDataManager : MonoBehaviour
         playerData.rankPoints = PlayerPrefs.GetInt("PlayerRankPoints", 0);
         playerData.avatarIndex = PlayerPrefs.GetInt("PlayerAvatar", 0);
         playerData.playerName = PlayerPrefs.GetString("PlayerName", "Player_" + Random.Range(1000, 9999));
-        
+
         // Achievements
         playerData.botWins = PlayerPrefs.GetInt("PlayerBotWins", 0);
         playerData.totalMoneyEarned = PlayerPrefs.GetInt("PlayerTotalMoney", 0);
         playerData.currentWinStreak = PlayerPrefs.GetInt("PlayerWinStreak", 0);
         playerData.highestWinStreak = PlayerPrefs.GetInt("PlayerHighestStreak", 0);
-        
+
         string rawAch = PlayerPrefs.GetString("PlayerUnlockedAchievements", "");
         playerData.unlockedAchievements.Clear();
         if (!string.IsNullOrEmpty(rawAch))
         {
             playerData.unlockedAchievements = new System.Collections.Generic.List<string>(rawAch.Split(','));
         }
-        
-        Debug.Log($"[PlayerDataManager] Đã tải dữ liệu: {playerData.playerName} - Level {playerData.level}");
+
+        // [PHASE-2] Power-Up inventory
+        playerData.powerUp_5050     = PlayerPrefs.GetInt("PlayerPU_5050", 0);
+        playerData.powerUp_extraTime = PlayerPrefs.GetInt("PlayerPU_Time", 0);
+        playerData.powerUp_shield   = PlayerPrefs.GetInt("PlayerPU_Shield", 0);
+
+        // [PHASE-2] Tier & Season
+        playerData.currentTier             = PlayerPrefs.GetInt("PlayerCurrentTier", 1);
+        playerData.highestTierThisSeason   = PlayerPrefs.GetInt("PlayerHighestTierSeason", 1);
+        playerData.lastSeasonProcessed     = PlayerPrefs.GetInt("PlayerLastSeasonProcessed", 0);
+        playerData.seasonBadges            = PlayerPrefs.GetString("PlayerSeasonBadges", "");
+
+        // [PHASE-2] Daily Quests
+        playerData.dailyQuestsData = PlayerPrefs.GetString("PlayerDailyQuests", "");
+
+        // Self-heal: nếu tier chưa khớp RP (migration từ build cũ) → đồng bộ ngay
+        playerData.RecomputeTier();
+
+        Debug.Log($"[PlayerDataManager] Đã tải dữ liệu: {playerData.playerName} - Level {playerData.level} - Tier {playerData.currentTier}");
     }
 
     /// <summary>
@@ -90,26 +121,32 @@ public class PlayerDataManager : MonoBehaviour
         PlayerPrefs.DeleteKey("PlayerRankPoints");
         PlayerPrefs.DeleteKey("PlayerAvatar");
         PlayerPrefs.DeleteKey("PlayerName");
-        
+
         PlayerPrefs.DeleteKey("PlayerBotWins");
         PlayerPrefs.DeleteKey("PlayerTotalMoney");
         PlayerPrefs.DeleteKey("PlayerWinStreak");
         PlayerPrefs.DeleteKey("PlayerHighestStreak");
         PlayerPrefs.DeleteKey("PlayerUnlockedAchievements");
-        
+
+        // [PHASE-2] xóa power-up, tier, season, quest
+        PlayerPrefs.DeleteKey("PlayerPU_5050");
+        PlayerPrefs.DeleteKey("PlayerPU_Time");
+        PlayerPrefs.DeleteKey("PlayerPU_Shield");
+        PlayerPrefs.DeleteKey("PlayerCurrentTier");
+        PlayerPrefs.DeleteKey("PlayerHighestTierSeason");
+        PlayerPrefs.DeleteKey("PlayerLastSeasonProcessed");
+        PlayerPrefs.DeleteKey("PlayerSeasonBadges");
+        PlayerPrefs.DeleteKey("PlayerDailyQuests");
+
         PlayerPrefs.Save();
-        
+
         // Reset local SO values
         if (playerData != null)
         {
-            playerData.level = 1;
-            playerData.currentExp = 0;
-            playerData.money = 0;
-            playerData.rankPoints = 0;
-            playerData.avatarIndex = 0;
+            playerData.Reset();
             playerData.playerName = "Player_" + Random.Range(1000, 9999);
         }
-        
+
         Debug.Log("[PlayerDataManager] Đã xóa dữ liệu local player (giữ nguyên cài đặt).");
     }
 

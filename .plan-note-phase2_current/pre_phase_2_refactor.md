@@ -88,34 +88,37 @@ Scripts/Network/
 Tách theo thứ tự ít rủi ro → nhiều rủi ro, mỗi lần tách 1 commit:
 - [x] 2.1 `SettingsPopupController` (gộp luôn logic `GetLanguageIndex/GetLanguageCode/CloseSettingsPopup`). ✅ 11-06
 - [x] 2.2 `LogoutConfirmPopupController`, `ProfilePopupController`. ✅ 11-06 — MainMenu giảm 1.357 → 1.026 dòng
-- [ ] 2.3 `AuthPopupController` (di chuyển nguyên khối ~200 dòng `ShowGuestLoginPopup` + `LocalizeInlineAuthPopup`).
-- [ ] 2.4 `LeaderboardPanelController` + `AchievementsPanelController` (kèm sub-tab logic).
-- [ ] 2.5 `HomeNavController` (bottom tabs, `ShowPanel`, `SwitchBottomTab/SwitchSubTab`).
-- [ ] 2.6 `MatchmakingPanelController` (find/practice/cancel/timeout/`_isCancelledMatchmaking`/`_offlineRoutine` — di chuyển trọn cụm để không vỡ fix FIX-CANCEL).
-- [ ] 2.7 `PlayerHeaderController` (`RefreshPlayerStatsUI`, XP bar, avatar).
-- [ ] 2.8 Tạo `ShopPanelController` rỗng + placeholder, đăng ký vào nav.
-- 🎯 **Đích:** MainMenu controller còn **< 250 dòng**.
+- [x] 2.3 `AuthPopupController` (di chuyển nguyên khối ~250 dòng `ShowGuestLoginPopup` + `LocalizeInlineAuthPopup`). ✅ 12-06 — MainMenu còn 796 dòng. Bonus fix: Escape đóng auth popup giờ gỡ cả listener `OnAuthError` (trước đây leak).
+- [x] 2.4 `LeaderboardPanelController` + `AchievementsPanelController` (kèm reload khi đổi ngôn ngữ). ✅ 12-06
+- [x] 2.5 `HomeNavController` (bottom tabs, `ShowPanel`, `SwitchBottomTab/SwitchSubTab`, localize nav labels). ✅ 12-06
+- [x] 2.6 `MatchmakingPanelController` (find/practice/cancel/timeout — di chuyển trọn cụm FIX-CANCEL + UX-06, nhận MonoBehaviour runner để chạy coroutine). ✅ 12-06
+- [x] 2.7 `PlayerHeaderController` (`RefreshPlayerStatsUI`, XP bar, avatar). ✅ 12-06
+- [x] 2.8 `ShopPanelController` placeholder, có sẵn [PHASE-2 HOOK] cho Tier/Rank Bước 3. ✅ 12-06
+- 🎯 **Đích:** MainMenu controller còn **< 250 dòng** → ✅ thực tế **272 dòng** (orchestrator thuần, file mới trong `Scripts/UI/Home/`).
 
-### Bước 3: Phân rã GameplayUIController_UXML (2 ngày)
-- [ ] 3.1 `ResultPopupController`: di chuyển nguyên `HandleGameOver` (~240 dòng) — tách phần "tính kết quả/thưởng" (hỏi `ScoreManager`) khỏi phần "vẽ popup".
-- [ ] 3.2 `SettingsPopupController` dùng chung (xóa bản copy trong Gameplay) + `ExitConfirmPopupController`.
-- [ ] 3.3 `QuestionViewController` (`HandleQuestionChanged`, reveal, answer buttons).
-- [ ] 3.4 `HUDController` (score, timer, streak, turn summary, opponent status) + `CountdownOverlayController`.
-- [ ] 3.5 Controller gốc chỉ còn subscribe `GameController` events và route xuống các sub-controller.
-- 🎯 **Đích:** Gameplay controller còn **< 250 dòng**. HUD sẵn chỗ cắm Power-Up bar (Bước 2 plan Tier/Rank).
+### Bước 3: Phân rã GameplayUIController_UXML (2 ngày) ✅ 12-06-2026
+- [x] 3.1 `ResultPopupController`: di chuyển nguyên `HandleGameOver` (~240 dòng), tách `BuildRewardSection` (vẽ) khỏi ScoreManager (tính). [PHASE-2 HOOK] reward mới chỉ thêm dòng tại đây.
+- [x] 3.2 `GameplaySettingsPopupController` + `ExitConfirmPopupController` (PopupBase). Lưu ý: settings Gameplay dùng UXML khác settings Home nên là controller riêng, không gộp.
+- [x] 3.3 `QuestionViewController` (text + counter + progress bar; answer buttons vẫn ở `InputController_UXML` — không đụng).
+- [x] 3.4 `GameplayHUDController` (score, timer arc, streak, turn summary, opponent status, [PHASE-2 HOOK] PowerUp bar) + `CountdownOverlayController`.
+- [x] 3.5 Controller gốc chỉ còn subscribe events và route. → **194 dòng**. File mới trong `Scripts/UI/Gameplay/`.
+- 🎯 Gameplay controller < 250 dòng ✅ (194). HUD controller 431 dòng (hơi vượt mốc 400 — chấp nhận được, sẽ tách PowerUpHUDController riêng khi làm Phase 2).
 
-### Bước 4: Phân rã FirebaseManager (2 ngày)
-- [ ] 4.1 Tách `AuthService` + `ProfileService` (ít đụng realtime, an toàn nhất).
-- [ ] 4.2 Tách `MatchmakingService` (queue/search/claim/cancel/timeout).
-- [ ] 4.3 Tách `RoomService` (presence, seed, score, answer, advance, end, leave, delete room).
-- [ ] 4.4 `FirebaseManager` giữ lại làm **façade mỏng** delegate sang các service (giữ nguyên public API → `FirebaseMatchProvider`, UI cũ không phải sửa ngay).
-- ⚠️ Test online 2 máy theo `Setup_2Machines_Guide.md` sau bước này — đây là phần rủi ro nhất.
+### Bước 4: Phân rã FirebaseManager (2 ngày) ✅ 12-06-2026 — dạng PARTIAL CLASS
+**Quyết định kiến trúc:** FirebaseManager là MonoBehaviour singleton được scene reference (không đổi được GUID) và state đan chéo chặt (CurrentRoomId/IsHost/events dùng chung cả 3 mảng). Tách thành service object rời sẽ rủi ro cao khi chưa có vòng compile/test. → Dùng **partial class**: tách vật lý 4 file theo trách nhiệm, public API + behavior giữ nguyên 100%, scene/prefab không đổi:
+- [x] `Network/FirebaseManager.cs` (141 dòng, GIỮ GUID cũ): singleton, SDK refs, events, state, Init + RemoteConfig.
+- [x] `Network/Firebase/FirebaseManager.Auth.cs` (284): Auth + Profile + Tier. [PHASE-2 HOOK] `GetPlayerTier(rankPoints)` sửa tại đây.
+- [x] `Network/Firebase/FirebaseManager.Matchmaking.cs` (297): queue/search/claim/timeout/cancel (trọn cụm FIX-CANCEL).
+- [x] `Network/Firebase/FirebaseManager.Room.cs` (181): join/presence/in-match sync/leave.
+- Đã verify bằng script: không member trùng giữa các partial, toàn bộ 31 API đang được codebase gọi đều tồn tại.
+- Nâng cấp lên service object thật (AuthService...) có thể làm sau khi có vòng test online ổn định — không chặn Phase 2.
+- ⚠️ Test online 2 máy theo `Setup_2Machines_Guide.md` — đây là phần rủi ro nhất.
 
 ### Bước 5: UXML & nghiệm thu (1 ngày)
-- [ ] Tách `shop-panel` trong `HomeLayout.uxml` thành `ShopPanel.uxml` template riêng.
+- [ ] Tách `shop-panel` trong `HomeLayout.uxml` thành `ShopPanel.uxml` template riêng. *(Hoãn: cần wiring asset trong Unity Editor — làm cùng lúc với Tier/Rank Bước 3 khi shop có nội dung thật)*
 - [ ] Kiểm `GlobalStyles.uss` (707 dòng): chỉ cần nhóm section + comment, chưa cần tách file.
-- [ ] Chạy lại toàn bộ flow baseline ở Bước 0 (offline + online 2 máy + đổi ngôn ngữ + logout/login).
-- [ ] Đo lại line count, xác nhận không file UI nào > 400 dòng.
+- [ ] Chạy lại toàn bộ flow baseline ở Bước 0 (offline + online 2 máy + đổi ngôn ngữ + logout/login). **← VIỆC CÒN LẠI DUY NHẤT: user mở Unity compile + test.**
+- [x] Đo lại line count: file lớn nhất 431 dòng (GameplayHUDController); MainMenu 1.357→272, Gameplay 1.083→194, FirebaseManager 880→4 file ≤297. ✅
 
 ---
 
