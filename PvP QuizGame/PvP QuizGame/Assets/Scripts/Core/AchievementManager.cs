@@ -12,7 +12,7 @@ public class AchievementDef
     public int targetValue;
     public int rewardAmount;
     public RewardType rewardType;
-    // [Icon Fix] iconString cũ chứa emoji (🤖, 💰...) — mất trên build APK.
+    
     // Đổi sang iconClass + iconTint (USS class name) để dùng PNG icon.
     public string iconClass;     // ví dụ "icon-bot", "icon-coins", "icon-crown"
     public string iconTint;      // ví dụ "icon-tint-gold", "icon-tint-money"; nullable.
