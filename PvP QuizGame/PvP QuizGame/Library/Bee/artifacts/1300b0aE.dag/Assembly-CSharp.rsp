@@ -476,6 +476,7 @@
 "Assets/Scripts/Data/PlayerData.cs"
 "Assets/Scripts/Data/QuestionData.cs"
 "Assets/Scripts/Data/QuizDatabase.cs"
+"Assets/Scripts/Network/FakeLeaderboardSeeder.cs"
 "Assets/Scripts/Network/Firebase/FirebaseManager.Auth.cs"
 "Assets/Scripts/Network/Firebase/FirebaseManager.Matchmaking.cs"
 "Assets/Scripts/Network/Firebase/FirebaseManager.Room.cs"

@@ -29,21 +29,28 @@ public class LeaderboardManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Lấy top 100 người có Điểm Xếp Hạng cao nhất
+    /// [Seed] Bật/tắt việc trộn fake users vào BXH khi user thật còn ít.
+    /// Set false khi đã có nhiều người chơi thật (>= FakeLeaderboardSeeder.MinRealUsers).
+    /// </summary>
+    public bool useFakeUsersWhenSparse = true;
+
+    /// <summary>
+    /// Lấy top 100 người có Điểm Xếp Hạng cao nhất.
+    /// [Seed] Nếu user thật &lt; MinRealUsers, trộn fake users vào để BXH không trống.
     /// </summary>
     public async Task<List<LeaderboardEntry>> FetchTopRankPlayersAsync(int limit = 100)
     {
         if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsConnected)
         {
-            Debug.LogWarning("[LeaderboardManager] Firebase chưa kết nối!");
-            return new List<LeaderboardEntry>();
+            Debug.LogWarning("[LeaderboardManager] Firebase chua ket noi!");
+            // [Seed] Offline / khong co Firebase -> van tra ve fake users de UI khong trong.
+            return useFakeUsersWhenSparse ? BuildFakeOnlyResult(limit) : new List<LeaderboardEntry>();
         }
 
         var results = new List<LeaderboardEntry>();
         try
         {
             var dbRef = FirebaseManager.Instance.GetRootRef();
-            // Firebase hỗ trợ OrderByChild, ta sẽ query trực tiếp trên trường rankPoints
             var snapshot = await dbRef.Child("users")
                 .OrderByChild("rankPoints")
                 .LimitToLast(limit)
@@ -51,11 +58,8 @@ public class LeaderboardManager : MonoBehaviour
 
             if (snapshot.Exists && snapshot.ChildrenCount > 0)
             {
-                // Firebase LimitToLast trả về thứ tự tăng dần (từ điểm thấp đến cao)
-                // Cần add vào list rồi đảo ngược để Top 1 (cao điểm nhất) lên đầu
                 foreach (var child in snapshot.Children)
                 {
-                    // FEAT: Lọc bỏ tài khoản Khách (Guest) khỏi Bảng Xếp Hạng
                     if (child.Child("isGuest").Value != null)
                     {
                         bool isGuest = false;
@@ -67,7 +71,6 @@ public class LeaderboardManager : MonoBehaviour
                     if (child.Child("rankPoints").Value != null) int.TryParse(child.Child("rankPoints").Value.ToString(), out rp);
                     if (child.Child("avatarIndex").Value != null) int.TryParse(child.Child("avatarIndex").Value.ToString(), out avatar);
 
-                    // [PHASE-2] Lấy tier từ cloud, fallback compute từ RP
                     int tier = PlayerData.ComputeTier(rp);
                     if (child.Child("currentTier").Value != null) int.TryParse(child.Child("currentTier").Value.ToString(), out tier);
 
@@ -82,9 +85,8 @@ public class LeaderboardManager : MonoBehaviour
                     results.Add(entry);
                 }
 
-                results.Reverse(); // Từ cao xuống thấp
-                
-                // Cập nhật thuộc tính rank (1, 2, 3...)
+                results.Reverse();
+
                 for (int i = 0; i < results.Count; i++)
                 {
                     results[i].rank = i + 1;
@@ -93,26 +95,55 @@ public class LeaderboardManager : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[LeaderboardManager] Lỗi fetch leaderboard: {ex.Message}");
+            Debug.LogError($"[LeaderboardManager] Loi fetch leaderboard: {ex.Message}");
+        }
+
+        if (useFakeUsersWhenSparse && results.Count < FakeLeaderboardSeeder.MinRealUsers)
+        {
+            MergeFakeUsers(results, limit);
         }
 
         return results;
     }
 
+    /// <summary>[Seed] Tron fake users vao danh sach ket qua that, re-sort va re-rank.</summary>
+    private static void MergeFakeUsers(List<LeaderboardEntry> realResults, int limit)
+    {
+        var fakes = FakeLeaderboardSeeder.GetFakeEntries();
+        realResults.AddRange(fakes);
+
+        realResults.Sort((a, b) => b.rankPoints.CompareTo(a.rankPoints));
+
+        if (realResults.Count > limit)
+            realResults.RemoveRange(limit, realResults.Count - limit);
+
+        for (int i = 0; i < realResults.Count; i++)
+            realResults[i].rank = i + 1;
+    }
+
+    /// <summary>[Seed] Offline fallback: chi tra ve fake users da sort + rank.</summary>
+    private static List<LeaderboardEntry> BuildFakeOnlyResult(int limit)
+    {
+        var fakes = FakeLeaderboardSeeder.GetFakeEntries();
+        fakes.Sort((a, b) => b.rankPoints.CompareTo(a.rankPoints));
+        if (fakes.Count > limit) fakes.RemoveRange(limit, fakes.Count - limit);
+        for (int i = 0; i < fakes.Count; i++) fakes[i].rank = i + 1;
+        return fakes;
+    }
+
     /// <summary>
-    /// [PHASE-2] Fetch BXH lọc theo tier hiện tại (Bronze..Legend).
-    /// Sort theo rankPoints desc. Trả về kèm rank position của user trong tier (nếu uid khớp).
+    /// [PHASE-2] Fetch BXH loc theo tier hien tai (Bronze..Legend).
+    /// Sort theo rankPoints desc. Tra ve kem rank position cua user trong tier (neu uid khop).
     /// </summary>
     public async Task<List<LeaderboardEntry>> FetchTierLeaderboardAsync(int tier, int limit = 100)
     {
-        var all = await FetchTopRankPlayersAsync(500); // Fetch nhiều hơn rồi filter
+        var all = await FetchTopRankPlayersAsync(500);
         var filtered = new List<LeaderboardEntry>();
         foreach (var e in all)
         {
             if (e.tier == tier) filtered.Add(e);
         }
         if (filtered.Count > limit) filtered.RemoveRange(limit, filtered.Count - limit);
-        // Cập nhật rank trong phạm vi tier
         for (int i = 0; i < filtered.Count; i++) filtered[i].rank = i + 1;
         return filtered;
     }

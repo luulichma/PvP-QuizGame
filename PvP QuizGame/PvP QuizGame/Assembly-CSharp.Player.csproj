@@ -56,6 +56,7 @@
     <Compile Include="Assets\Scripts\UI\Common\FlyTextService.cs" />
     <Compile Include="Assets\Scripts\UI\Popups\SettingsPopupController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
+    <Compile Include="Assets\Scripts\Network\FakeLeaderboardSeeder.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
     <Compile Include="Assets\Scripts\UI\Home\HomeNavController.cs" />
     <Compile Include="Assets\Scripts\Network\FirebaseManager.cs" />
