@@ -89,6 +89,11 @@ public partial class FirebaseManager : MonoBehaviour
                 IsConnected = true;
                 Debug.Log("[FirebaseManager] Firebase đã sẵn sàng!");
 
+                // [FIX] Đảm bảo FirebaseMatchProvider tồn tại (singleton MonoBehaviour).
+                // Trước đây nó không được place trong scene → Instance luôn null
+                // → InputController fallback sang LocalMatchProvider → online mode kẹt.
+                EnsureFirebaseMatchProvider();
+
                 // Khởi tạo Remote Config sau khi Firebase sẵn sàng
                 InitializeRemoteConfig();
 
@@ -101,6 +106,20 @@ public partial class FirebaseManager : MonoBehaviour
                 OnAuthError?.Invoke(error);
             }
         });
+    }
+
+    // ==================== AUTO-CREATE FirebaseMatchProvider ====================
+    private void EnsureFirebaseMatchProvider()
+    {
+        if (FirebaseMatchProvider.Instance != null)
+        {
+            Debug.Log("[FirebaseManager] FirebaseMatchProvider đã có sẵn.");
+            return;
+        }
+        var go = new GameObject("FirebaseMatchProvider (auto)");
+        go.AddComponent<FirebaseMatchProvider>();
+        // FirebaseMatchProvider.Awake sẽ tự DontDestroyOnLoad
+        Debug.Log("[FirebaseManager] Đã auto-tạo FirebaseMatchProvider GameObject.");
     }
 
     // ==================== REMOTE CONFIG ====================

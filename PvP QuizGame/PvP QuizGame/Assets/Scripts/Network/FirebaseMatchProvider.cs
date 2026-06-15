@@ -75,7 +75,12 @@ public class FirebaseMatchProvider : MonoBehaviour
         _scoresRef.ValueChanged  += _scoresHandler;
         _stateRef.ValueChanged   += _stateHandler;
 
-        Debug.Log("[FirebaseMatchProvider] Đã attach room listeners.");
+        // [DEBUG] Set sẵn _waitingForAnswers ngay khi attach (đề phòng câu hỏi đầu fire OnQuestionChanged
+        // trước khi listener kịp attach hoặc miss event)
+        _waitingForAnswers = true;
+
+        Debug.Log($"[FirebaseMatchProvider][DEBUG] Đã attach room listeners. Room={fm.CurrentRoomId}, " +
+                  $"LocalUid={fm.LocalUserId}, OppUid={fm.OpponentId}, IsHost={fm.IsHost}, _waitingForAnswers=true");
     }
 
     private void DetachRoomListeners()
@@ -100,27 +105,70 @@ public class FirebaseMatchProvider : MonoBehaviour
     {
         // Reset cờ chờ — đợi cả 2 answer cho câu mới
         _waitingForAnswers = true;
+        Debug.Log($"[FirebaseMatchProvider][DEBUG] HandleNewQuestion → _waitingForAnswers=true. " +
+                  $"Question='{question?.questionText}', frame={Time.frameCount}");
     }
 
     private void OnAnswersChanged(ValueChangedEventArgs args)
     {
-        if (args.DatabaseError != null) return;
-        if (!_waitingForAnswers) return;
+        // [DEBUG] Log mọi lần listener fire
+        var fmDbg = FirebaseManager.Instance;
+        string snapDump = args.Snapshot != null && args.Snapshot.Exists
+            ? args.Snapshot.GetRawJsonValue()
+            : "(null/empty)";
+        Debug.Log($"[FirebaseMatchProvider][DEBUG] OnAnswersChanged FIRE. _waitingForAnswers={_waitingForAnswers}, " +
+                  $"snap={snapDump}, frame={Time.frameCount}");
+
+        if (args.DatabaseError != null)
+        {
+            Debug.LogWarning($"[FirebaseMatchProvider][DEBUG] EARLY-RETURN: DatabaseError={args.DatabaseError.Message}");
+            return;
+        }
+        if (!_waitingForAnswers)
+        {
+            Debug.Log("[FirebaseMatchProvider][DEBUG] EARLY-RETURN: _waitingForAnswers=false (đã được fire trước đó hoặc chưa set true)");
+            return;
+        }
 
         var fm = FirebaseManager.Instance;
-        if (fm == null) return;
+        if (fm == null)
+        {
+            Debug.LogWarning("[FirebaseMatchProvider][DEBUG] EARLY-RETURN: FirebaseManager.Instance null");
+            return;
+        }
 
         var snap = args.Snapshot;
-        if (snap == null) return;
+        if (snap == null)
+        {
+            Debug.LogWarning("[FirebaseMatchProvider][DEBUG] EARLY-RETURN: snapshot null");
+            return;
+        }
 
         // Chỉ tiếp tục khi CẢ 2 đã ghi đáp án
-        if (!snap.HasChild(fm.LocalUserId) || !snap.HasChild(fm.OpponentId)) return;
+        bool hasLocal = snap.HasChild(fm.LocalUserId);
+        bool hasOpp   = snap.HasChild(fm.OpponentId);
+        if (!hasLocal || !hasOpp)
+        {
+            Debug.Log($"[FirebaseMatchProvider][DEBUG] EARLY-RETURN: chưa đủ 2 đáp án. " +
+                      $"LocalUid={fm.LocalUserId} HasChild={hasLocal}, OppUid={fm.OpponentId} HasChild={hasOpp}");
+            return;
+        }
 
-        if (!int.TryParse(snap.Child(fm.LocalUserId).Value?.ToString(), out int myAns)) return;
-        if (!int.TryParse(snap.Child(fm.OpponentId).Value?.ToString(), out int oppAns)) return;
+        string myRaw  = snap.Child(fm.LocalUserId).Value?.ToString();
+        string oppRaw = snap.Child(fm.OpponentId).Value?.ToString();
+        if (!int.TryParse(myRaw, out int myAns))
+        {
+            Debug.LogWarning($"[FirebaseMatchProvider][DEBUG] EARLY-RETURN: parse local answer fail. raw='{myRaw}'");
+            return;
+        }
+        if (!int.TryParse(oppRaw, out int oppAns))
+        {
+            Debug.LogWarning($"[FirebaseMatchProvider][DEBUG] EARLY-RETURN: parse opp answer fail. raw='{oppRaw}'");
+            return;
+        }
 
         _waitingForAnswers = false;
-        Debug.Log($"[FirebaseMatchProvider] Cả 2 đã trả lời. Me={myAns}, Opp={oppAns}");
+        Debug.Log($"[FirebaseMatchProvider][DEBUG] >>> FIRE OnBothPlayersAnswered. Me={myAns}, Opp={oppAns}, frame={Time.frameCount}");
 
         // Quy ước: param1 = local player (P1), param2 = opponent
         OnBothPlayersAnswered?.Invoke(myAns, oppAns);
@@ -142,15 +190,34 @@ public class FirebaseMatchProvider : MonoBehaviour
 
     private void OnScoresChanged(ValueChangedEventArgs args)
     {
-        if (args.DatabaseError != null) return;
+        var fmDbg = FirebaseManager.Instance;
+        string snapDump = args.Snapshot != null && args.Snapshot.Exists
+            ? args.Snapshot.GetRawJsonValue()
+            : "(null/empty)";
+        Debug.Log($"[FirebaseMatchProvider][DEBUG] OnScoresChanged FIRE. snap={snapDump}, frame={Time.frameCount}");
+
+        if (args.DatabaseError != null)
+        {
+            Debug.LogWarning($"[FirebaseMatchProvider][DEBUG] OnScoresChanged DatabaseError={args.DatabaseError.Message}");
+            return;
+        }
         var fm = FirebaseManager.Instance;
         if (fm == null) return;
 
         var oppNode = args.Snapshot.Child(fm.OpponentId);
-        if (oppNode != null && oppNode.Value != null
-            && int.TryParse(oppNode.Value.ToString(), out int oppScore))
+        if (oppNode == null || oppNode.Value == null)
         {
+            Debug.Log($"[FirebaseMatchProvider][DEBUG] OnScoresChanged: chưa có score cho OppUid={fm.OpponentId}");
+            return;
+        }
+        if (int.TryParse(oppNode.Value.ToString(), out int oppScore))
+        {
+            Debug.Log($"[FirebaseMatchProvider][DEBUG] >>> FIRE OnOpponentScoreUpdated({oppScore})");
             OnOpponentScoreUpdated?.Invoke(oppScore);
+        }
+        else
+        {
+            Debug.LogWarning($"[FirebaseMatchProvider][DEBUG] OnScoresChanged: parse score fail. raw='{oppNode.Value}'");
         }
     }
 

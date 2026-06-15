@@ -272,6 +272,7 @@ public class ScoreManager : MonoBehaviour
     /// </summary>
     public void SetOpponentScore(int opponentScore)
     {
+        Debug.Log($"[ScoreManager][DEBUG] SetOpponentScore({opponentScore}) — Player2Score: {Player2Score} → {opponentScore}, frame={Time.frameCount}");
         Player2Score = opponentScore;
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }
@@ -280,7 +281,9 @@ public class ScoreManager : MonoBehaviour
     {
         if (playerId == 1)
         {
+            int before = Player1Score;
             Player1Score += points;
+            Debug.Log($"[ScoreManager][DEBUG] AddScore P1: {before} → {Player1Score} (+{points}), frame={Time.frameCount}");
             // Online: push lên Firebase để đối thủ thấy
             if (FirebaseManager.Instance != null
                 && !FirebaseManager.Instance.isOfflineMode
@@ -289,10 +292,19 @@ public class ScoreManager : MonoBehaviour
             {
                 FirebaseManager.Instance.UpdateMyScore(Player1Score);
             }
+            else
+            {
+                Debug.LogWarning("[ScoreManager][DEBUG] AddScore P1: KHÔNG push lên Firebase " +
+                                 $"(isOffline={FirebaseManager.Instance?.isOfflineMode}, " +
+                                 $"connected={FirebaseManager.Instance?.IsConnected}, " +
+                                 $"room='{FirebaseManager.Instance?.CurrentRoomId}')");
+            }
         }
         else if (playerId == 2)
         {
+            int before = Player2Score;
             Player2Score += points;
+            Debug.Log($"[ScoreManager][DEBUG] AddScore P2 (local-side, offline branch): {before} → {Player2Score} (+{points})");
         }
         OnScoreChanged?.Invoke(Player1Score, Player2Score);
     }

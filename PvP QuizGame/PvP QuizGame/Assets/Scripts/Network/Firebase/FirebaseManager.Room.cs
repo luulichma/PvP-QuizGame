@@ -112,14 +112,38 @@ public partial class FirebaseManager
 
     public void UpdateMyScore(int score)
     {
-        if (!IsConnected || !IsAuthenticated || string.IsNullOrEmpty(CurrentRoomId)) return;
-        _root.Child("rooms").Child(CurrentRoomId).Child("scores").Child(LocalUserId).SetValueAsync(score);
+        if (!IsConnected || !IsAuthenticated || string.IsNullOrEmpty(CurrentRoomId))
+        {
+            Debug.LogWarning($"[FirebaseManager][DEBUG] UpdateMyScore BỎ QUA. " +
+                             $"IsConnected={IsConnected}, IsAuthenticated={IsAuthenticated}, RoomId='{CurrentRoomId}'");
+            return;
+        }
+        string path = $"rooms/{CurrentRoomId}/scores/{LocalUserId}";
+        Debug.Log($"[FirebaseManager][DEBUG] UpdateMyScore → ghi {score} vào {path}, frame={Time.frameCount}");
+        _root.Child("rooms").Child(CurrentRoomId).Child("scores").Child(LocalUserId).SetValueAsync(score)
+            .ContinueWithOnMainThread(t => {
+                if (t.IsFaulted)
+                    Debug.LogError($"[FirebaseManager][DEBUG] UpdateMyScore FAULTED: {t.Exception?.Message}");
+            });
     }
 
     public void SubmitMyAnswer(int answerIndex)
     {
-        if (!IsConnected || !IsAuthenticated || string.IsNullOrEmpty(CurrentRoomId)) return;
-        _root.Child("rooms").Child(CurrentRoomId).Child("answers").Child(LocalUserId).SetValueAsync(answerIndex);
+        if (!IsConnected || !IsAuthenticated || string.IsNullOrEmpty(CurrentRoomId))
+        {
+            Debug.LogWarning($"[FirebaseManager][DEBUG] SubmitMyAnswer BỎ QUA. " +
+                             $"IsConnected={IsConnected}, IsAuthenticated={IsAuthenticated}, RoomId='{CurrentRoomId}'");
+            return;
+        }
+        string path = $"rooms/{CurrentRoomId}/answers/{LocalUserId}";
+        Debug.Log($"[FirebaseManager][DEBUG] SubmitMyAnswer → ghi {answerIndex} vào {path}, frame={Time.frameCount}");
+        _root.Child("rooms").Child(CurrentRoomId).Child("answers").Child(LocalUserId).SetValueAsync(answerIndex)
+            .ContinueWithOnMainThread(t => {
+                if (t.IsFaulted)
+                    Debug.LogError($"[FirebaseManager][DEBUG] SubmitMyAnswer FAULTED: {t.Exception?.Message}");
+                else
+                    Debug.Log($"[FirebaseManager][DEBUG] SubmitMyAnswer ghi xong {path}={answerIndex}, frame={Time.frameCount}");
+            });
     }
 
     /// <summary>Host gọi sau mỗi câu để clear answers và tăng currentQ.</summary>

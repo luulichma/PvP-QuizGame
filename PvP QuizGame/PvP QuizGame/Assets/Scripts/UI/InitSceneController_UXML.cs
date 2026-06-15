@@ -48,6 +48,12 @@ public class InitSceneController_UXML : MonoBehaviour
     private VisualElement _authPopup;
     private bool _authPopupConfirmed = false;
 
+    // [FIX-LOAD][B3] Popup báo lỗi tải dữ liệu + nút Thử lại
+    private VisualElement _loadErrorOverlay;
+    private bool _localizationFailedFlag = false;
+    // [FIX-LOAD][B5] Quiz data verify
+    private bool _quizDataInvalidFlag = false;
+
     private void OnEnable()
     {
         if (uiDocument == null) uiDocument = GetComponent<UIDocument>();
@@ -66,11 +72,29 @@ public class InitSceneController_UXML : MonoBehaviour
         ShowRandomTip();
 
         LocalizationManager.OnLanguageChanged += OnLocalizationReady;
+        // [FIX-LOAD][B3] Bắt event tải fail để hiện popup retry
+        LocalizationManager.OnLocalizationFailed += OnLocalizationFailed;
+        // [FIX-LOAD][B5] Bắt event quiz data thiếu
+        QuizManager.OnQuizDataInvalid += OnQuizDataInvalid;
     }
 
     private void OnDisable()
     {
         LocalizationManager.OnLanguageChanged -= OnLocalizationReady;
+        LocalizationManager.OnLocalizationFailed -= OnLocalizationFailed;
+        QuizManager.OnQuizDataInvalid -= OnQuizDataInvalid;
+    }
+
+    private void OnLocalizationFailed()
+    {
+        Debug.LogWarning("[Init] OnLocalizationFailed → sẽ hiện popup Thử lại.");
+        _localizationFailedFlag = true;
+    }
+
+    private void OnQuizDataInvalid(int actualCount, int minRequired)
+    {
+        Debug.LogError($"[Init] OnQuizDataInvalid count={actualCount}/{minRequired} → sẽ hiện popup Thử lại.");
+        _quizDataInvalidFlag = true;
     }
 
     private void Start()
@@ -107,18 +131,38 @@ public class InitSceneController_UXML : MonoBehaviour
     private IEnumerator InitializationRoutine()
     {
         // ============ 1. Localization ============
+        // [FIX-LOAD][B3] Có thể loop khi user bấm Thử lại
         if (LocalizationManager.Instance != null)
         {
-            float waitStart = Time.time;
-            while (!LocalizationManager.Instance.IsReady)
+            bool localizationDone = false;
+            while (!localizationDone)
             {
-                if (Time.time - waitStart > localizationTimeout)
+                _localizationFailedFlag = false;
+                // [FIX-LOAD][B1] Timeout tăng lên để bao trùm 3 retry × ~15s
+                float effectiveTimeout = Mathf.Max(localizationTimeout, 45f);
+                float waitStart = Time.time;
+                while (!LocalizationManager.Instance.IsReady && !_localizationFailedFlag)
                 {
-                    Debug.LogWarning("[Init] Localization timeout — vẫn tiếp tục.");
-                    break;
+                    if (Time.time - waitStart > effectiveTimeout)
+                    {
+                        Debug.LogWarning("[Init] Localization timeout — coi như failed.");
+                        _localizationFailedFlag = true;
+                        break;
+                    }
+                    UpdateProgressUI(Mathf.Clamp01((Time.time - waitStart) / minLoadDuration) * 0.3f);
+                    yield return null;
                 }
-                UpdateProgressUI(Mathf.Clamp01((Time.time - waitStart) / minLoadDuration) * 0.3f);
-                yield return null;
+
+                if (LocalizationManager.Instance.IsReady && !_localizationFailedFlag)
+                {
+                    localizationDone = true;
+                }
+                else
+                {
+                    // [FIX-LOAD][B3] Hiện popup, đợi user bấm Thử lại
+                    yield return StartCoroutine(ShowLoadErrorPopupRoutine(isLocalization: true));
+                    LocalizationManager.Instance.RetryInit();
+                }
             }
         }
         UpdateProgressUI(0.3f);
@@ -179,10 +223,35 @@ public class InitSceneController_UXML : MonoBehaviour
 
         UpdateProgressUI(0.9f);
 
-        // ============ 3. Đảm bảo tối thiểu minLoadDuration ============
+        // ============ 3. [FIX-LOAD][B5] Verify quiz data trước khi vào Home ============
+        // Tránh trường hợp Localization "ready" nhưng số key q_* lại quá ít → user vào trận mới phát hiện.
+        if (QuizManager.Instance != null)
+        {
+            bool quizOk = false;
+            while (!quizOk)
+            {
+                _quizDataInvalidFlag = false;
+                quizOk = QuizManager.Instance.VerifyQuizDataAvailable();
+                if (!quizOk)
+                {
+                    Debug.LogWarning("[Init] Quiz data thiếu — hiện popup Thử lại.");
+                    yield return StartCoroutine(ShowLoadErrorPopupRoutine(isLocalization: false));
+                    // User bấm Thử lại → reload Localization (nguồn của quiz data)
+                    LocalizationManager.Instance?.RetryInit();
+                    float waitStart = Time.time;
+                    while (LocalizationManager.Instance != null && !LocalizationManager.Instance.IsReady)
+                    {
+                        if (Time.time - waitStart > 45f) break;
+                        yield return null;
+                    }
+                }
+            }
+        }
+
+        // ============ 4. Đảm bảo tối thiểu minLoadDuration ============
         yield return new WaitForSeconds(0.3f);
 
-        // ============ 4. Load HomeScene ============
+        // ============ 5. Load HomeScene ============
         SetStatus("init_loading_home", "Đang tải sảnh chờ...");
         if (GameManager.Instance != null)
         {
@@ -392,6 +461,90 @@ public class InitSceneController_UXML : MonoBehaviour
         if (forgotEmail != null) forgotEmail.label = L.GetText("auth_lbl_email", "Email");
         if (forgotConfirm != null) forgotConfirm.text = L.GetText("auth_btn_send_request", "GỬI YÊU CẦU");
         if (forgotBack != null) forgotBack.text = L.GetText("menu_cancel", "QUAY LẠI");
+    }
+
+    // ==================== LOAD ERROR POPUP (FIX-LOAD B3) ====================
+
+    /// <summary>
+    /// [FIX-LOAD][B3] Hiện popup báo lỗi tải dữ liệu với nút "Thử lại".
+    /// Tạo bằng code (không cần UXML asset mới). Coroutine block đến khi user bấm Thử lại.
+    /// </summary>
+    private IEnumerator ShowLoadErrorPopupRoutine(bool isLocalization)
+    {
+        if (_loadErrorOverlay != null)
+        {
+            // Đã có popup → wait tiếp
+            bool waitConfirm = true;
+            while (waitConfirm) yield return null;
+            yield break;
+        }
+
+        var root = uiDocument?.rootVisualElement;
+        if (root == null) yield break;
+
+        _loadErrorOverlay = new VisualElement { name = "load-error-overlay" };
+        _loadErrorOverlay.style.position = Position.Absolute;
+        _loadErrorOverlay.style.top = 0; _loadErrorOverlay.style.bottom = 0;
+        _loadErrorOverlay.style.left = 0; _loadErrorOverlay.style.right = 0;
+        _loadErrorOverlay.style.backgroundColor = new Color(0, 0, 0, 0.75f);
+        _loadErrorOverlay.style.justifyContent = Justify.Center;
+        _loadErrorOverlay.style.alignItems = Align.Center;
+
+        var box = new VisualElement();
+        box.style.width = 480;
+        box.style.paddingTop = 32; box.style.paddingBottom = 32;
+        box.style.paddingLeft = 28; box.style.paddingRight = 28;
+        box.style.backgroundColor = new Color(0.12f, 0.14f, 0.20f, 0.98f);
+        box.style.borderTopLeftRadius = 18; box.style.borderTopRightRadius = 18;
+        box.style.borderBottomLeftRadius = 18; box.style.borderBottomRightRadius = 18;
+        box.style.alignItems = Align.Center;
+
+        var title = new Label(isLocalization ? "Không tải được dữ liệu" : "Dữ liệu câu hỏi thiếu");
+        title.style.fontSize = 22;
+        title.style.color = new Color(1f, 0.85f, 0.3f);
+        title.style.marginBottom = 14;
+        title.style.unityFontStyleAndWeight = FontStyle.Bold;
+        box.Add(title);
+
+        var msg = new Label(isLocalization
+            ? "Vui lòng kiểm tra kết nối mạng rồi bấm Thử lại."
+            : "Ngân hàng câu hỏi chưa đủ. Vui lòng kiểm tra kết nối mạng rồi Thử lại.");
+        msg.style.fontSize = 14;
+        msg.style.color = new Color(0.9f, 0.9f, 0.9f);
+        msg.style.whiteSpace = WhiteSpace.Normal;
+        msg.style.marginBottom = 22;
+        msg.style.unityTextAlign = TextAnchor.MiddleCenter;
+        box.Add(msg);
+
+        var retryBtn = new Button { text = "THỬ LẠI" };
+        retryBtn.style.width = 200; retryBtn.style.height = 48;
+        retryBtn.style.fontSize = 16;
+        retryBtn.style.backgroundColor = new Color(0.15f, 0.55f, 0.95f);
+        retryBtn.style.color = Color.white;
+        retryBtn.style.borderTopLeftRadius = 8; retryBtn.style.borderTopRightRadius = 8;
+        retryBtn.style.borderBottomLeftRadius = 8; retryBtn.style.borderBottomRightRadius = 8;
+        retryBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
+        box.Add(retryBtn);
+
+        _loadErrorOverlay.Add(box);
+        root.Add(_loadErrorOverlay);
+
+        // Localize bằng key (nếu có dữ liệu localization fallback)
+        var L = LocalizationManager.Instance;
+        if (L != null)
+        {
+            title.text = L.GetText(isLocalization ? "load_err_title" : "load_err_quiz_title", title.text);
+            msg.text   = L.GetText(isLocalization ? "load_err_msg"   : "load_err_quiz_msg",   msg.text);
+            retryBtn.text = L.GetText("load_err_retry", retryBtn.text);
+        }
+
+        bool clicked = false;
+        retryBtn.clicked += () => clicked = true;
+
+        while (!clicked) yield return null;
+
+        root.Remove(_loadErrorOverlay);
+        _loadErrorOverlay = null;
     }
 
     // ==================== HELPER ====================

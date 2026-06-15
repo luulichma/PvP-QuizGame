@@ -19,12 +19,27 @@ public class LocalizationManager : MonoBehaviour
 
     public static event Action OnLanguageChanged;
 
+    /// <summary>[FIX-LOAD] Fire khi cả Sheet/Cache/JSON đều fail HOẶC số key parse được ít hơn ngưỡng.
+    /// InitScene listen event này để hiện popup retry thay vì silent đi tiếp.</summary>
+    public static event Action OnLocalizationFailed;
+
     [Header("Remote Configuration")]
     [Tooltip("Link CSV của Google Sheet (Publish to Web → CSV). Để trống nếu chỉ dùng JSON local.")]
     public string sheetUrl = "";
 
-    [Tooltip("Timeout (giây) khi tải Sheet. Quá thời gian này → fallback sang cache/local.")]
+    [Tooltip("Timeout (giây) cho LẦN tải Sheet đầu tiên. Cold-start mạng cần thời gian DNS+TLS, nên giá trị này dùng cho lần đầu.")]
     public int sheetTimeoutSeconds = 6;
+
+    [Header("[FIX-LOAD] Retry & Validation")]
+    [Tooltip("Số lần retry tải Sheet trước khi fallback sang cache. Mỗi lần backoff timeout tăng dần.")]
+    public int sheetMaxRetries = 3;
+
+    [Tooltip("Backoff timeout (giây) cho từng lần retry. Mặc định 8 / 12 / 15.")]
+    public int[] sheetRetryTimeouts = new int[] { 8, 12, 15 };
+
+    [Tooltip("Số key tối thiểu mà ParseCSV cần parse được để được coi là HỢP LỆ. " +
+             "Nếu parse ra ít hơn → coi như sheet hỏng, KHÔNG ghi đè cache, KHÔNG set _isReady.")]
+    public int minExpectedKeys = 50;
 
     private Dictionary<string, string> _localizedText;
     private string _currentLanguage = "vi";
@@ -54,14 +69,21 @@ public class LocalizationManager : MonoBehaviour
         StartCoroutine(InitLocalization());
     }
 
+    /// <summary>[FIX-LOAD] Public để InitScene gọi lại từ nút "Thử lại" trên popup.</summary>
+    public void RetryInit()
+    {
+        if (_isReady) return; // đã có dữ liệu, không cần retry
+        StartCoroutine(InitLocalization());
+    }
+
     private IEnumerator InitLocalization()
     {
         string savedLang = PlayerPrefs.GetString("Language", _currentLanguage);
 
-        // 1. Ưu tiên tải từ Google Sheet nếu có Link
+        // 1. Ưu tiên tải từ Google Sheet nếu có Link — có retry với backoff
         if (!string.IsNullOrEmpty(sheetUrl))
         {
-            yield return StartCoroutine(DownloadFromSheet(savedLang));
+            yield return StartCoroutine(DownloadFromSheetWithRetry(savedLang));
         }
 
         // 2. Nếu Sheet thất bại, thử cache CSV cũ
@@ -75,29 +97,77 @@ public class LocalizationManager : MonoBehaviour
         {
             yield return StartCoroutine(LoadLocalLanguageCoroutine(savedLang, null));
         }
+
+        // [FIX-LOAD][B3] Nếu sau cả 3 nguồn vẫn không ready hoặc dict quá nhỏ → báo Init biết
+        if (!_isReady || _localizedText == null || _localizedText.Count < minExpectedKeys)
+        {
+            Debug.LogError($"[Localization] TẤT CẢ nguồn fallback đều fail hoặc thiếu key. " +
+                           $"_isReady={_isReady}, keys={(_localizedText?.Count ?? 0)}/{minExpectedKeys}. " +
+                           $"Fire OnLocalizationFailed.");
+            OnLocalizationFailed?.Invoke();
+        }
     }
 
-    private IEnumerator DownloadFromSheet(string langCode)
+    /// <summary>[FIX-LOAD][B1] Retry tải Sheet tối đa sheetMaxRetries lần với backoff timeout.</summary>
+    private IEnumerator DownloadFromSheetWithRetry(string langCode)
     {
-        Debug.Log("[Localization] Đang tải dữ liệu từ Google Sheet...");
+        for (int attempt = 0; attempt < sheetMaxRetries; attempt++)
+        {
+            int timeout = (sheetRetryTimeouts != null && attempt < sheetRetryTimeouts.Length)
+                ? sheetRetryTimeouts[attempt]
+                : sheetTimeoutSeconds;
+
+            Debug.Log($"[Localization] Sheet attempt {attempt + 1}/{sheetMaxRetries}, timeout={timeout}s");
+            yield return StartCoroutine(DownloadFromSheet(langCode, timeout));
+
+            if (_isReady)
+            {
+                Debug.Log($"[Localization] Sheet OK ở attempt {attempt + 1}.");
+                yield break;
+            }
+
+            // Nghỉ ngắn giữa các lần retry để mạng có thời gian phục hồi
+            if (attempt < sheetMaxRetries - 1)
+                yield return new WaitForSeconds(1.5f);
+        }
+        Debug.LogWarning($"[Localization] Đã retry {sheetMaxRetries} lần — Sheet vẫn fail, fallback sang cache/local.");
+    }
+
+    /// <summary>[FIX-LOAD] timeoutOverride > 0 sẽ override sheetTimeoutSeconds — dùng cho retry với backoff.</summary>
+    private IEnumerator DownloadFromSheet(string langCode, int timeoutOverride = 0)
+    {
+        int effectiveTimeout = timeoutOverride > 0 ? timeoutOverride : sheetTimeoutSeconds;
+        Debug.Log($"[Localization] Đang tải dữ liệu từ Google Sheet (timeout={effectiveTimeout}s)...");
         using (UnityWebRequest request = UnityWebRequest.Get(sheetUrl))
         {
-            request.timeout = sheetTimeoutSeconds;
+            request.timeout = effectiveTimeout;
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string csv = request.downloadHandler.text;
 
-                // Lưu cache để lần sau dùng được khi offline
-                TrySaveCache(csv);
-
+                // [FIX-LOAD][B2] Parse TRƯỚC, validate count TRƯỚC khi ghi cache.
+                // Tránh trường hợp Sheet bị thay đổi format → parse được 1-2 key cũng ghi đè cache tốt cũ.
                 if (ParseCSV(csv, langCode))
                 {
-                    _currentLanguage = langCode;
-                    _isReady = true;
-                    Debug.Log($"[Localization] Đã nạp từ Sheet: {_localizedText.Count} key (lang={langCode}).");
-                    OnLanguageChanged?.Invoke();
+                    int parsedCount = _localizedText?.Count ?? 0;
+                    if (parsedCount < minExpectedKeys)
+                    {
+                        Debug.LogWarning($"[Localization] Sheet parse được {parsedCount} key < minExpected={minExpectedKeys}. " +
+                                         "Coi như fail, KHÔNG ghi cache để giữ cache tốt cũ.");
+                        // Rollback _localizedText vì ParseCSV đã gán
+                        _localizedText = null;
+                    }
+                    else
+                    {
+                        // Parse đủ key → mới ghi cache + set ready
+                        TrySaveCache(csv);
+                        _currentLanguage = langCode;
+                        _isReady = true;
+                        Debug.Log($"[Localization] Đã nạp từ Sheet: {parsedCount} key (lang={langCode}).");
+                        OnLanguageChanged?.Invoke();
+                    }
                 }
                 else
                 {
@@ -106,7 +176,7 @@ public class LocalizationManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[Localization] Lỗi tải từ Sheet ({request.error}). Sẽ thử cache/local.");
+                Debug.LogWarning($"[Localization] Lỗi tải từ Sheet ({request.error}). Sẽ retry / fallback.");
             }
         }
     }
@@ -121,9 +191,17 @@ public class LocalizationManager : MonoBehaviour
             string csv = File.ReadAllText(cachePath);
             if (ParseCSV(csv, langCode))
             {
+                // [FIX-LOAD][B2] Validate min keys cũng cho cache (đề phòng cache bị corrupt).
+                int parsedCount = _localizedText?.Count ?? 0;
+                if (parsedCount < minExpectedKeys)
+                {
+                    Debug.LogWarning($"[Localization] Cache có nhưng chỉ {parsedCount}/{minExpectedKeys} key — bỏ qua, thử JSON local.");
+                    _localizedText = null;
+                    return;
+                }
                 _currentLanguage = langCode;
                 _isReady = true;
-                Debug.Log($"[Localization] Đã nạp từ cache: {_localizedText.Count} key (lang={langCode}).");
+                Debug.Log($"[Localization] Đã nạp từ cache: {parsedCount} key (lang={langCode}).");
                 OnLanguageChanged?.Invoke();
             }
         }
@@ -258,12 +336,25 @@ public class LocalizationManager : MonoBehaviour
         {
             LocalizationData data = JsonUtility.FromJson<LocalizationData>(jsonContent);
 
-            _localizedText = new Dictionary<string, string>();
+            var dict = new Dictionary<string, string>();
             foreach (var item in data.items)
             {
-                _localizedText[item.key] = item.value;
+                dict[item.key] = item.value;
             }
 
+            // [FIX-LOAD][B2] Validate min keys cho JSON local. Nếu thiếu nghiêm trọng → KHÔNG set ready.
+            if (dict.Count < minExpectedKeys)
+            {
+                Debug.LogError($"[Localization] JSON local chỉ có {dict.Count} key < minExpected={minExpectedKeys}. " +
+                               $"Không set ready, để InitLocalization fire OnLocalizationFailed.");
+                // Vẫn gán dict để game không hoàn toàn rỗng nếu user vẫn chọn vào — nhưng không set _isReady
+                _localizedText = dict;
+                _switchCoroutine = null;
+                // KHÔNG set _isReady = true, KHÔNG fire OnLanguageChanged
+                yield break;
+            }
+
+            _localizedText = dict;
             _currentLanguage = langCode;
             _isReady = true;
             _switchCoroutine = null;
@@ -273,24 +364,26 @@ public class LocalizationManager : MonoBehaviour
         else
         {
             // BUG FIX: Khi tải thất bại, ROLLBACK về ngôn ngữ cũ thay vì giữ _currentLanguage sai
-            // (trước đây: _localizedText ??= ... → giữ dữ liệu cũ nhưng _currentLanguage đã bị đổi)
-            if (!string.IsNullOrEmpty(fallbackLang) && fallbackLang != langCode)
+            if (!string.IsNullOrEmpty(fallbackLang) && fallbackLang != langCode
+                && _localizedText != null && _localizedText.Count >= minExpectedKeys)
             {
+                // [FIX-LOAD][B3] Chỉ rollback khi ngôn ngữ cũ THỰC SỰ còn data đủ.
                 Debug.LogWarning($"[Localization] Rollback về ngôn ngữ trước: '{fallbackLang}' ('{langCode}' không có file local).");
                 _currentLanguage = fallbackLang;
                 PlayerPrefs.SetString("Language", fallbackLang);
                 PlayerPrefs.Save();
-                // _localizedText vẫn còn dữ liệu của fallbackLang từ lần load trước → không cần load lại
+                _isReady = true;
+                _switchCoroutine = null;
+                OnLanguageChanged?.Invoke();
             }
             else
             {
-                // Trường hợp init lần đầu mà không có file: set dict rỗng, đánh dấu ready để game không bị kẹt
-                _localizedText ??= new Dictionary<string, string>();
+                // [FIX-LOAD][B3] KHÔNG còn silent set _isReady=true với dict rỗng nữa.
+                // Để InitLocalization phát hiện và fire OnLocalizationFailed → InitScene hiện popup retry.
+                Debug.LogError($"[Localization] JSON local '{langCode}' không tải được và không có fallback đủ data. " +
+                               $"KHÔNG set _isReady — chờ InitLocalization fire OnLocalizationFailed.");
+                _switchCoroutine = null;
             }
-
-            _isReady = true;
-            _switchCoroutine = null;
-            OnLanguageChanged?.Invoke();
         }
     }
 

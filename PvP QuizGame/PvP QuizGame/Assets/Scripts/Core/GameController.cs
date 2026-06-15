@@ -65,11 +65,17 @@ public class GameController : MonoBehaviour
         QuizManager.OnQuestionsExhausted      += HandleQuestionsExhausted;
 
         // Xác định mode
-        _isOnline = FirebaseManager.Instance != null
-                  && !FirebaseManager.Instance.isOfflineMode
-                  && FirebaseManager.Instance.IsConnected
-                  && FirebaseManager.Instance.IsAuthenticated
-                  && !string.IsNullOrEmpty(FirebaseManager.Instance.CurrentRoomId);
+        // [DEBUG] Log từng điều kiện để biết tại sao _isOnline có thể bị false
+        var fmInst = FirebaseManager.Instance;
+        bool cond1 = fmInst != null;
+        bool cond2 = cond1 && !fmInst.isOfflineMode;
+        bool cond3 = cond1 && fmInst.IsConnected;
+        bool cond4 = cond1 && fmInst.IsAuthenticated;
+        bool cond5 = cond1 && !string.IsNullOrEmpty(fmInst.CurrentRoomId);
+        _isOnline = cond1 && cond2 && cond3 && cond4 && cond5;
+        Debug.Log($"[GameController][DEBUG] _isOnline check: FMNotNull={cond1}, NotOffline={cond2}, " +
+                  $"IsConnected={cond3}, IsAuthenticated={cond4}, HasRoomId={cond5} → _isOnline={_isOnline}. " +
+                  $"frame={Time.frameCount}");
 
         if (_isOnline)
         {
@@ -202,7 +208,13 @@ public class GameController : MonoBehaviour
     // ==================== PVP ANSWER HANDLING ====================
     private void HandleBothPlayersAnswered(int p1Answer, int p2Answer)
     {
-        if (CurrentState != GameState.Playing) return;
+        Debug.Log($"[GameController][DEBUG] HandleBothPlayersAnswered FIRED. p1={p1Answer}, p2={p2Answer}, " +
+                  $"State={CurrentState}, _isOnline={_isOnline}, _isRevealing={_isRevealing}, frame={Time.frameCount}");
+        if (CurrentState != GameState.Playing)
+        {
+            Debug.LogWarning($"[GameController][DEBUG] EARLY-RETURN: State={CurrentState}, bỏ qua.");
+            return;
+        }
         // BUG-02: Lưu P2 answer để HandleTimerEnd dùng
         _currentP2Answer = p2Answer;
         StartCoroutine(RevealAndAdvance(p1Answer, p2Answer));
@@ -375,19 +387,27 @@ public class GameController : MonoBehaviour
     private void HandleTimerEnd()
     {
         if (CurrentState != GameState.Playing) return;
-        
-        Debug.Log("[GameController] Hết giờ! Đang chấm điểm...");
-        
+
+        Debug.Log($"[GameController][DEBUG] HandleTimerEnd. _isOnline={_isOnline}, " +
+                  $"_currentLocalAnswer={_currentLocalAnswer}, _currentP2Answer={_currentP2Answer}, " +
+                  $"_isRevealing={_isRevealing}, frame={Time.frameCount}");
+
         if (_isOnline)
         {
             // [SYNC FIX] Thay vì tự advance locally, client sẽ đẩy đáp án (hoặc -1) lên Firebase
             // và chờ Firebase báo OnBothPlayersAnswered để tiến hành đồng bộ.
             if (_currentLocalAnswer == -1)
             {
+                Debug.Log("[GameController][DEBUG] Online + chưa trả lời → submit -1 lên Firebase.");
                 if (FirebaseMatchProvider.Instance != null)
                 {
                     FirebaseMatchProvider.Instance.SubmitAnswerP1(-1);
                 }
+            }
+            else
+            {
+                Debug.LogWarning("[GameController][DEBUG] Online + ĐÃ trả lời nhưng OnBothPlayersAnswered KHÔNG fire " +
+                                 "→ đang đợi AFK timeout. Kiểm tra log FirebaseMatchProvider để xem listener đứt ở đâu.");
             }
         }
         else

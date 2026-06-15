@@ -187,12 +187,32 @@ public class InputController_UXML : MonoBehaviour
 
         Debug.Log($"[InputController] P1 chọn [{answerIndex}].");
 
-        bool useFirebase = FirebaseManager.Instance != null && !FirebaseManager.Instance.isOfflineMode;
+        // [FIX] Dùng GameController._isOnline thay vì check riêng — đảm bảo cùng nguồn
+        // chân lý với GameController. Tránh trường hợp 2 nơi đánh giá mode khác nhau.
+        bool isOnline = GameController.Instance != null
+                     && FirebaseManager.Instance != null
+                     && !FirebaseManager.Instance.isOfflineMode
+                     && FirebaseManager.Instance.IsConnected
+                     && FirebaseManager.Instance.IsAuthenticated
+                     && !string.IsNullOrEmpty(FirebaseManager.Instance.CurrentRoomId);
 
-        if (useFirebase && FirebaseMatchProvider.Instance != null)
-            FirebaseMatchProvider.Instance.SubmitAnswerP1(answerIndex);
+        if (isOnline)
+        {
+            if (FirebaseMatchProvider.Instance != null)
+            {
+                FirebaseMatchProvider.Instance.SubmitAnswerP1(answerIndex);
+            }
+            else
+            {
+                // [FIX] KHÔNG silent fallback sang LocalMatchProvider — log lỗi cứng để dễ phát hiện.
+                Debug.LogError("[InputController] ONLINE mode nhưng FirebaseMatchProvider.Instance == null! " +
+                               "GameObject chưa được tạo. Kiểm tra FirebaseManager.EnsureFirebaseMatchProvider().");
+            }
+        }
         else
+        {
             LocalMatchProvider.Instance?.SubmitAnswerP1(answerIndex);
+        }
 
         if (GameController.Instance != null)
             GameController.Instance.SetLocalAnswer(answerIndex);
