@@ -1,0 +1,64 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      ".indexOn": ["rankPoints"],
+      "$uid": {
+        ".write": "auth != null && $uid === auth.uid"
+      }
+    },
+
+    "matchmakingQueue": {
+      "$tier": {
+        ".read": "auth != null",
+        ".indexOn": ["joinedAt"],
+        "$uid": {
+          ".write": "auth != null && $uid === auth.uid",
+          ".validate": "!newData.exists() || (newData.hasChildren(['name','joinedAt']) && newData.child('name').isString())"
+        }
+      }
+    },
+
+    "rooms": {
+      "$roomId": {
+        ".read": "auth != null && data.child('players').child(auth.uid).exists()",
+        ".write": "auth != null && ((!data.exists() && newData.child('players').child(auth.uid).exists()) || (data.exists() && data.child('players').child(auth.uid).exists()))",
+
+        "scores": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid",
+            ".validate": "newData.isNumber() || !newData.exists()"
+          }
+        },
+        "answers": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid",
+            ".validate": "newData.isNumber() || !newData.exists()"
+          }
+        },
+        "players": {
+          "$uid": {
+            "online": {
+              ".write": "auth != null && $uid === auth.uid",
+              ".validate": "newData.isBoolean() || !newData.exists()"
+            }
+          }
+        }
+      }
+    },
+
+    "seasonConfig": {
+      ".read": "auth != null",
+      ".write": false
+    },
+
+    "seasonArchive": {
+      "$season": {
+        ".read": "auth != null",
+        "$uid": {
+          ".write": "auth != null && $uid === auth.uid"
+        }
+      }
+    }
+  }
+}
